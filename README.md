@@ -1,5 +1,5 @@
 # Bonsai
-A miniature reactive Java library - for Android
+A miniature reactive Java library - for Android.
 
 ### How to use
 
