@@ -1,5 +1,5 @@
 # Bonsai
-A simplified reactive library.
+A miniature reactive Java library.
 
 ### How to use
 
