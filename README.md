@@ -110,8 +110,8 @@ Observable.create(new Action<List<String>>() {
         subscriber.onNext(stringList);
         subscriber.onComplete();
     }
-}).subscribeOn(Schedulers.io())
-  .observeOn(Schedulers.main())
+}).subscribeOn(Schedulers.current())
+  .observeOn(Schedulers.current())
   .subscribe(new OnSubscribe<List<String>>() {
         @Override
         public void onNext(List<String> item) {
