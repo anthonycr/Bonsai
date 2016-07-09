@@ -22,6 +22,7 @@ package com.anthonycr.bonsai;
 
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -33,10 +34,14 @@ public final class Schedulers {
         throw new UnsupportedOperationException("This class is not instantiable");
     }
 
-    private static final Scheduler sMainScheduler = new ThreadScheduler(Looper.getMainLooper());
-    private static final Scheduler sWorkerScheduler = new WorkerScheduler();
-    private static final Scheduler sIoScheduler = new SingleThreadedScheduler();
+    @Nullable private static Scheduler sMainScheduler;
+    @Nullable private static Scheduler sWorkerScheduler;
+    @Nullable private static Scheduler sIoScheduler;
 
+    /**
+     * A worker scheduler. Backed by a fixed
+     * thread pool containing 4 thread.
+     */
     private static class WorkerScheduler implements Scheduler {
 
         private static final Executor sWorker = Executors.newFixedThreadPool(4);
@@ -47,6 +52,10 @@ public final class Schedulers {
         }
     }
 
+    /**
+     * A single threaded scheduler. Backed by a
+     * single thread in an executor.
+     */
     private static class SingleThreadedScheduler implements Scheduler {
 
         private final Executor mSingleThreadExecutor = Executors.newSingleThreadExecutor();
@@ -57,11 +66,15 @@ public final class Schedulers {
         }
     }
 
+    /**
+     * A scheduler backed by an executor.
+     */
     private static class ExecutorScheduler implements Scheduler {
 
+        @NonNull
         private final Executor mBackingExecutor;
 
-        public ExecutorScheduler(Executor executor) {
+        public ExecutorScheduler(@NonNull Executor executor) {
             mBackingExecutor = executor;
         }
 
@@ -71,11 +84,28 @@ public final class Schedulers {
         }
     }
 
+    /**
+     * Creates a scheduler from an executor instance.
+     *
+     * @param executor the executor to use to create
+     *                 the Scheduler.
+     * @return a valid Scheduler backed by an executor.
+     */
     @NonNull
     public static Scheduler from(@NonNull Executor executor) {
         return new ExecutorScheduler(executor);
     }
 
+    /**
+     * A scheduler that points to the
+     * current thread. Useful when you
+     * are not on the main thread and
+     * need to observe on that thread.
+     *
+     * @return a scheduler associated with
+     * the current thread.
+     */
+    @NonNull
     public static Scheduler current() {
         if (Looper.myLooper() == null) {
             Looper.prepare();
@@ -84,6 +114,14 @@ public final class Schedulers {
         return new ThreadScheduler(Looper.myLooper());
     }
 
+    /**
+     * Creates a new Scheduler that
+     * creates a new thread and does
+     * all work on it.
+     *
+     * @return a scheduler associated
+     * with a new single thread.
+     */
     @NonNull
     public static Scheduler newSingleThreadedScheduler() {
         return new SingleThreadedScheduler();
@@ -98,27 +136,38 @@ public final class Schedulers {
      */
     @NonNull
     public static Scheduler worker() {
+        if (sWorkerScheduler == null) {
+            sWorkerScheduler = new WorkerScheduler();
+        }
         return sWorkerScheduler;
     }
 
     /**
-     * The main thread.
+     * The main thread. All work will
+     * be done on the single main thread.
      *
      * @return a non-null Scheduler that does work on the main thread.
      */
     @NonNull
     public static Scheduler main() {
+        if (sMainScheduler == null) {
+            sMainScheduler = new ThreadScheduler(Looper.getMainLooper());
+        }
         return sMainScheduler;
     }
 
     /**
-     * The io thread.
+     * The io scheduler. All work will be
+     * done on a single thread.
      *
      * @return a non-null Scheduler that does
      * work on a single thread off the main thread.
      */
     @NonNull
     public static Scheduler io() {
+        if (sIoScheduler == null) {
+            sIoScheduler = new SingleThreadedScheduler();
+        }
         return sIoScheduler;
     }
 }
