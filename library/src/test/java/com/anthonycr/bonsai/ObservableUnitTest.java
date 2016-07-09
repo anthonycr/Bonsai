@@ -361,4 +361,47 @@ public class ObservableUnitTest {
         Assert.assertTrue("Looper should be initialized by observable class", looperFinallyNotNull.get());
     }
 
+    @Test
+    public void testObservableSubscriberIsUnsubscribed() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch onNextLatch = new CountDownLatch(1);
+        final Assertion<Boolean> unsubscribed = new Assertion<>(false);
+        final List<String> list = new ArrayList<>();
+        Subscription subscription = Observable.create(new Action<String>() {
+
+            @Override
+            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+                if (!subscriber.isUnsubscribed()) {
+                    subscriber.onNext("test 1");
+                }
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                // should be unsubscribed after the latch countdown occurrs
+                if (!subscriber.isUnsubscribed()) {
+                    subscriber.onNext("test 2");
+                }
+                unsubscribed.set(subscriber.isUnsubscribed());
+            }
+        }).subscribeOn(Schedulers.newSingleThreadedScheduler())
+            .observeOn(Schedulers.newSingleThreadedScheduler())
+            .subscribe(new OnSubscribe<String>() {
+                @Override
+                public void onNext(@Nullable String item) {
+                    list.add(item);
+                    onNextLatch.countDown();
+                }
+            });
+
+        onNextLatch.await();
+        subscription.unsubscribe();
+        latch.countDown();
+
+        Assert.assertTrue("Only one item should have been emitted", list.size() == 1);
+        Assert.assertTrue("Wrong item emitted", list.get(0).equals("test 1"));
+        Assert.assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
+    }
+
 }
