@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 // delete the item from the database. When the operation
                 // completes, we call back to the main thread to update
                 // the UI and remove the item from the list.
-                deleteContactSubscription = DataModel.deleteContactObserable(contact)
+                deleteContactSubscription = DataModel.deleteContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
                     .subscribe(new OnSubscribe<Void>() {
