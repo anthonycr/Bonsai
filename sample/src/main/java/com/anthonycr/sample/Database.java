@@ -44,6 +44,7 @@ public final class Database extends SQLiteOpenHelper {
     private static Database instance;
     private SQLiteDatabase database;
 
+    @WorkerThread
     @NonNull
     public static synchronized Database getInstance() {
         if (instance == null) {
@@ -52,8 +53,10 @@ public final class Database extends SQLiteOpenHelper {
         return instance;
     }
 
+    @WorkerThread
     private Database(@NonNull Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        // Getting the writable database can be an expensive operation
         database = getWritableDatabase();
     }
 
