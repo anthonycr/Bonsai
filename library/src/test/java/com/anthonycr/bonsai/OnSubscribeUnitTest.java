@@ -67,21 +67,25 @@ public class OnSubscribeUnitTest {
 
         @Override
         public void onStart() {
+            super.onStart();
             onStart = true;
         }
 
         @Override
         public void onError(@NonNull Throwable throwable) {
+            super.onError(throwable);
             onError = true;
         }
 
         @Override
         public void onNext(@Nullable String item) {
+            super.onNext(item);
             onNext = true;
         }
 
         @Override
         public void onComplete() {
+            super.onComplete();
             onComplete = true;
         }
     }
