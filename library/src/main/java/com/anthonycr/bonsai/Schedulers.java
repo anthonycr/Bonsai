@@ -44,11 +44,11 @@ public final class Schedulers {
      */
     private static class WorkerScheduler implements Scheduler {
 
-        private static final Executor sWorker = Executors.newFixedThreadPool(4);
+        private final Executor mWorker = Executors.newFixedThreadPool(4);
 
         @Override
         public void execute(@NonNull Runnable command) {
-            sWorker.execute(command);
+            mWorker.execute(command);
         }
     }
 

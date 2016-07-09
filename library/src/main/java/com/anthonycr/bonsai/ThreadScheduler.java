@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 @SuppressWarnings("unused")
 class ThreadScheduler implements Scheduler {
 
+    @NonNull
     private final Handler mHandler;
 
     public ThreadScheduler(@NonNull Looper looper) {
