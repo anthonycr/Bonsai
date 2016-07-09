@@ -96,6 +96,40 @@ public void onDestroy() {
     }
 }
 ```
+
+##### List Example
+```java
+List<String> list = new ArrayList();
+Observable.create(new Action<List<String>>() {
+    @Override
+    public void onSubscribe(@NonNull Subscriber<List<String>> subscriber) {
+        List<String> stringList = new Arraylist<>();
+        stringList.add("string 1");
+        stringList.add("string 2");
+        stringList.add("string 3");
+        subscriber.onNext(stringList);
+        subscriber.onComplete();
+    }
+}).subscribeOn(Schedulers.io())
+  .observeOn(Schedulers.main())
+  .subscribe(new OnSubscribe<List<String>>() {
+        @Override
+        public void onNext(List<String> item) {
+            list.addAll(item);
+        }
+        
+        @Override
+        public void onComplete() {
+            Log.d(TAG, "We're done!");
+        }
+  });
+  
+for(String string : list) {
+    Log.d(TAG, "Received: " + string);
+}
+```
+
+
 ### License
 
 ````
