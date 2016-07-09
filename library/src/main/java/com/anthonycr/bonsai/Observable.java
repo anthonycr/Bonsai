@@ -173,6 +173,7 @@ public class Observable<T> {
                 Log.e(TAG, "onComplete called more than once");
                 throw new RuntimeException("onComplete called more than once");
             }
+            unsubscribe();
         }
 
         @Override
