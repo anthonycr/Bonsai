@@ -205,6 +205,11 @@ public class Observable<T> {
                 // Subscription has been unsubscribed, ignore it
             }
         }
+
+        @Override
+        public boolean isUnsubscribed() {
+            return mOnSubscribe == null;
+        }
     }
 
     private static class OnCompleteRunnable<T> implements Runnable {
