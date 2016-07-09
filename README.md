@@ -50,18 +50,22 @@ Observable.create(new Action<String>() {
 private Subscription subscription;
 
 /**
- * An observable that emits sequential odd numbers as long
- * as the Subscriber is subscribed to it. Odd numbers are
+ * An observable that emits sequential Fibonacci numbers as long
+ * as the Subscriber is subscribed to it. Fibonacci numbers are
  * Emitted every half a second.
  */
-private Observable<Integer> allPositiveOddNumbersObservable() {
+private Observable<Integer> allFibonacciNumbersObservable() {
     return Observable.create(new Action<Integer>() {
         @Override
         public void onSubscribe(@NonNull Subscriber<Integer> subscriber) {
-            int oddNumber = -1;
+            int firstNumber = 0;
+            int secondNumber = 1;
+            int temp;
             while(!subscriber.isUnsubscribed()) {
-                oddNumber += 2;
-                subscriber.onNext(oddNumber);
+                temp = secondNumber;
+                secondNumber = secondNumber + firstNumber;
+                firstNumber = temp;
+                subscriber.onNext(secondNumber);
                 try {
                     Thread.sleep(500);
                 } catch(InterruptedException ignored) {}
@@ -78,7 +82,7 @@ private void doWorkOnMainThread() {
         .subscribe(new OnSubscribe<Integer>() {
             @Override
             public void onNext(Integer item) {
-                Log.d(TAG, "Asynchronously received this odd number: " + item);
+                Log.d(TAG, "Asynchronously received this fibonacci number: " + item);
             }
         });
 }
