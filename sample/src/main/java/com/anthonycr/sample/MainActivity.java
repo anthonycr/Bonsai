@@ -151,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
                     // the database on the background thread, then receive
                     // notification when it has finished inserting into the
                     // database.
-                    unsubscribeIfNecessary(addContactSubscription);
                     addContactSubscription = DataModel.addContactObservable(newContact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
