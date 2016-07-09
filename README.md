@@ -49,16 +49,23 @@ Observable.create(new Action<String>() {
 ```java
 private Subscription subscription;
 
-private Observable<String> stringObservable() {
-    Observable.create(new Action<String>() {
+/**
+ * An observable that emits sequential odd numbers as long
+ * as the Subscriber is subscribed to it. Odd numbers are
+ * Emitted every half a second.
+ */
+private Observable<Integer> allPositiveOddNumbersObservable() {
+    Observable.create(new Action<Integer>() {
         @Override
-        public void onSubscribe(@NonNull Subscriber<String> subscriber) {
-            subscriber.onNext("string 1");
-            subscriber.onNext("string 2");
-            try {
-                Thread.sleep(2000);
-            } catch(InterruptedException ignored) {}
-            subscriber.onNext("string 3");
+        public void onSubscribe(@NonNull Subscriber<Integer> subscriber) {
+            int oddNumber = -1;
+            while(!subscriber.isUnsubscribed()) {
+                oddNumber += 2;
+                subscriber.onNext(oddNumber);
+                try {
+                    Thread.sleep(500);
+                } catch(InterruptedException ignored) {}
+            }
             subscriber.onComplete();
         }
     });
@@ -68,10 +75,10 @@ private void doWorkOnMainThread() {
     subscription = stringObservable()
         .subscribeOn(Schedulers.worker())
         .observeOn(Schedulders.main())
-        .subscribe(new OnSubscribe<String>() {
+        .subscribe(new OnSubscribe<Integer>() {
             @Override
-            public void onNext(String item) {
-                Log.d(TAG, "Asynchronously received this string: " + item);
+            public void onNext(Integer item) {
+                Log.d(TAG, "Asynchronously received this odd number: " + item);
             }
         });
 }
