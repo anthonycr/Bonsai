@@ -55,7 +55,7 @@ private Subscription subscription;
  * Emitted every half a second.
  */
 private Observable<Integer> allPositiveOddNumbersObservable() {
-    Observable.create(new Action<Integer>() {
+    return Observable.create(new Action<Integer>() {
         @Override
         public void onSubscribe(@NonNull Subscriber<Integer> subscriber) {
             int oddNumber = -1;
