@@ -69,11 +69,11 @@ private void doWorkOnMainThread() {
         .subscribeOn(Schedulers.worker())
         .observeOn(Schedulders.main())
         .subscribe(new OnSubscribe<String>() {
-        @Override
-        public void onNext(String item) {
-            Log.d(TAG, "Asynchronously received this string: " + item);
-        }
-    });
+            @Override
+            public void onNext(String item) {
+                Log.d(TAG, "Asynchronously received this string: " + item);
+            }
+        });
 }
 
 @Override
