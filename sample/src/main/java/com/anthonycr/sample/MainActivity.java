@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
     private Adapter adapter;
-
     private Subscription getAllContactsSubscription;
     private Subscription addContactSubscription;
     private Subscription editContactSubscription;
