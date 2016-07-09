@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Bonsai</string>
+    <string name="app_name">BonsaiSample</string>
+    <string name="ok">OK</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="edit_contact">Edit Contact</string>
+    <string name="message_blank_name">Name must not be blank.</string>
+    <string name="hint_name">Name</string>
+    <string name="hint_number">Number</string>
 </resources>
