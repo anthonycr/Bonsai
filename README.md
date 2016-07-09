@@ -37,7 +37,7 @@ Observable.create(new Action<String>() {
     }
 }).subscribeOn(Schedulers.io())
   .observeOn(Schedulers.main())
-  .subscribe(new OnSubscribe<String>(){
+  .subscribe(new OnSubscribe<String>() {
         @Override
         public void onNext(String item) {
             Log.d(TAG, "Asynchronously received this string: " + item);
