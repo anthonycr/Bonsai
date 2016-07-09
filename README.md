@@ -61,6 +61,7 @@ private Observable<Integer> allFibonacciNumbersObservable() {
             int firstNumber = 0;
             int secondNumber = 1;
             int temp;
+            subscriber.onNext(secondNumber);
             while(!subscriber.isUnsubscribed()) {
                 temp = secondNumber;
                 secondNumber = secondNumber + firstNumber;
