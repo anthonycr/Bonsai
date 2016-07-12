@@ -77,7 +77,7 @@ private Observable<Integer> allFibonacciNumbersObservable() {
 }
 
 private void doWorkOnMainThread() {
-    subscription = stringObservable()
+    subscription = allFibonacciNumbersObservable()
         .subscribeOn(Schedulers.worker())
         .observeOn(Schedulders.main())
         .subscribe(new OnSubscribe<Integer>() {
