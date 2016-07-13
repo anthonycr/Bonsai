@@ -42,6 +42,11 @@ Observable.create(new Action<String>() {
         public void onNext(String item) {
             Log.d(TAG, "Asynchronously received this string: " + item);
         }
+
+        @Override
+        public void onComplete() {
+            Log.d(TAG, "Finished receiving strings");
+        }
   });
 ```
 
@@ -69,7 +74,10 @@ private Observable<Integer> allFibonacciNumbersObservable() {
                 subscriber.onNext(secondNumber);
                 try {
                     Thread.sleep(500);
-                } catch(InterruptedException ignored) {}
+                } catch(InterruptedException exception) {
+                    subscriber.onError(exception);
+                    return;
+                }
             }
             subscriber.onComplete();
         }
@@ -82,8 +90,18 @@ private void doWorkOnMainThread() {
         .observeOn(Schedulders.main())
         .subscribe(new OnSubscribe<Integer>() {
             @Override
+            public void onStart() {
+                Log.d(TAG, "Started receiving numbers");
+            }
+
+            @Override
             public void onNext(Integer item) {
                 Log.d(TAG, "Asynchronously received this fibonacci number: " + item);
+            }
+
+            @Override
+            public void onError(Exception error) {
+                Log.d(TAG, "Error occurred while receiving numbers", error);
             }
         });
 }
