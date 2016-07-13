@@ -13,6 +13,10 @@ A miniature reactive Android library.
 - `Observable`: A manager class that handles communication between an `Action` and a `Subscriber` by scheduling events to occurr on different threads using a `Scheduler`
 - `Action`: Work that you wish to perform when the user subscribes to your observable. `Action.onSubscribe` is called when the user subscribes to the Observable. The work is run on the Scheduler specified by the `Observable.subscribeOn` method.
 - `Subscriber`, `OnSubscribe`: The consumer of the observable is the Subscriber. There are two classes describing this in order to separate communication between the subscriber thread (where the work is done) and the observer thread (where it is emitted). Subscriber is used by the subscriber thread to pass events to the OnSubscribe implementation (provided by ths subscriber), which is called on the observe thread.
+    - `onStart()`: Always called when the observable starts (called internally)
+    - `onNext(T item)`: Called by the Observable if it has an item to pass to you
+    - `onComplete()`: Should be called by the Observable when it is done emitting items, this will release the resources used by the Observable/Subscription unless they are held elsewhere. Not calling this indicates that the Observable has more items to emit.
+    - `onError(Exception exception)`: The Observable should call this if an error occurs. If this method is called, onComplete or onNext should not be called.
 - `Scheduler`: A thin wrapper around a thread that schedules work to be done.
 - `Schedulers`: A utility class that creates `Scheduler` instances for you. See below for a list of provided ones:
     - `io()`: A single thread that you should reserve for talking to disk. Android disk IO is single threaded for write operations, which is why one thread is used here.
