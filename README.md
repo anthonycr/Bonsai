@@ -16,6 +16,7 @@ A miniature reactive Android library.
     - `onStart()`: Always called when the observable starts (called internally)
     - `onNext(T item)`: Called by the Observable if it has an item to pass to you
     - `onComplete()`: Should be called by the Observable when it is done emitting items, this will release the resources used by the Observable/Subscription unless they are held elsewhere. Not calling this indicates that the Observable has more items to emit.
+    - `onError(Exception exception)`: TODO: This API needs work and will likely be changed to be called automatically when you throw an exception. Currently: The Observable should call this if an error occurs. If this method is called, onComplete or onNext should not be called. 
 - `Scheduler`: A thin wrapper around a thread that schedules work to be done.
 - `Schedulers`: A utility class that creates `Scheduler` instances for you. See below for a list of provided ones:
     - `io()`: A single thread that you should reserve for talking to disk. Android disk IO is single threaded for write operations, which is why one thread is used here.
