@@ -365,6 +365,7 @@ public class ObservableUnitTest {
     public void testObservableSubscriberIsUnsubscribed() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onNextLatch = new CountDownLatch(1);
+        final CountDownLatch onFinalLatch = new CountDownLatch(1);
         final Assertion<Boolean> unsubscribed = new Assertion<>(false);
         final List<String> list = new ArrayList<>();
         Subscription subscription = Observable.create(new Action<String>() {
@@ -384,6 +385,7 @@ public class ObservableUnitTest {
                     subscriber.onNext("test 2");
                 }
                 unsubscribed.set(subscriber.isUnsubscribed());
+                onFinalLatch.countDown();
             }
         }).subscribeOn(Schedulers.newSingleThreadedScheduler())
             .observeOn(Schedulers.newSingleThreadedScheduler())
@@ -398,6 +400,7 @@ public class ObservableUnitTest {
         onNextLatch.await();
         subscription.unsubscribe();
         latch.countDown();
+        onFinalLatch.await();
 
         Assert.assertTrue("Only one item should have been emitted", list.size() == 1);
         Assert.assertTrue("Wrong item emitted", list.get(0).equals("test 1"));
