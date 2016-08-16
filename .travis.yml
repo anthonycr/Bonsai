@@ -6,7 +6,6 @@ android:
     - build-tools-23.0.3
     - build-tools-22.0.1
     - android-23
-    - android-22
     - extra-android-support
     - extra-android-m2repository
   licenses:
@@ -18,5 +17,5 @@ before_install:
 install:
   - ./gradlew
 script:
-  - ./gradlew :bonsai:assembleRelease --stacktrace
+  - ./gradlew :library:assembleRelease --stacktrace
   - ./gradlew :sample:assembleRelease --stacktrace
