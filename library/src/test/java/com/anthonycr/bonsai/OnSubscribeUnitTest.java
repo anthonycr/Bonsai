@@ -49,12 +49,20 @@ public class OnSubscribeUnitTest {
         onSubscribe.onStart();
         onSubscribe.onNext("Test");
         onSubscribe.onComplete();
-        onSubscribe.onError(new NullPointerException("test exception"));
+        // onError should throw an Exception by default
+        // onSubscribe.onError(new NullPointerException("test exception"));
 
         Assert.assertTrue(onSubscribe.onStart);
         Assert.assertTrue(onSubscribe.onNext);
         Assert.assertTrue(onSubscribe.onComplete);
-        Assert.assertTrue(onSubscribe.onError);
+        // Assert.assertTrue(onSubscribe.onError);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void onError_throwsException() {
+        TestSubscriberImpl onSubscribe = new TestSubscriberImpl();
+
+        onSubscribe.onError(new NullPointerException("test exception"));
     }
 
     private static class TestSubscriberImpl extends OnSubscribe<String> {

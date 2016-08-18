@@ -33,12 +33,17 @@ public abstract class OnSubscribe<T> {
      * Receiving this callback means that
      * the observable is dead and no
      * {@link #onComplete()} or {@link #onNext(Object)}
-     * callbacks will be called.
+     * callbacks will be called. Default implementation
+     * throws an exception, so you will get a crash
+     * if the Observable throws an exception and this
+     * method is not overridden.
      *
      * @param throwable an optional throwable that could
      *                  be sent.
      */
-    public void onError(@NonNull Throwable throwable) {}
+    public void onError(@NonNull Throwable throwable) {
+        throw new RuntimeException("Exception thrown: override onError to handle it", throwable);
+    }
 
     /**
      * Called before the observer begins

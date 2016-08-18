@@ -123,7 +123,11 @@ public class Observable<T> {
         executeOnSubscriberThread(new Runnable() {
             @Override
             public void run() {
-                mAction.onSubscribe(subscriber);
+                try {
+                    mAction.onSubscribe(subscriber);
+                } catch (Exception exception) {
+                    subscriber.onError(exception);
+                }
             }
         });
 
@@ -191,6 +195,7 @@ public class Observable<T> {
                 mOnError = true;
                 mObservable.executeOnObserverThread(new OnErrorRunnable<>(onSubscribe, throwable));
             }
+            unsubscribe();
         }
 
         @Override
@@ -212,56 +217,5 @@ public class Observable<T> {
         }
     }
 
-    private static class OnCompleteRunnable<T> implements Runnable {
-        private final OnSubscribe<T> onSubscribe;
-
-        public OnCompleteRunnable(@NonNull OnSubscribe<T> onSubscribe) {this.onSubscribe = onSubscribe;}
-
-        @Override
-        public void run() {
-            onSubscribe.onComplete();
-        }
-    }
-
-    private static class OnNextRunnable<T> implements Runnable {
-        private final OnSubscribe<T> onSubscribe;
-        private final T item;
-
-        public OnNextRunnable(@NonNull OnSubscribe<T> onSubscribe, T item) {
-            this.onSubscribe = onSubscribe;
-            this.item = item;
-        }
-
-        @Override
-        public void run() {
-            onSubscribe.onNext(item);
-        }
-    }
-
-    private static class OnErrorRunnable<T> implements Runnable {
-        private final OnSubscribe<T> onSubscribe;
-        private final Throwable throwable;
-
-        public OnErrorRunnable(@NonNull OnSubscribe<T> onSubscribe, @NonNull Throwable throwable) {
-            this.onSubscribe = onSubscribe;
-            this.throwable = throwable;
-        }
-
-        @Override
-        public void run() {
-            onSubscribe.onError(throwable);
-        }
-    }
-
-    private static class OnStartRunnable<T> implements Runnable {
-        private final OnSubscribe<T> onSubscribe;
-
-        public OnStartRunnable(@NonNull OnSubscribe<T> onSubscribe) {this.onSubscribe = onSubscribe;}
-
-        @Override
-        public void run() {
-            onSubscribe.onStart();
-        }
-    }
 }
 
