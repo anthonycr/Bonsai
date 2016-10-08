@@ -27,16 +27,15 @@ import android.support.annotation.Nullable;
 public abstract class OnSubscribe<T> {
 
     /**
-     * Called when the observable
-     * runs into an error that will
-     * cause it to abort and not finish.
-     * Receiving this callback means that
-     * the observable is dead and no
-     * {@link #onComplete()} or {@link #onNext(Object)}
+     * Called when the observable runs into an error
+     * that will cause it to abort and not finish.
+     * Receiving this callback means that the observable
+     * is dead and no {@link #onComplete()} or {@link #onNext(Object)}
      * callbacks will be called. Default implementation
      * throws an exception, so you will get a crash
      * if the Observable throws an exception and this
-     * method is not overridden.
+     * method is not overridden. Do not call super when
+     * you override this method.
      *
      * @param throwable an optional throwable that could
      *                  be sent.
