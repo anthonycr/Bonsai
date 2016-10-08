@@ -43,7 +43,7 @@ public class Observable<T> {
     @Nullable private Scheduler mObserverThread;
     @NonNull private final Scheduler mDefault;
 
-    Observable(@NonNull Action<T> action) {
+    private Observable(@NonNull Action<T> action) {
         mAction = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
@@ -62,6 +62,7 @@ public class Observable<T> {
      * @param <T>    the type that will be emitted to the onSubscribe
      * @return a valid non-null Observable.
      */
+    @SuppressWarnings("WeakerAccess")
     @NonNull
     public static <T> Observable<T> create(@NonNull Action<T> action) {
         Preconditions.checkNonNull(action);
@@ -75,6 +76,7 @@ public class Observable<T> {
      * @param subscribeScheduler the Scheduler to run the work on.
      * @return returns this so that calls can be conveniently chained.
      */
+    @SuppressWarnings("WeakerAccess")
     public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
         mSubscriberThread = subscribeScheduler;
         return this;
@@ -87,6 +89,7 @@ public class Observable<T> {
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
      */
+    @SuppressWarnings("WeakerAccess")
     public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
         mObserverThread = observerScheduler;
         return this;
@@ -96,6 +99,7 @@ public class Observable<T> {
      * Subscribes immediately to the Observable and ignores
      * all onComplete and onNext calls.
      */
+    @SuppressWarnings("WeakerAccess")
     public void subscribe() {
         executeOnSubscriberThread(new Runnable() {
             @Override
@@ -112,6 +116,7 @@ public class Observable<T> {
      * @param onSubscribe the class that wishes to receive onNext and
      *                    onComplete callbacks from the Observable.
      */
+    @SuppressWarnings("WeakerAccess")
     public Subscription subscribe(@NonNull OnSubscribe<T> onSubscribe) {
 
         Preconditions.checkNonNull(onSubscribe);
@@ -157,7 +162,7 @@ public class Observable<T> {
         private boolean mOnCompleteExecuted = false;
         private boolean mOnError = false;
 
-        public SubscriberImpl(@Nullable OnSubscribe<T> onSubscribe, @NonNull Observable<T> observable) {
+        SubscriberImpl(@Nullable OnSubscribe<T> onSubscribe, @NonNull Observable<T> observable) {
             mOnSubscribe = onSubscribe;
             mObservable = observable;
         }

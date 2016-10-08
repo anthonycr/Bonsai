@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
 
             private TextView nameView;
 
-            public ViewHolder(View view) {
+            ViewHolder(View view) {
                 nameView = (TextView) view.findViewById(R.id.contact_name);
             }
 
@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
         @NonNull
         private final MainActivity activity;
 
-        public Adapter(@NonNull MainActivity activity, int resource) {
+        Adapter(@NonNull MainActivity activity, int resource) {
             super(activity, resource);
             this.activity = activity;
         }
