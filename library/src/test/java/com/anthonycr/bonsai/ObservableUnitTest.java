@@ -27,9 +27,6 @@ import android.support.annotation.Nullable;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class ObservableUnitTest {
+public class ObservableUnitTest extends BaseUnitTest{
 
     @Test
     public void testMainLooperWorking() throws Exception {

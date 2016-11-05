@@ -26,15 +26,10 @@ import android.support.annotation.Nullable;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.lang.reflect.Modifier;
 
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class OnSubscribeUnitTest {
+public class OnSubscribeUnitTest extends BaseUnitTest{
 
     @Test
     public void testClassType() throws Exception {

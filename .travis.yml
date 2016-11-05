@@ -20,4 +20,4 @@ install:
 script:
   - ./gradlew :library:assembleDebug --stacktrace
   - ./gradlew :sample:assembleDebug --stacktrace
-  - ./gradlew :sample:testDebug --stacktrace
+  - ./gradlew :library:testDebug --stacktrace
