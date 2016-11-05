@@ -70,6 +70,23 @@ public class Observable<T> {
     }
 
     /**
+     * Static creator that creates an Observable that is empty
+     * and emits no items, but completes immediately.
+     *
+     * @param <T> the type that will be emitted to the onSubscribe
+     * @return a valid non-null empty Observable.
+     */
+    @NonNull
+    public static <T> Observable<T> empty() {
+        return new Observable<>(new Action<T>() {
+            @Override
+            public void onSubscribe(@NonNull Subscriber<T> subscriber) {
+                subscriber.onComplete();
+            }
+        });
+    }
+
+    /**
      * Tells the Observable what Scheduler that the onSubscribe
      * work should run on.
      *

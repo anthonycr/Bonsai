@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
  */
-public class ObservableUnitTest extends BaseUnitTest{
+public class ObservableUnitTest extends BaseUnitTest {
 
     @Test
     public void testMainLooperWorking() throws Exception {
@@ -400,6 +400,28 @@ public class ObservableUnitTest extends BaseUnitTest{
         Assert.assertTrue("Only one item should have been emitted", list.size() == 1);
         Assert.assertTrue("Wrong item emitted", list.get(0).equals("test 1"));
         Assert.assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
+    }
+
+    @Test
+    public void testObservableEmpty_emitsNothingImmediately() throws Exception {
+        final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
+        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        Observable.empty().subscribe(new OnSubscribe<Object>() {
+
+            @Override
+            public void onNext(@Nullable Object item) {
+                onNextAssertion.set(true);
+            }
+
+            @Override
+            public void onComplete() {
+                onCompleteAssertion.set(true);
+            }
+
+        });
+
+        Assert.assertFalse(onNextAssertion.get());
+        Assert.assertTrue(onCompleteAssertion.get());
     }
 
 }
