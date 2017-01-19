@@ -130,7 +130,7 @@ public class ObservableUnitTest extends BaseUnitTest {
                 }
             });
 
-        // Even though error has been broadcase,
+        // Even though error has been broadcast,
         // observable should still complete.
         assertTrue(list.size() == testCount);
         for (int n = 0; n < list.size(); n++) {
@@ -189,7 +189,7 @@ public class ObservableUnitTest extends BaseUnitTest {
                 }
             });
 
-        // Even though error has been broadcase,
+        // Even though error has been broadcast,
         // observable should still complete.
         assertTrue(list.size() == testCount);
         for (int n = 0; n < list.size(); n++) {
@@ -375,7 +375,7 @@ public class ObservableUnitTest extends BaseUnitTest {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                // should be unsubscribed after the latch countdown occurrs
+                // should be unsubscribed after the latch countdown occurs
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 2");
                 }

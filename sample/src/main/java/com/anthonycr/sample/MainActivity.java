@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // When the user clicks okay, we update the database
                 // with the new values for the contact. The update is
-                // done on a background thread, and then calles back
+                // done on a background thread, and then calls back
                 // onto the main thread, where we update the adapter.
                 editContactSubscription = DataModel.updateContactObservable(contact)
                     .subscribeOn(Schedulers.io())
@@ -337,8 +337,9 @@ public class MainActivity extends AppCompatActivity {
             this.activity = activity;
         }
 
+        @NonNull
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
             ViewHolder viewHolder;
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.contact_layout, parent, false);

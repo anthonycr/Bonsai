@@ -24,8 +24,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
-import java.util.concurrent.Executor;
-
 @SuppressWarnings("unused")
 class ThreadScheduler implements Scheduler {
 

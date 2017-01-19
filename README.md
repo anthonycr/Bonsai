@@ -12,7 +12,7 @@ A miniature reactive Android library.
 
 ### The API
 
-- `Observable`: A manager class that handles communication between an `Action` and a `Subscriber` by scheduling events to occurr on different threads using a `Scheduler`
+- `Observable`: A manager class that handles communication between an `Action` and a `Subscriber` by scheduling events to occur on different threads using a `Scheduler`
 - `Action`: Work that you wish to perform when the user subscribes to your observable. `Action.onSubscribe` is called when the user subscribes to the Observable. The work is run on the Scheduler specified by the `Observable.subscribeOn` method.
 - `Subscriber`, `OnSubscribe`: The consumer of the observable is the Subscriber. There are two classes describing this in order to separate communication between the subscriber thread (where the work is done) and the observer thread (where it is emitted). Subscriber is used by the subscriber thread to pass events to the OnSubscribe implementation (provided by ths subscriber), which is called on the observe thread.
     - `onStart()`: Always called when the observable starts (called internally)
@@ -93,7 +93,7 @@ private Observable<Integer> allFibonacciNumbersObservable() {
 private void doWorkOnMainThread() {
     subscription = allFibonacciNumbersObservable()
         .subscribeOn(Schedulers.worker())
-        .observeOn(Schedulders.main())
+        .observeOn(Schedulers.main())
         .subscribe(new OnSubscribe<Integer>() {
             @Override
             public void onStart() {
@@ -127,7 +127,7 @@ List<String> list = new ArrayList();
 Observable.create(new Action<List<String>>() {
     @Override
     public void onSubscribe(@NonNull Subscriber<List<String>> subscriber) {
-        List<String> stringList = new Arraylist<>();
+        List<String> stringList = new ArrayList<>();
         stringList.add("string 1");
         stringList.add("string 2");
         stringList.add("string 3");

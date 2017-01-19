@@ -52,8 +52,8 @@ public final class DataModel {
      * An observable that adds a contact to the database.
      *
      * @param contact the contact to add.
-     * @return an obseravable that will return nothing,
-     * the only event used by this obserable is onComplete
+     * @return an observable that will return nothing,
+     * the only event used by this observable is onComplete
      * which will notify you when the observable finishes completing.
      */
     @NonNull
@@ -71,8 +71,8 @@ public final class DataModel {
      * An observable that updates the contact in the database.
      *
      * @param contact the contact to update.
-     * @return an obseravable that will return nothing,
-     * the only event used by this obserable is onComplete
+     * @return an observable that will return nothing,
+     * the only event used by this observable is onComplete
      * which will notify you when the observable finishes completing.
      */
     @NonNull
@@ -90,8 +90,8 @@ public final class DataModel {
      * An observable that deletes a contact from the database.
      *
      * @param contact the contact to delete.
-     * @return an obseravable that will return nothing,
-     * the only event used by this obserable is onComplete
+     * @return an observable that will return nothing,
+     * the only event used by this observable is onComplete
      * which will notify you when the observable finishes completing.
      */
     @NonNull
