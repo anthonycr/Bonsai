@@ -79,6 +79,65 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testObservableEventEmission_withException() throws Exception {
+        final int testCount = 7;
+
+        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
+        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
+        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
+        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+
+        final List<String> list = new ArrayList<>(testCount);
+        Observable.create(new Action<String>() {
+            @Override
+            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+                for (int n = 0; n < 7; n++) {
+                    subscriber.onNext(String.valueOf(n));
+                }
+                throw new RuntimeException("Test failure");
+            }
+        }).subscribeOn(Schedulers.current())
+            .observeOn(Schedulers.current())
+            .subscribe(new OnSubscribe<String>() {
+
+                @Override
+                public void onStart() {
+                    startAssertion.set(true);
+                }
+
+                @Override
+                public void onNext(@Nullable String item) {
+                    nextAssertion.set(true);
+                    list.add(item);
+                }
+
+                @Override
+                public void onComplete() {
+                    completeAssertion.set(true);
+                }
+
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    errorAssertion.set(true);
+                }
+            });
+
+        // Even though error has been broadcast,
+        // observable should still complete.
+        assertTrue(list.size() == testCount);
+        for (int n = 0; n < list.size(); n++) {
+            assertTrue(String.valueOf(n).equals(list.get(n)));
+        }
+
+        // Assert that each of the events was
+        // received by the subscriber
+        assertTrue(errorAssertion.get());
+        assertTrue(startAssertion.get());
+        assertFalse(completeAssertion.get());
+        assertTrue(nextAssertion.get());
+    }
+
+    @Test
     public void testObservableEventEmission_withError() throws Exception {
         final int testCount = 7;
 
