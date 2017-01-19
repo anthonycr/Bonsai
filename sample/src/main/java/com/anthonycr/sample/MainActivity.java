@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
 
         private static class ViewHolder {
 
-            private TextView nameView;
+            private final TextView nameView;
 
             ViewHolder(View view) {
                 nameView = (TextView) view.findViewById(R.id.contact_name);

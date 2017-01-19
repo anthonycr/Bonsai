@@ -70,9 +70,6 @@ public class ObservableUnitTest extends BaseUnitTest {
                     list.add(item);
                 }
 
-                @Override
-                public void onComplete() {
-                }
             });
 
         assertTrue(list.size() == testCount);
@@ -302,9 +299,6 @@ public class ObservableUnitTest extends BaseUnitTest {
                 }
             }
         }).subscribe(new OnSubscribe<Object>() {
-            @Override
-            public void onComplete() {
-            }
         });
         Assert.assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
@@ -324,9 +318,6 @@ public class ObservableUnitTest extends BaseUnitTest {
                 }
             }
         }).subscribe(new OnSubscribe<Object>() {
-            @Override
-            public void onComplete() {
-            }
         });
         Assert.assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete",
             errorThrown.get());

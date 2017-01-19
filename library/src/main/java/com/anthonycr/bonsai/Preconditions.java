@@ -20,8 +20,10 @@
  */
 package com.anthonycr.bonsai;
 
+import android.support.annotation.Nullable;
+
 @SuppressWarnings("unused")
-public final class Preconditions {
+final class Preconditions {
 
     private Preconditions() {
         throw new UnsupportedOperationException("This class is not instantiable");
@@ -34,7 +36,7 @@ public final class Preconditions {
      *
      * @param object check nullness on this object.
      */
-    public static void checkNonNull(Object object) {
+    static void checkNonNull(@Nullable Object object) {
         if (object == null) {
             throw new NullPointerException("Object must not be null");
         }

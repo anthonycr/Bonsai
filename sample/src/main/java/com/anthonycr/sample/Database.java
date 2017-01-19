@@ -42,7 +42,7 @@ public final class Database extends SQLiteOpenHelper {
     private static final String KEY_BIRTHDAY = "KEY_BIRTHDAY";
 
     private static Database instance;
-    private SQLiteDatabase database;
+    private final SQLiteDatabase database;
 
     @WorkerThread
     @NonNull

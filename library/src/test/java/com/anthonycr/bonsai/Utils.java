@@ -34,7 +34,7 @@ public class Utils {
     private static final String DEFAULT_LOG_TAG = "BonsaiUnitTest";
 
     @SuppressWarnings("TryWithIdenticalCatches")
-    public static <T> void testNonInstantiableClass(Class<T> clazz) throws Exception {
+    public static <T> void testNonInstantiableClass(Class<T> clazz) {
         Constructor<T> constructor;
         boolean instantiable = true;
         try {
