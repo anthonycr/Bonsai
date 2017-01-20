@@ -57,11 +57,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+
+    // list view data adapter
     private Adapter adapter;
-    private Subscription getAllContactsSubscription;
-    private Subscription addContactSubscription;
-    private Subscription editContactSubscription;
-    private Subscription deleteContactSubscription;
+
+    // data model subscriptions
+    @Nullable private Subscription getAllContactsSubscription;
+    @Nullable private Subscription addContactSubscription;
+    @Nullable private Subscription editContactSubscription;
+    @Nullable private Subscription deleteContactSubscription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -252,15 +256,20 @@ public class MainActivity extends AppCompatActivity {
         dateSpinner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
                         Calendar calendar = Calendar.getInstance();
                         calendar.set(year, monthOfYear, dayOfMonth);
                         contact.setBirthday(calendar.getTime().getTime());
                         dateSpinner.setText(dateFormat.format(calendar.getTime()));
+
                     }
-                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+                }, calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH))
                     .show();
             }
         });
@@ -321,16 +330,15 @@ public class MainActivity extends AppCompatActivity {
 
         private static class ViewHolder {
 
-            private final TextView nameView;
+            @NonNull private final TextView nameView;
 
-            ViewHolder(View view) {
+            ViewHolder(@NonNull View view) {
                 nameView = (TextView) view.findViewById(R.id.contact_name);
             }
 
         }
 
-        @NonNull
-        private final MainActivity activity;
+        @NonNull private final MainActivity activity;
 
         Adapter(@NonNull MainActivity activity, int resource) {
             super(activity, resource);

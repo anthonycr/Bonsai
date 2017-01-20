@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
 
@@ -41,8 +42,9 @@ public final class Database extends SQLiteOpenHelper {
     private static final String KEY_NUMBER = "KEY_NUMBER";
     private static final String KEY_BIRTHDAY = "KEY_BIRTHDAY";
 
-    private static Database instance;
-    private final SQLiteDatabase database;
+    @Nullable private static Database instance;
+
+    @NonNull private final SQLiteDatabase database;
 
     @WorkerThread
     @NonNull
