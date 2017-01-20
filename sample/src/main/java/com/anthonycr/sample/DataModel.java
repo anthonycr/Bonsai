@@ -57,7 +57,7 @@ public final class DataModel {
      * which will notify you when the observable finishes completing.
      */
     @NonNull
-    public static Observable<Void> addContactObservable(final Contact contact) {
+    public static Observable<Void> addContactObservable(@NonNull final Contact contact) {
         return Observable.create(new Action<Void>() {
             @Override
             public void onSubscribe(@NonNull Subscriber<Void> subscriber) {
@@ -76,7 +76,7 @@ public final class DataModel {
      * which will notify you when the observable finishes completing.
      */
     @NonNull
-    public static Observable<Void> updateContactObservable(final Contact contact) {
+    public static Observable<Void> updateContactObservable(@NonNull final Contact contact) {
         return Observable.create(new Action<Void>() {
             @Override
             public void onSubscribe(@NonNull Subscriber<Void> subscriber) {
@@ -95,7 +95,7 @@ public final class DataModel {
      * which will notify you when the observable finishes completing.
      */
     @NonNull
-    public static Observable<Void> deleteContactObservable(final Contact contact) {
+    public static Observable<Void> deleteContactObservable(@NonNull final Contact contact) {
         return Observable.create(new Action<Void>() {
             @Override
             public void onSubscribe(@NonNull Subscriber<Void> subscriber) {

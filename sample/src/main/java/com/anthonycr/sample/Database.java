@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@WorkerThread
 public final class Database extends SQLiteOpenHelper {
 
     private static final String TAG = Database.class.getSimpleName();
