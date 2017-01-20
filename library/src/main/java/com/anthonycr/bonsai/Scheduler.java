@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -22,6 +22,7 @@ package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
 
+@SuppressWarnings("WeakerAccess")
 public interface Scheduler {
 
     void execute(@NonNull Runnable runnable);

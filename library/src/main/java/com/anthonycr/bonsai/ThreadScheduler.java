@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -24,13 +24,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
-@SuppressWarnings("unused")
 class ThreadScheduler implements Scheduler {
 
-    @NonNull
-    private final Handler mHandler;
+    @NonNull private final Handler mHandler;
 
-    public ThreadScheduler(@NonNull Looper looper) {
+    ThreadScheduler(@NonNull Looper looper) {
         mHandler = new Handler(looper);
     }
 

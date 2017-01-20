@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one

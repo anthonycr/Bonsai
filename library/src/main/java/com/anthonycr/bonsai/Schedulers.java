@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -30,13 +30,13 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("unused")
 public final class Schedulers {
 
-    private Schedulers() {
-        throw new UnsupportedOperationException("This class is not instantiable");
-    }
-
     @Nullable private static Scheduler sMainScheduler;
     @Nullable private static Scheduler sWorkerScheduler;
     @Nullable private static Scheduler sIoScheduler;
+
+    private Schedulers() {
+        throw new UnsupportedOperationException("This class is not instantiable");
+    }
 
     /**
      * A worker scheduler. Backed by a fixed

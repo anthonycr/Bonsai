@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -33,15 +33,15 @@ import android.util.Log;
  *
  * @param <T> the type that the Observable will emit.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Observable<T> {
 
     private static final String TAG = Observable.class.getSimpleName();
 
     @NonNull private final Action<T> mAction;
+    @NonNull private final Scheduler mDefaultThread;
     @Nullable private Scheduler mSubscriberThread;
     @Nullable private Scheduler mObserverThread;
-    @NonNull private final Scheduler mDefault;
 
     private Observable(@NonNull Action<T> action) {
         mAction = action;
@@ -50,7 +50,7 @@ public class Observable<T> {
         }
         Looper looper = Looper.myLooper();
         Preconditions.checkNonNull(looper);
-        mDefault = new ThreadScheduler(looper);
+        mDefaultThread = new ThreadScheduler(looper);
     }
 
     /**
@@ -62,7 +62,6 @@ public class Observable<T> {
      * @param <T>    the type that will be emitted to the onSubscribe
      * @return a valid non-null Observable.
      */
-    @SuppressWarnings("WeakerAccess")
     @NonNull
     public static <T> Observable<T> create(@NonNull Action<T> action) {
         Preconditions.checkNonNull(action);
@@ -93,7 +92,6 @@ public class Observable<T> {
      * @param subscribeScheduler the Scheduler to run the work on.
      * @return returns this so that calls can be conveniently chained.
      */
-    @SuppressWarnings("WeakerAccess")
     public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
         mSubscriberThread = subscribeScheduler;
         return this;
@@ -106,7 +104,6 @@ public class Observable<T> {
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
      */
-    @SuppressWarnings("WeakerAccess")
     public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
         mObserverThread = observerScheduler;
         return this;
@@ -116,7 +113,6 @@ public class Observable<T> {
      * Subscribes immediately to the Observable and ignores
      * all onComplete and onNext calls.
      */
-    @SuppressWarnings("WeakerAccess")
     public void subscribe() {
         executeOnSubscriberThread(new Runnable() {
             @Override
@@ -133,7 +129,6 @@ public class Observable<T> {
      * @param onSubscribe the class that wishes to receive onNext and
      *                    onComplete callbacks from the Observable.
      */
-    @SuppressWarnings("WeakerAccess")
     public Subscription subscribe(@NonNull OnSubscribe<T> onSubscribe) {
 
         Preconditions.checkNonNull(onSubscribe);
@@ -160,7 +155,7 @@ public class Observable<T> {
         if (mObserverThread != null) {
             mObserverThread.execute(runnable);
         } else {
-            mDefault.execute(runnable);
+            mDefaultThread.execute(runnable);
         }
     }
 
@@ -168,7 +163,7 @@ public class Observable<T> {
         if (mSubscriberThread != null) {
             mSubscriberThread.execute(runnable);
         } else {
-            mDefault.execute(runnable);
+            mDefaultThread.execute(runnable);
         }
     }
 
