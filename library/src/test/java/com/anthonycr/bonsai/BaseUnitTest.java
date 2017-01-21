@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 11/4/2016 Anthony Restaino
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@Config(constants = BuildConfig.class, sdk = 25)
 public abstract class BaseUnitTest {
 }
