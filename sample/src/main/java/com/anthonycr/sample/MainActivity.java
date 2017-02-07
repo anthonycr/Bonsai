@@ -87,7 +87,11 @@ public class MainActivity extends AppCompatActivity {
             .subscribe(new OnSubscribe<List<Contact>>() {
                 @Override
                 public void onNext(@Nullable List<Contact> item) {
-                    adapter.addAll(item);
+                    if (item != null) {
+                        adapter.addAll(item);
+                    } else {
+                        adapter.clear();
+                    }
                     adapter.notifyDataSetChanged();
                 }
             });
@@ -248,8 +252,8 @@ public class MainActivity extends AppCompatActivity {
         if (contact.getNumber() != -1) {
             numberText.setText(String.valueOf(contact.getNumber()));
         }
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date(contact.getBirthday()));
+        final Calendar oldCalendar = Calendar.getInstance();
+        oldCalendar.setTime(new Date(contact.getBirthday()));
         dateSpinner.setText(dateFormat.format(new Date(contact.getBirthday())));
 
         // Update the contact and the spinner when the user changes the date
@@ -261,15 +265,15 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.set(year, monthOfYear, dayOfMonth);
-                        contact.setBirthday(calendar.getTime().getTime());
-                        dateSpinner.setText(dateFormat.format(calendar.getTime()));
+                        Calendar newCalendar = Calendar.getInstance();
+                        newCalendar.set(year, monthOfYear, dayOfMonth);
+                        contact.setBirthday(newCalendar.getTime().getTime());
+                        dateSpinner.setText(dateFormat.format(newCalendar.getTime()));
 
                     }
-                }, calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH))
+                }, oldCalendar.get(Calendar.YEAR),
+                    oldCalendar.get(Calendar.MONTH),
+                    oldCalendar.get(Calendar.DAY_OF_MONTH))
                     .show();
             }
         });
@@ -357,13 +361,16 @@ public class MainActivity extends AppCompatActivity {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
             Contact contact = getItem(position);
-            viewHolder.nameView.setText(contact.getName());
+            viewHolder.nameView.setText(contact != null ? contact.getName() : null);
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // When the user clicks the item,
                     // call back to the contactClicked() method.
-                    activity.contactClicked(getItem(position));
+                    Contact clickedContact = getItem(position);
+                    if (clickedContact != null) {
+                        activity.contactClicked(clickedContact);
+                    }
                 }
             });
             return convertView;
