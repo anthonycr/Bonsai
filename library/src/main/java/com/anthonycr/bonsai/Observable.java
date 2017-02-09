@@ -92,6 +92,7 @@ public class Observable<T> {
      * @param subscribeScheduler the Scheduler to run the work on.
      * @return returns this so that calls can be conveniently chained.
      */
+    @NonNull
     public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
         mSubscriberThread = subscribeScheduler;
         return this;
@@ -104,6 +105,7 @@ public class Observable<T> {
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
      */
+    @NonNull
     public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
         mObserverThread = observerScheduler;
         return this;
@@ -129,6 +131,7 @@ public class Observable<T> {
      * @param onSubscribe the class that wishes to receive onNext and
      *                    onComplete callbacks from the Observable.
      */
+    @NonNull
     public Subscription subscribe(@NonNull OnSubscribe<T> onSubscribe) {
 
         Preconditions.checkNonNull(onSubscribe);
