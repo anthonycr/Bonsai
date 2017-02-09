@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -294,11 +295,16 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThread_isCorrect() throws Exception {
+    public void testObservableThread_onStart_isCorrect() throws Exception {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
+
         final Assertion<String> subscribeThreadAssertion = new Assertion<>();
         final Assertion<String> observerThreadAssertion = new Assertion<>();
+
+        final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
+        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+
         Observable.create(new Action<String>() {
 
             @Override
@@ -311,7 +317,15 @@ public class ObservableUnitTest extends BaseUnitTest {
             .observeOn(Schedulers.io())
             .subscribe(new OnSubscribe<String>() {
                 @Override
-                public void onComplete() {
+                public void onError(@NonNull Throwable throwable) {
+                    onErrorAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+
+                @Override
+                public void onStart() {
+                    onStartAssertion.set(true);
                     observerThreadAssertion.set(Thread.currentThread().toString());
                     observeLatch.countDown();
                 }
@@ -321,11 +335,229 @@ public class ObservableUnitTest extends BaseUnitTest {
         observeLatch.await();
 
         String currentThread = Thread.currentThread().toString();
+
         assertNotNull(subscribeThreadAssertion.get());
         assertNotNull(observerThreadAssertion.get());
-        assertFalse(subscribeThreadAssertion.get().equals(currentThread));
-        assertFalse(observerThreadAssertion.get().equals(currentThread));
-        assertFalse(subscribeThreadAssertion.get().equals(observerThreadAssertion.get()));
+
+        assertNotEquals(subscribeThreadAssertion.get(), currentThread);
+        assertNotEquals(observerThreadAssertion.get(), currentThread);
+        assertNotEquals(subscribeThreadAssertion.get(), observerThreadAssertion.get());
+
+        assertTrue(onStartAssertion.get());
+        assertFalse(onErrorAssertion.get());
+    }
+
+    @Test
+    public void testObservableThread_onNext_isCorrect() throws Exception {
+        final CountDownLatch observeLatch = new CountDownLatch(1);
+        final CountDownLatch subscribeLatch = new CountDownLatch(1);
+
+        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
+        final Assertion<String> observerThreadAssertion = new Assertion<>();
+
+        final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
+        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+
+        Observable.create(new Action<String>() {
+
+            @Override
+            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+                subscribeThreadAssertion.set(Thread.currentThread().toString());
+                subscribeLatch.countDown();
+                subscriber.onNext(null);
+                subscriber.onComplete();
+            }
+        }).subscribeOn(Schedulers.worker())
+            .observeOn(Schedulers.io())
+            .subscribe(new OnSubscribe<String>() {
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    onErrorAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+
+                @Override
+                public void onNext(@Nullable String item) {
+                    onNextAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+            });
+
+        subscribeLatch.await();
+        observeLatch.await();
+
+        String currentThread = Thread.currentThread().toString();
+
+        assertNotNull(subscribeThreadAssertion.get());
+        assertNotNull(observerThreadAssertion.get());
+
+        assertNotEquals(subscribeThreadAssertion.get(), currentThread);
+        assertNotEquals(observerThreadAssertion.get(), currentThread);
+        assertNotEquals(subscribeThreadAssertion.get(), observerThreadAssertion.get());
+
+        assertTrue(onNextAssertion.get());
+        assertFalse(onErrorAssertion.get());
+    }
+
+    @Test
+    public void testObservableThread_onComplete_isCorrect() throws Exception {
+        final CountDownLatch observeLatch = new CountDownLatch(1);
+        final CountDownLatch subscribeLatch = new CountDownLatch(1);
+
+        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
+        final Assertion<String> observerThreadAssertion = new Assertion<>();
+
+        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+
+        Observable.create(new Action<String>() {
+
+            @Override
+            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+                subscribeThreadAssertion.set(Thread.currentThread().toString());
+                subscribeLatch.countDown();
+                subscriber.onComplete();
+            }
+        }).subscribeOn(Schedulers.worker())
+            .observeOn(Schedulers.io())
+            .subscribe(new OnSubscribe<String>() {
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    onErrorAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+
+                @Override
+                public void onComplete() {
+                    onCompleteAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+            });
+
+        subscribeLatch.await();
+        observeLatch.await();
+
+        String currentThread = Thread.currentThread().toString();
+
+        assertNotNull(subscribeThreadAssertion.get());
+        assertNotNull(observerThreadAssertion.get());
+
+        assertNotEquals(subscribeThreadAssertion.get(), currentThread);
+        assertNotEquals(observerThreadAssertion.get(), currentThread);
+        assertNotEquals(subscribeThreadAssertion.get(), observerThreadAssertion.get());
+
+        assertTrue(onCompleteAssertion.get());
+        assertFalse(onErrorAssertion.get());
+    }
+
+    @Test
+    public void testObservableThread_onError_isCorrect() throws Exception {
+        final CountDownLatch observeLatch = new CountDownLatch(1);
+        final CountDownLatch subscribeLatch = new CountDownLatch(1);
+
+        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
+        final Assertion<String> observerThreadAssertion = new Assertion<>();
+
+        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+
+        Observable.create(new Action<String>() {
+
+            @Override
+            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+                subscribeThreadAssertion.set(Thread.currentThread().toString());
+                subscribeLatch.countDown();
+                subscriber.onError(new RuntimeException("There was a problem"));
+            }
+        }).subscribeOn(Schedulers.worker())
+            .observeOn(Schedulers.io())
+            .subscribe(new OnSubscribe<String>() {
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    onErrorAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+
+                @Override
+                public void onComplete() {
+                    onCompleteAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+            });
+
+        subscribeLatch.await();
+        observeLatch.await();
+
+        String currentThread = Thread.currentThread().toString();
+
+        assertNotNull(subscribeThreadAssertion.get());
+        assertNotNull(observerThreadAssertion.get());
+
+        assertNotEquals(subscribeThreadAssertion.get(), currentThread);
+        assertNotEquals(observerThreadAssertion.get(), currentThread);
+        assertNotEquals(subscribeThreadAssertion.get(), observerThreadAssertion.get());
+
+        assertFalse(onCompleteAssertion.get());
+        assertTrue(onErrorAssertion.get());
+    }
+
+    @Test
+    public void testObservableThread_ThrownException_isCorrect() throws Exception {
+        final CountDownLatch observeLatch = new CountDownLatch(1);
+        final CountDownLatch subscribeLatch = new CountDownLatch(1);
+
+        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
+        final Assertion<String> observerThreadAssertion = new Assertion<>();
+
+        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+
+        Observable.create(new Action<String>() {
+
+            @Override
+            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+                subscribeThreadAssertion.set(Thread.currentThread().toString());
+                subscribeLatch.countDown();
+                throw new RuntimeException("There was a problem");
+            }
+        }).subscribeOn(Schedulers.worker())
+            .observeOn(Schedulers.io())
+            .subscribe(new OnSubscribe<String>() {
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    onErrorAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+
+                @Override
+                public void onComplete() {
+                    onCompleteAssertion.set(true);
+                    observerThreadAssertion.set(Thread.currentThread().toString());
+                    observeLatch.countDown();
+                }
+            });
+
+        subscribeLatch.await();
+        observeLatch.await();
+
+        String currentThread = Thread.currentThread().toString();
+
+        assertNotNull(subscribeThreadAssertion.get());
+        assertNotNull(observerThreadAssertion.get());
+
+        assertNotEquals(subscribeThreadAssertion.get(), currentThread);
+        assertNotEquals(observerThreadAssertion.get(), currentThread);
+        assertNotEquals(subscribeThreadAssertion.get(), observerThreadAssertion.get());
+
+        assertFalse(onCompleteAssertion.get());
+        assertTrue(onErrorAssertion.get());
     }
 
     @Test
