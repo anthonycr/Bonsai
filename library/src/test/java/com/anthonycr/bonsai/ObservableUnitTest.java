@@ -55,9 +55,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final int testCount = 7;
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 for (int n = 0; n < 7; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -65,7 +65,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
                     list.add(item);
@@ -89,9 +89,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> startAssertion = new Assertion<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 for (int n = 0; n < 7; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -99,7 +99,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
 
                 @Override
                 public void onStart() {
@@ -148,9 +148,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> startAssertion = new Assertion<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 for (int n = 0; n < 7; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -163,7 +163,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
 
                 @Override
                 public void onStart() {
@@ -212,9 +212,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> startAssertion = new Assertion<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 for (int n = 0; n < 7; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -222,7 +222,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
 
                 @Override
                 public void onStart() {
@@ -266,10 +266,10 @@ public class ObservableUnitTest extends BaseUnitTest {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
         final Assertion<Boolean> assertion = new Assertion<>(false);
-        Subscription stringSubscription = Observable.create(new Action<String>() {
+        Subscription stringSubscription = Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 try {
                     subscribeLatch.await();
                 } catch (InterruptedException e) {
@@ -280,7 +280,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(Schedulers.io())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
                     assertion.set(true);
@@ -305,17 +305,22 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
+                @Override
+                public void onNext(@Nullable String item) {
+
+                }
+
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -358,10 +363,10 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onNext(null);
@@ -369,7 +374,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -412,17 +417,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -465,17 +470,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onError(new RuntimeException("There was a problem"));
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -518,17 +523,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new Action<String>() {
+        Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 throw new RuntimeException("There was a problem");
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -563,9 +568,9 @@ public class ObservableUnitTest extends BaseUnitTest {
     @Test
     public void testObservableSubscribesWithoutSubscriber() throws Exception {
         final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
-        Observable.create(new Action<Object>() {
+        Observable.create(new ObservableAction<Object>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
                 subscriber.onNext(null);
                 subscriber.onComplete();
                 isCalledAssertion.set(true);
@@ -579,9 +584,9 @@ public class ObservableUnitTest extends BaseUnitTest {
     @Test
     public void testObservableThrowsException_onCompleteCalledTwice() throws Exception {
         final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Observable.create(new Action<Object>() {
+        Observable.create(new ObservableAction<Object>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onComplete();
@@ -589,7 +594,7 @@ public class ObservableUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new OnSubscribe<Object>() {
+        }).subscribe(new ObservableOnSubscribe<Object>() {
         });
         Assert.assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
@@ -598,9 +603,9 @@ public class ObservableUnitTest extends BaseUnitTest {
     @Test
     public void testObservableThrowsException_onNextCalledAfterOnComplete() throws Exception {
         final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Observable.create(new Action<Object>() {
+        Observable.create(new ObservableAction<Object>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onNext(null);
@@ -608,7 +613,7 @@ public class ObservableUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new OnSubscribe<Object>() {
+        }).subscribe(new ObservableOnSubscribe<Object>() {
         });
         Assert.assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete",
             errorThrown.get());
@@ -624,9 +629,9 @@ public class ObservableUnitTest extends BaseUnitTest {
             public void run() {
                 // No looper associated with this thread yet
                 looperInitiallyNull.set(Looper.myLooper() == null);
-                Observable.create(new Action<Object>() {
+                Observable.create(new ObservableAction<Object>() {
                     @Override
-                    public void onSubscribe(@NonNull Subscriber<Object> subscriber) {
+                    public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
                         looperFinallyNotNull.set(Looper.myLooper() != null);
                     }
                 }).subscribe();
@@ -645,10 +650,10 @@ public class ObservableUnitTest extends BaseUnitTest {
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
         final Assertion<Boolean> unsubscribed = new Assertion<>(false);
         final List<String> list = new ArrayList<>();
-        Subscription subscription = Observable.create(new Action<String>() {
+        Subscription subscription = Observable.create(new ObservableAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 1");
                 }
@@ -666,7 +671,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.newSingleThreadedScheduler())
             .observeOn(Schedulers.newSingleThreadedScheduler())
-            .subscribe(new OnSubscribe<String>() {
+            .subscribe(new ObservableOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
                     list.add(item);
@@ -688,7 +693,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     public void testObservableEmpty_emitsNothingImmediately() throws Exception {
         final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        Observable.empty().subscribe(new OnSubscribe<Object>() {
+        Observable.empty().subscribe(new ObservableOnSubscribe<Object>() {
 
             @Override
             public void onNext(@Nullable Object item) {

@@ -22,22 +22,17 @@ package com.anthonycr.bonsai;
 
 import android.support.annotation.Nullable;
 
-final class Preconditions {
-
-    private Preconditions() {
-        throw new UnsupportedOperationException("This class is not instantiable");
-    }
+public abstract class ObservableOnSubscribe<T> extends CompletableOnSubscribe {
 
     /**
-     * Ensure that an object is not null
-     * and throw a RuntimeException if it
-     * is null.
+     * Called when the Observer emits an
+     * item. It can be called multiple times.
+     * It cannot be called after onComplete
+     * has been called.
      *
-     * @param object check nullness on this object.
+     * @param item the item that has been emitted,
+     *             can be null.
      */
-    static void checkNonNull(@Nullable Object object) {
-        if (object == null) {
-            throw new NullPointerException("Object must not be null");
-        }
-    }
+    public void onNext(@Nullable T item) {}
+
 }

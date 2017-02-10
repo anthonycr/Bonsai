@@ -23,7 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.anthonycr.bonsai.OnSubscribe;
+import com.anthonycr.bonsai.ObservableOnSubscribe;
 import com.anthonycr.bonsai.Schedulers;
 import com.anthonycr.bonsai.Subscription;
 
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         getAllContactsSubscription = DataModel.allContactsObservable()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.main())
-            .subscribe(new OnSubscribe<List<Contact>>() {
+            .subscribe(new ObservableOnSubscribe<List<Contact>>() {
                 @Override
                 public void onNext(@Nullable List<Contact> item) {
                     if (item != null) {
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                     addContactSubscription = DataModel.addContactObservable(newContact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
-                        .subscribe(new OnSubscribe<Void>() {
+                        .subscribe(new ObservableOnSubscribe<Void>() {
                             @Override
                             public void onComplete() {
                                 adapter.add(newContact);
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 editContactSubscription = DataModel.updateContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new OnSubscribe<Void>() {
+                    .subscribe(new ObservableOnSubscribe<Void>() {
                         @Override
                         public void onComplete() {
                             adapter.notifyDataSetChanged();
@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                 deleteContactSubscription = DataModel.deleteContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new OnSubscribe<Void>() {
+                    .subscribe(new ObservableOnSubscribe<Void>() {
                         @Override
                         public void onComplete() {
                             adapter.remove(contact);

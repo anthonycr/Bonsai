@@ -37,11 +37,11 @@ import android.support.annotation.NonNull;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-class OnErrorRunnable<T> implements Runnable {
-    private final OnSubscribe<T> onSubscribe;
+class OnErrorRunnable implements Runnable {
+    private final CompletableOnSubscribe onSubscribe;
     private final Throwable throwable;
 
-    OnErrorRunnable(@NonNull OnSubscribe<T> onSubscribe, @NonNull Throwable throwable) {
+    OnErrorRunnable(@NonNull CompletableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
         this.onSubscribe = onSubscribe;
         this.throwable = throwable;
     }

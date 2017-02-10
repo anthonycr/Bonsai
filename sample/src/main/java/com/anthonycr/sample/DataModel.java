@@ -2,9 +2,9 @@ package com.anthonycr.sample;
 
 import android.support.annotation.NonNull;
 
-import com.anthonycr.bonsai.Action;
+import com.anthonycr.bonsai.ObservableAction;
 import com.anthonycr.bonsai.Observable;
-import com.anthonycr.bonsai.Subscriber;
+import com.anthonycr.bonsai.ObservableSubscriber;
 
 import java.util.List;
 
@@ -39,9 +39,9 @@ public final class DataModel {
      */
     @NonNull
     public static Observable<List<Contact>> allContactsObservable() {
-        return Observable.create(new Action<List<Contact>>() {
+        return Observable.create(new ObservableAction<List<Contact>>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<List<Contact>> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<List<Contact>> subscriber) {
                 subscriber.onNext(Database.getInstance().getAllContacts());
                 subscriber.onComplete();
             }
@@ -58,9 +58,9 @@ public final class DataModel {
      */
     @NonNull
     public static Observable<Void> addContactObservable(@NonNull final Contact contact) {
-        return Observable.create(new Action<Void>() {
+        return Observable.create(new ObservableAction<Void>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<Void> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<Void> subscriber) {
                 Database.getInstance().addContact(contact);
                 subscriber.onComplete();
             }
@@ -77,9 +77,9 @@ public final class DataModel {
      */
     @NonNull
     public static Observable<Void> updateContactObservable(@NonNull final Contact contact) {
-        return Observable.create(new Action<Void>() {
+        return Observable.create(new ObservableAction<Void>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<Void> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<Void> subscriber) {
                 Database.getInstance().updateContact(contact);
                 subscriber.onComplete();
             }
@@ -96,9 +96,9 @@ public final class DataModel {
      */
     @NonNull
     public static Observable<Void> deleteContactObservable(@NonNull final Contact contact) {
-        return Observable.create(new Action<Void>() {
+        return Observable.create(new ObservableAction<Void>() {
             @Override
-            public void onSubscribe(@NonNull Subscriber<Void> subscriber) {
+            public void onSubscribe(@NonNull ObservableSubscriber<Void> subscriber) {
                 Database.getInstance().deleteContact(contact);
                 subscriber.onComplete();
             }

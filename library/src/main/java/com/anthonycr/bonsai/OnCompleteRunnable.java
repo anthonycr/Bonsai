@@ -37,10 +37,10 @@ import android.support.annotation.NonNull;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-class OnCompleteRunnable<T> implements Runnable {
-    @NonNull private final OnSubscribe<T> onSubscribe;
+class OnCompleteRunnable implements Runnable {
+    @NonNull private final CompletableOnSubscribe onSubscribe;
 
-    OnCompleteRunnable(@NonNull OnSubscribe<T> onSubscribe) {this.onSubscribe = onSubscribe;}
+    OnCompleteRunnable(@NonNull CompletableOnSubscribe onSubscribe) {this.onSubscribe = onSubscribe;}
 
     @Override
     public void run() {

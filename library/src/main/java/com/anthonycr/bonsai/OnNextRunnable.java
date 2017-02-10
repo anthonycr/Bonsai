@@ -39,10 +39,10 @@ import android.support.annotation.Nullable;
  * limitations under the License.
  */
 class OnNextRunnable<T> implements Runnable {
-    @NonNull private final OnSubscribe<T> onSubscribe;
+    @NonNull private final ObservableOnSubscribe<T> onSubscribe;
     @Nullable private final T item;
 
-    OnNextRunnable(@NonNull OnSubscribe<T> onSubscribe, @Nullable T item) {
+    OnNextRunnable(@NonNull ObservableOnSubscribe<T> onSubscribe, @Nullable T item) {
         this.onSubscribe = onSubscribe;
         this.item = item;
     }
