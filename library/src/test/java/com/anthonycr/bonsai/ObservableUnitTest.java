@@ -58,7 +58,7 @@ public class ObservableUnitTest extends BaseUnitTest {
         Observable.create(new ObservableAction<String>() {
             @Override
             public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
-                for (int n = 0; n < 7; n++) {
+                for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
                 subscriber.onComplete();
@@ -92,7 +92,7 @@ public class ObservableUnitTest extends BaseUnitTest {
         Observable.create(new ObservableAction<String>() {
             @Override
             public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
-                for (int n = 0; n < 7; n++) {
+                for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
                 throw new RuntimeException("Test failure");
@@ -151,7 +151,7 @@ public class ObservableUnitTest extends BaseUnitTest {
         Observable.create(new ObservableAction<String>() {
             @Override
             public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
-                for (int n = 0; n < 7; n++) {
+                for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
                 try {
@@ -215,7 +215,7 @@ public class ObservableUnitTest extends BaseUnitTest {
         Observable.create(new ObservableAction<String>() {
             @Override
             public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
-                for (int n = 0; n < 7; n++) {
+                for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
                 subscriber.onComplete();
