@@ -20,11 +20,13 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.anthonycr.bonsai.ObservableOnSubscribe;
 import com.anthonycr.bonsai.Schedulers;
+import com.anthonycr.bonsai.SingleOnSubscribe;
 import com.anthonycr.bonsai.Subscription;
 
 import java.text.SimpleDateFormat;
@@ -72,7 +74,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView list = (ListView) findViewById(R.id.list_view);
+        final ListView list = (ListView) findViewById(R.id.list_view);
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
+        list.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
 
         adapter = new Adapter(this, R.layout.contact_layout);
 
@@ -84,15 +90,18 @@ public class MainActivity extends AppCompatActivity {
         getAllContactsSubscription = DataModel.allContactsObservable()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.main())
-            .subscribe(new ObservableOnSubscribe<List<Contact>>() {
+            .subscribe(new SingleOnSubscribe<List<Contact>>() {
                 @Override
-                public void onNext(@Nullable List<Contact> item) {
+                public void onItem(@Nullable List<Contact> item) {
                     if (item != null) {
                         adapter.addAll(item);
                     } else {
                         adapter.clear();
                     }
                     adapter.notifyDataSetChanged();
+
+                    list.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
                 }
             });
     }

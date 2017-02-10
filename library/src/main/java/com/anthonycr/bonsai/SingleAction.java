@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 /**
  * Created by anthonycr on 2/8/17.
  */
-
 public interface SingleAction<T> {
 
     /**

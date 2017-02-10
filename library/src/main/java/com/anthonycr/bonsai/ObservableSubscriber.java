@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 /**
  * Created by anthonycr on 2/8/17.
  */
-
 public interface ObservableSubscriber<T> extends CompletableSubscriber {
 
     /**
