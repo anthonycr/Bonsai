@@ -4,8 +4,6 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -613,7 +611,7 @@ public class SingleUnitTest extends BaseUnitTest {
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
             .subscribe();
-        Assert.assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
+        assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
     }
 
     @Test
@@ -631,7 +629,7 @@ public class SingleUnitTest extends BaseUnitTest {
             }
         }).subscribe(new SingleOnSubscribe<Object>() {
         });
-        Assert.assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
+        assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
     }
 
@@ -650,7 +648,7 @@ public class SingleUnitTest extends BaseUnitTest {
             }
         }).subscribe(new SingleOnSubscribe<Object>() {
         });
-        Assert.assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
+        assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
             errorThrown.get());
     }
 
@@ -674,8 +672,8 @@ public class SingleUnitTest extends BaseUnitTest {
             }
         });
         latch.await();
-        Assert.assertTrue("Looper should initially be null", looperInitiallyNull.get());
-        Assert.assertTrue("Looper should be initialized by Single class", looperFinallyNotNull.get());
+        assertTrue("Looper should initially be null", looperInitiallyNull.get());
+        assertTrue("Looper should be initialized by Single class", looperFinallyNotNull.get());
     }
 
     @Test
@@ -713,8 +711,8 @@ public class SingleUnitTest extends BaseUnitTest {
         latch.countDown();
         onFinalLatch.await();
 
-        Assert.assertTrue("No items should have been emitted", list.size() == 0);
-        Assert.assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
+        assertTrue("No items should have been emitted", list.size() == 0);
+        assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
     }
 
     @Test
@@ -735,8 +733,8 @@ public class SingleUnitTest extends BaseUnitTest {
 
         });
 
-        Assert.assertFalse(onItemAssertion.get());
-        Assert.assertTrue(onCompleteAssertion.get());
+        assertFalse(onItemAssertion.get());
+        assertTrue(onCompleteAssertion.get());
     }
 
 }

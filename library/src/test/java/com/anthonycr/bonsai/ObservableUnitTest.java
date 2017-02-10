@@ -24,8 +24,6 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -578,7 +576,7 @@ public class ObservableUnitTest extends BaseUnitTest {
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
             .subscribe();
-        Assert.assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
+        assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
     }
 
     @Test
@@ -596,7 +594,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribe(new ObservableOnSubscribe<Object>() {
         });
-        Assert.assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
+        assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
     }
 
@@ -615,7 +613,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribe(new ObservableOnSubscribe<Object>() {
         });
-        Assert.assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete",
+        assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete",
             errorThrown.get());
     }
 
@@ -639,8 +637,8 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         });
         latch.await();
-        Assert.assertTrue("Looper should initially be null", looperInitiallyNull.get());
-        Assert.assertTrue("Looper should be initialized by observable class", looperFinallyNotNull.get());
+        assertTrue("Looper should initially be null", looperInitiallyNull.get());
+        assertTrue("Looper should be initialized by observable class", looperFinallyNotNull.get());
     }
 
     @Test
@@ -684,9 +682,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         latch.countDown();
         onFinalLatch.await();
 
-        Assert.assertTrue("Only one item should have been emitted", list.size() == 1);
-        Assert.assertTrue("Wrong item emitted", list.get(0).equals("test 1"));
-        Assert.assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
+        assertTrue("Only one item should have been emitted", list.size() == 1);
+        assertTrue("Wrong item emitted", list.get(0).equals("test 1"));
+        assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
     }
 
     @Test
@@ -707,8 +705,8 @@ public class ObservableUnitTest extends BaseUnitTest {
 
         });
 
-        Assert.assertFalse(onNextAssertion.get());
-        Assert.assertTrue(onCompleteAssertion.get());
+        assertFalse(onNextAssertion.get());
+        assertTrue(onCompleteAssertion.get());
     }
 
 }
