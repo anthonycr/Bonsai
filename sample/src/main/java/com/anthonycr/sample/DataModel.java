@@ -13,6 +13,7 @@ import com.anthonycr.bonsai.SingleAction;
 import com.anthonycr.bonsai.SingleSubscriber;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Copyright 7/8/2016 Anthony Restaino
@@ -57,13 +58,13 @@ public final class DataModel {
                 // is slow, it should be done on a background thread.
                 List<Contact> allContacts = Database.getInstance().getAllContacts();
 
-                long diffMillis = (System.nanoTime() - currentTime) / 1000;
+                long diffMillis = (System.nanoTime() - currentTime) / TimeUnit.MILLISECONDS.toNanos(1);
 
                 if (diffMillis > 0) {
                     try {
                         // Simulate the effect of a long disk operation or
                         // network request that takes at least 1 second.
-                        Thread.sleep(diffMillis);
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(1) - diffMillis);
                     } catch (InterruptedException e) {
                         subscriber.onError(e);
                     }
