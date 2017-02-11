@@ -23,7 +23,6 @@ package com.anthonycr.bonsai;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 /**
  * A reactive Java implementation. This class allows work
@@ -194,7 +193,6 @@ public class Observable<T> {
                 mOnCompleteExecuted = true;
                 mObservable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             } else if (!mOnError && mOnCompleteExecuted) {
-                Log.e(TAG, "onComplete called more than once");
                 throw new RuntimeException("onComplete called more than once");
             }
             unsubscribe();
@@ -224,7 +222,6 @@ public class Observable<T> {
             if (!mOnCompleteExecuted && onSubscribe != null && !mOnError) {
                 mObservable.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
             } else if (mOnCompleteExecuted) {
-                Log.e(TAG, "onComplete has been already called, onNext should not be called");
                 throw new RuntimeException("onNext should not be called after onComplete has been called");
             } else {
                 // Subscription has been unsubscribed, ignore it

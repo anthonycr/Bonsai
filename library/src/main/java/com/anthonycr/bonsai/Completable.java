@@ -3,7 +3,6 @@ package com.anthonycr.bonsai;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 /**
  * Created by anthonycr on 2/8/17.
@@ -166,7 +165,6 @@ public class Completable {
                 mOnCompleteExecuted = true;
                 mCompletable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             } else if (!mOnError && mOnCompleteExecuted) {
-                Log.e(TAG, "onComplete called more than once");
                 throw new RuntimeException("onComplete called more than once");
             }
             unsubscribe();

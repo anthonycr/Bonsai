@@ -21,7 +21,6 @@
 package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 @SuppressWarnings("unused")
 public interface CompletableSubscriber extends Subscription {

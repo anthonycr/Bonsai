@@ -22,12 +22,10 @@ package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
 
-@SuppressWarnings("unused")
 public interface CompletableAction {
     /**
      * Should be overridden to send the subscriber
-     * events such as {@link CompletableSubscriber#onNext(Object)}
-     * or {@link CompletableSubscriber#onComplete()}.
+     * events such as {@link CompletableSubscriber#onComplete()}.
      *
      * @param subscriber the subscriber that is sent in
      *                   when the user of the Observable

@@ -8,8 +8,8 @@ import android.support.annotation.NonNull;
 public interface ObservableAction<T> {
     /**
      * Should be overridden to send the subscriber
-     * events such as {@link CompletableSubscriber#onNext(Object)}
-     * or {@link CompletableSubscriber#onComplete()}.
+     * events such as {@link ObservableSubscriber#onNext(Object)}
+     * or {@link ObservableSubscriber#onComplete()}.
      *
      * @param subscriber the subscriber that is sent in
      *                   when the user of the Observable

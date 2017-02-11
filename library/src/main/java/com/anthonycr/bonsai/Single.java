@@ -3,7 +3,6 @@ package com.anthonycr.bonsai;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 /**
  * Created by anthonycr on 2/8/17.
@@ -169,7 +168,6 @@ public class Single<T> {
                 mOnCompleteExecuted = true;
                 mSingle.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             } else if (!mOnError && mOnCompleteExecuted) {
-                Log.e(TAG, "onComplete called more than once");
                 throw new RuntimeException("onComplete called more than once");
             }
             unsubscribe();
@@ -200,10 +198,8 @@ public class Single<T> {
                 mOnOnlyExecuted = true;
                 mSingle.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
             } else if (mOnCompleteExecuted) {
-                Log.e(TAG, "onComplete has been already called, onItem should not be called");
                 throw new RuntimeException("onItem should not be called after onComplete has been called");
             } else if (mOnOnlyExecuted) {
-                Log.e(TAG, "onItem has been already called, onItem should not be called multiple times");
                 throw new RuntimeException("onItem should not be called multiple times");
             } else {
                 // Subscription has been unsubscribed, ignore it
