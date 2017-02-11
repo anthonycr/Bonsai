@@ -23,7 +23,7 @@ package com.anthonycr.bonsai;
 import android.support.annotation.NonNull;
 
 @SuppressWarnings("unused")
-public interface CompletableAction<T extends CompletableSubscriber> {
+public interface CompletableAction {
     /**
      * Should be overridden to send the subscriber
      * events such as {@link CompletableSubscriber#onNext(Object)}
@@ -33,5 +33,5 @@ public interface CompletableAction<T extends CompletableSubscriber> {
      *                   when the user of the Observable
      *                   subscribes.
      */
-    void onSubscribe(@NonNull T subscriber);
+    void onSubscribe(@NonNull CompletableSubscriber subscriber);
 }

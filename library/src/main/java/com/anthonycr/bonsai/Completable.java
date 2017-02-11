@@ -91,7 +91,7 @@ public class Completable {
         executeOnSubscriberThread(new Runnable() {
             @Override
             public void run() {
-                mAction.onSubscribe(new Completable.SubscriberImpl<>(null, Completable.this));
+                mAction.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
             }
         });
     }
@@ -108,7 +108,7 @@ public class Completable {
 
         Preconditions.checkNonNull(onSubscribe);
 
-        final CompletableSubscriber subscriber = new Completable.SubscriberImpl<>(onSubscribe, this);
+        final CompletableSubscriber subscriber = new Completable.SubscriberImpl(onSubscribe, this);
 
         subscriber.onStart();
 
@@ -142,7 +142,7 @@ public class Completable {
         }
     }
 
-    private static class SubscriberImpl<T> implements CompletableSubscriber {
+    private static class SubscriberImpl implements CompletableSubscriber {
 
         @Nullable private volatile CompletableOnSubscribe mOnSubscribe;
         @NonNull private final Completable mCompletable;
