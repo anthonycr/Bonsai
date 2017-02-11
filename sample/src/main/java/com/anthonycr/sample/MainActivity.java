@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                     addContactSubscription = DataModel.addContactObservable(newContact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
-                        .subscribe(new ObservableOnSubscribe<Void>() {
+                        .subscribe(new SingleOnSubscribe() {
                             @Override
                             public void onComplete() {
                                 adapter.add(newContact);
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 editContactSubscription = DataModel.updateContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new ObservableOnSubscribe<Void>() {
+                    .subscribe(new SingleOnSubscribe() {
                         @Override
                         public void onComplete() {
                             adapter.notifyDataSetChanged();
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 deleteContactSubscription = DataModel.deleteContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new ObservableOnSubscribe<Void>() {
+                    .subscribe(new SingleOnSubscribe() {
                         @Override
                         public void onComplete() {
                             adapter.remove(contact);
