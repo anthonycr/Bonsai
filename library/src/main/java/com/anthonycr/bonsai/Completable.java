@@ -25,7 +25,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * Created by anthonycr on 2/8/17.
+ * A reactive Java implementation. This class allows work
+ * to be done on a certain thread and then allows
+ * items to be emitted on a different thread. It is
+ * a replacement for {@link android.os.AsyncTask}.
+ * <p>
+ * It allows the caller of this class to create a completable
+ * task that runs and then finishes with a completion event.
+ * The consumer of the {@link Completable} will be notified
+ * of the start and completion of the action, as well as any
+ * errors that occur.
  */
 public class Completable {
 

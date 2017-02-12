@@ -29,6 +29,12 @@ import android.support.annotation.Nullable;
  * to be done on a certain thread and then allows
  * items to be emitted on a different thread. It is
  * a replacement for {@link android.os.AsyncTask}.
+ * <p>
+ * It allows the caller of this class to create an observable
+ * task that can emit multiple items and then complete.
+ * The consumer of the {@link Observable} will be notified
+ * of the start and completion of the action, as well as the
+ * items that can be emitted, or errors that occur.
  *
  * @param <T> the type that the Observable will emit.
  */

@@ -25,7 +25,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * Created by anthonycr on 2/8/17.
+ * A reactive Java implementation. This class allows work
+ * to be done on a certain thread and then allows
+ * items to be emitted on a different thread. It is
+ * a replacement for {@link android.os.AsyncTask}.
+ * <p>
+ * It allows the caller of this class to create a single
+ * task that optionally emits a single item and then completes.
+ * The consumer of the {@link Single} will be notified
+ * of the start and completion of the action, as well as the
+ * item that could be emitted, or errors that occur.
+ *
+ * @param <T> the type that the Single will emit.
  */
 public class Single<T> {
 
