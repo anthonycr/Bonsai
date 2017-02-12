@@ -38,8 +38,6 @@ import android.support.annotation.Nullable;
  */
 public class Completable {
 
-    private static final String TAG = Single.class.getSimpleName();
-
     @NonNull private final CompletableAction mAction;
     @NonNull private final Scheduler mDefaultThread;
     @Nullable private Scheduler mSubscriberThread;

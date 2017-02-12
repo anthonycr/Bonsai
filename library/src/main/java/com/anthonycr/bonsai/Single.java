@@ -40,8 +40,6 @@ import android.support.annotation.Nullable;
  */
 public class Single<T> {
 
-    private static final String TAG = Single.class.getSimpleName();
-
     @NonNull private final SingleAction<T> mAction;
     @NonNull private final Scheduler mDefaultThread;
     @Nullable private Scheduler mSubscriberThread;

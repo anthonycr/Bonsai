@@ -27,7 +27,14 @@ import android.support.annotation.Nullable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-@SuppressWarnings("unused")
+/**
+ * A class of default {@link Scheduler} provided
+ * for use with {@link Observable}, {@link Single},
+ * and {@link Completable}.
+ * <p>
+ * If the options available here are not sufficient,
+ * implement {@link Scheduler} and create your own.
+ */
 public final class Schedulers {
 
     @Nullable private static Scheduler sMainScheduler;
@@ -110,8 +117,13 @@ public final class Schedulers {
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
-        //noinspection ConstantConditions
-        return new ThreadScheduler(Looper.myLooper());
+
+        // Assert that the looper is not null
+        // since we just prepared it if it was.
+        Looper looper = Looper.myLooper();
+        Preconditions.checkNonNull(looper);
+
+        return new ThreadScheduler(looper);
     }
 
     /**

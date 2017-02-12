@@ -38,10 +38,8 @@ import android.support.annotation.Nullable;
  *
  * @param <T> the type that the Observable will emit.
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings("WeakerAccess")
 public class Observable<T> {
-
-    private static final String TAG = Observable.class.getSimpleName();
 
     @NonNull private final ObservableAction<T> mAction;
     @NonNull private final Scheduler mDefaultThread;
