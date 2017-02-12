@@ -133,6 +133,21 @@ public class SingleUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testSingleEventEmission_withoutSubscriber_withException() throws Exception {
+        Single.create(new SingleAction<String>() {
+            @Override
+            public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
+                subscriber.onItem(String.valueOf(1));
+                throw new RuntimeException("Test failure");
+            }
+        }).subscribeOn(Schedulers.current())
+            .observeOn(Schedulers.io())
+            .subscribe();
+
+        // No assertions since we did not supply an OnSubscribe.
+    }
+
+    @Test
     public void testSingleEventEmission_withException() throws Exception {
         final int testCount = 1;
 

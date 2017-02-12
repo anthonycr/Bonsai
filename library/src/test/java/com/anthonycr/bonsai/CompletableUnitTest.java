@@ -84,6 +84,20 @@ public class CompletableUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testCompletableEventEmission_withoutSubscriber_withException() throws Exception {
+        Completable.create(new CompletableAction() {
+            @Override
+            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+                throw new RuntimeException("Test failure");
+            }
+        }).subscribeOn(Schedulers.current())
+            .observeOn(Schedulers.current())
+            .subscribe();
+
+        // No assertions since we did not supply an OnSubscribe.
+    }
+
+    @Test
     public void testCompletableEventEmission_withError() throws Exception {
         final Assertion<Boolean> errorAssertion = new Assertion<>(false);
         final Assertion<Boolean> completeAssertion = new Assertion<>(false);

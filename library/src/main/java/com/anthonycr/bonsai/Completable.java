@@ -117,7 +117,11 @@ public class Completable {
         executeOnSubscriberThread(new Runnable() {
             @Override
             public void run() {
-                mAction.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
+                try {
+                    mAction.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
+                } catch (Exception exception) {
+                    // Do nothing because we don't have a subscriber
+                }
             }
         });
     }

@@ -121,7 +121,11 @@ public class Single<T> {
         executeOnSubscriberThread(new Runnable() {
             @Override
             public void run() {
-                mAction.onSubscribe(new Single.SubscriberImpl<>(null, Single.this));
+                try {
+                    mAction.onSubscribe(new Single.SubscriberImpl<>(null, Single.this));
+                } catch (Exception exception) {
+                    // Do nothing because we don't have a subscriber
+                }
             }
         });
     }

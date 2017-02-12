@@ -137,6 +137,25 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testObservableEventEmission_withoutSubscriber_withException() throws Exception {
+        final int testCount = 7;
+
+        Observable.create(new ObservableAction<String>() {
+            @Override
+            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+                for (int n = 0; n < testCount; n++) {
+                    subscriber.onNext(String.valueOf(n));
+                }
+                throw new RuntimeException("Test failure");
+            }
+        }).subscribeOn(Schedulers.current())
+            .observeOn(Schedulers.current())
+            .subscribe();
+
+        // No assertions since we did not supply an OnSubscribe.
+    }
+
+    @Test
     public void testObservableEventEmission_withError() throws Exception {
         final int testCount = 7;
 
