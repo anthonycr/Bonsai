@@ -115,7 +115,7 @@ public class Single<T> {
 
     /**
      * Subscribes immediately to the Single and ignores
-     * all onComplete and onNext calls.
+     * all onComplete and onItem calls.
      */
     public void subscribe() {
         executeOnSubscriberThread(new Runnable() {
@@ -134,7 +134,7 @@ public class Single<T> {
      * Immediately subscribes to the Single and starts
      * sending events from the Single to the {@link ObservableOnSubscribe}.
      *
-     * @param onSubscribe the class that wishes to receive onNext and
+     * @param onSubscribe the class that wishes to receive onItem and
      *                    onComplete callbacks from the Single.
      */
     @NonNull
