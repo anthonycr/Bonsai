@@ -44,7 +44,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.anthonycr.bonsai.ObservableOnSubscribe;
+import com.anthonycr.bonsai.CompletableOnSubscribe;
 import com.anthonycr.bonsai.Schedulers;
 import com.anthonycr.bonsai.SingleOnSubscribe;
 import com.anthonycr.bonsai.Subscription;
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     addContactSubscription = DataModel.addContactObservable(newContact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
-                        .subscribe(new SingleOnSubscribe() {
+                        .subscribe(new CompletableOnSubscribe() {
                             @Override
                             public void onComplete() {
                                 adapter.add(newContact);
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 editContactSubscription = DataModel.updateContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new SingleOnSubscribe() {
+                    .subscribe(new CompletableOnSubscribe() {
                         @Override
                         public void onComplete() {
                             adapter.notifyDataSetChanged();
@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 deleteContactSubscription = DataModel.deleteContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new SingleOnSubscribe() {
+                    .subscribe(new CompletableOnSubscribe() {
                         @Override
                         public void onComplete() {
                             adapter.remove(contact);
