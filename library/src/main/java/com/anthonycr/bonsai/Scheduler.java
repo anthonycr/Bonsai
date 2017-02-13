@@ -29,6 +29,7 @@ import android.support.annotation.NonNull;
  * execute {@link Runnable} on a thread of
  * their choosing.
  */
+@SuppressWarnings("WeakerAccess")
 public interface Scheduler {
 
     /**

@@ -24,6 +24,7 @@ package com.anthonycr.bonsai;
  * A subscription to an originating
  * Observable that can be unsubscribed.
  */
+@SuppressWarnings("WeakerAccess")
 public interface Subscription {
 
     /**

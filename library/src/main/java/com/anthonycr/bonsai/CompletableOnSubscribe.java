@@ -29,6 +29,7 @@ import android.support.annotation.NonNull;
  * If {@link #onError(Throwable)} is not overridden,
  * it will through an exception.
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class CompletableOnSubscribe {
 
     /**

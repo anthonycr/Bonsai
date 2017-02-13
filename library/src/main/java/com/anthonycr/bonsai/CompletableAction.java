@@ -26,6 +26,7 @@ import android.support.annotation.NonNull;
  * An action to perform when a consumer
  * subscribes to the {@link Completable}.
  */
+@SuppressWarnings("WeakerAccess")
 public interface CompletableAction {
     /**
      * Should be overridden to send the subscriber

@@ -28,6 +28,7 @@ import android.support.annotation.Nullable;
  *
  * @param <T> the object type that should be emitted.
  */
+@SuppressWarnings("WeakerAccess")
 public interface SingleSubscriber<T> extends CompletableSubscriber {
 
     /**

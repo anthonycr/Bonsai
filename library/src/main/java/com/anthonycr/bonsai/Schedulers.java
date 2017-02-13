@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
  * If the options available here are not sufficient,
  * implement {@link Scheduler} and create your own.
  */
+@SuppressWarnings("WeakerAccess")
 public final class Schedulers {
 
     @Nullable private static Scheduler mainScheduler;

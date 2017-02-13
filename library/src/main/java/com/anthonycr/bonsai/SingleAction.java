@@ -28,6 +28,7 @@ import android.support.annotation.NonNull;
  *
  * @param <T> the type the action should emit.
  */
+@SuppressWarnings("WeakerAccess")
 public interface SingleAction<T> {
 
     /**

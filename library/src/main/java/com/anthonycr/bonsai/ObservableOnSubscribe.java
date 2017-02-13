@@ -31,6 +31,7 @@ import android.support.annotation.Nullable;
  *
  * @param <T> the type that will be emitted by the action.
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class ObservableOnSubscribe<T> extends CompletableOnSubscribe {
 
     /**
