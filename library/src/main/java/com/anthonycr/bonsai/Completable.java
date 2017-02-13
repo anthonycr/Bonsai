@@ -39,19 +39,19 @@ import android.support.annotation.Nullable;
 @SuppressWarnings("WeakerAccess")
 public class Completable {
 
-    @NonNull private final CompletableAction mAction;
-    @NonNull private final Scheduler mDefaultThread;
-    @Nullable private Scheduler mSubscriberThread;
-    @Nullable private Scheduler mObserverThread;
+    @NonNull private final CompletableAction action;
+    @NonNull private final Scheduler defaultThread;
+    @Nullable private Scheduler subscriberThread;
+    @Nullable private Scheduler observerThread;
 
     private Completable(@NonNull CompletableAction action) {
-        mAction = action;
+        this.action = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
         Looper looper = Looper.myLooper();
         Preconditions.checkNonNull(looper);
-        mDefaultThread = new ThreadScheduler(looper);
+        this.defaultThread = new ThreadScheduler(looper);
     }
 
     /**
@@ -93,7 +93,7 @@ public class Completable {
      */
     @NonNull
     public Completable subscribeOn(@NonNull Scheduler subscribeScheduler) {
-        mSubscriberThread = subscribeScheduler;
+        subscriberThread = subscribeScheduler;
         return this;
     }
 
@@ -106,7 +106,7 @@ public class Completable {
      */
     @NonNull
     public Completable observeOn(@NonNull Scheduler observerScheduler) {
-        mObserverThread = observerScheduler;
+        observerThread = observerScheduler;
         return this;
     }
 
@@ -119,7 +119,7 @@ public class Completable {
             @Override
             public void run() {
                 try {
-                    mAction.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
+                    action.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
                 } catch (Exception exception) {
                     // Do nothing because we don't have a subscriber
                 }
@@ -148,7 +148,7 @@ public class Completable {
             @Override
             public void run() {
                 try {
-                    mAction.onSubscribe(subscriber);
+                    action.onSubscribe(subscriber);
                 } catch (Exception exception) {
                     subscriber.onError(exception);
                 }
@@ -159,45 +159,45 @@ public class Completable {
     }
 
     private void executeOnObserverThread(@NonNull Runnable runnable) {
-        if (mObserverThread != null) {
-            mObserverThread.execute(runnable);
+        if (observerThread != null) {
+            observerThread.execute(runnable);
         } else {
-            mDefaultThread.execute(runnable);
+            defaultThread.execute(runnable);
         }
     }
 
     private void executeOnSubscriberThread(@NonNull Runnable runnable) {
-        if (mSubscriberThread != null) {
-            mSubscriberThread.execute(runnable);
+        if (subscriberThread != null) {
+            subscriberThread.execute(runnable);
         } else {
-            mDefaultThread.execute(runnable);
+            defaultThread.execute(runnable);
         }
     }
 
     private static class SubscriberImpl implements CompletableSubscriber {
 
-        @Nullable private volatile CompletableOnSubscribe mOnSubscribe;
-        @NonNull private final Completable mCompletable;
-        private boolean mOnCompleteExecuted = false;
-        private boolean mOnError = false;
+        @Nullable private volatile CompletableOnSubscribe onSubscribe;
+        @NonNull private final Completable completable;
+        private boolean onCompleteExecuted = false;
+        private boolean onError = false;
 
         SubscriberImpl(@Nullable CompletableOnSubscribe onSubscribe, @NonNull Completable completable) {
-            mOnSubscribe = onSubscribe;
-            mCompletable = completable;
+            this.onSubscribe = onSubscribe;
+            this.completable = completable;
         }
 
         @Override
         public void unsubscribe() {
-            mOnSubscribe = null;
+            onSubscribe = null;
         }
 
         @Override
         public void onComplete() {
-            CompletableOnSubscribe onSubscribe = mOnSubscribe;
-            if (!mOnCompleteExecuted && onSubscribe != null && !mOnError) {
-                mOnCompleteExecuted = true;
-                mCompletable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            } else if (!mOnError && mOnCompleteExecuted) {
+            CompletableOnSubscribe onSubscribe = this.onSubscribe;
+            if (!onCompleteExecuted && onSubscribe != null && !onError) {
+                onCompleteExecuted = true;
+                completable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
+            } else if (!onError && onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
             }
             unsubscribe();
@@ -205,25 +205,25 @@ public class Completable {
 
         @Override
         public void onStart() {
-            CompletableOnSubscribe onSubscribe = mOnSubscribe;
+            CompletableOnSubscribe onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                mCompletable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+                completable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
-            CompletableOnSubscribe onSubscribe = mOnSubscribe;
+            CompletableOnSubscribe onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                mOnError = true;
-                mCompletable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
+                onError = true;
+                completable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
             unsubscribe();
         }
 
         @Override
         public boolean isUnsubscribed() {
-            return mOnSubscribe == null;
+            return onSubscribe == null;
         }
     }
 }

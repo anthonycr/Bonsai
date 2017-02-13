@@ -41,19 +41,19 @@ import android.support.annotation.Nullable;
 @SuppressWarnings("WeakerAccess")
 public class Single<T> {
 
-    @NonNull private final SingleAction<T> mAction;
-    @NonNull private final Scheduler mDefaultThread;
-    @Nullable private Scheduler mSubscriberThread;
-    @Nullable private Scheduler mObserverThread;
+    @NonNull private final SingleAction<T> action;
+    @NonNull private final Scheduler defaultThread;
+    @Nullable private Scheduler subscriberThread;
+    @Nullable private Scheduler observerThread;
 
     private Single(@NonNull SingleAction<T> action) {
-        mAction = action;
+        this.action = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
         Looper looper = Looper.myLooper();
         Preconditions.checkNonNull(looper);
-        mDefaultThread = new ThreadScheduler(looper);
+        this.defaultThread = new ThreadScheduler(looper);
     }
 
     /**
@@ -97,7 +97,7 @@ public class Single<T> {
      */
     @NonNull
     public Single<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
-        mSubscriberThread = subscribeScheduler;
+        subscriberThread = subscribeScheduler;
         return this;
     }
 
@@ -110,7 +110,7 @@ public class Single<T> {
      */
     @NonNull
     public Single<T> observeOn(@NonNull Scheduler observerScheduler) {
-        mObserverThread = observerScheduler;
+        observerThread = observerScheduler;
         return this;
     }
 
@@ -123,7 +123,7 @@ public class Single<T> {
             @Override
             public void run() {
                 try {
-                    mAction.onSubscribe(new Single.SubscriberImpl<>(null, Single.this));
+                    action.onSubscribe(new Single.SubscriberImpl<>(null, Single.this));
                 } catch (Exception exception) {
                     // Do nothing because we don't have a subscriber
                 }
@@ -151,7 +151,7 @@ public class Single<T> {
             @Override
             public void run() {
                 try {
-                    mAction.onSubscribe(subscriber);
+                    action.onSubscribe(subscriber);
                 } catch (Exception exception) {
                     subscriber.onError(exception);
                 }
@@ -162,46 +162,46 @@ public class Single<T> {
     }
 
     private void executeOnObserverThread(@NonNull Runnable runnable) {
-        if (mObserverThread != null) {
-            mObserverThread.execute(runnable);
+        if (observerThread != null) {
+            observerThread.execute(runnable);
         } else {
-            mDefaultThread.execute(runnable);
+            defaultThread.execute(runnable);
         }
     }
 
     private void executeOnSubscriberThread(@NonNull Runnable runnable) {
-        if (mSubscriberThread != null) {
-            mSubscriberThread.execute(runnable);
+        if (subscriberThread != null) {
+            subscriberThread.execute(runnable);
         } else {
-            mDefaultThread.execute(runnable);
+            defaultThread.execute(runnable);
         }
     }
 
     private static class SubscriberImpl<T> implements SingleSubscriber<T> {
 
-        @Nullable private volatile SingleOnSubscribe<T> mOnSubscribe;
-        @NonNull private final Single<T> mSingle;
-        private boolean mOnCompleteExecuted = false;
-        private boolean mOnOnlyExecuted = false;
-        private boolean mOnError = false;
+        @Nullable private volatile SingleOnSubscribe<T> onSubscribe;
+        @NonNull private final Single<T> single;
+        private boolean onCompleteExecuted = false;
+        private boolean onOnlyExecuted = false;
+        private boolean onError = false;
 
-        SubscriberImpl(@Nullable SingleOnSubscribe<T> onSubscribe, @NonNull Single<T> Single) {
-            mOnSubscribe = onSubscribe;
-            mSingle = Single;
+        SubscriberImpl(@Nullable SingleOnSubscribe<T> onSubscribe, @NonNull Single<T> single) {
+            this.onSubscribe = onSubscribe;
+            this.single = single;
         }
 
         @Override
         public void unsubscribe() {
-            mOnSubscribe = null;
+            onSubscribe = null;
         }
 
         @Override
         public void onComplete() {
-            SingleOnSubscribe<T> onSubscribe = mOnSubscribe;
-            if (!mOnCompleteExecuted && onSubscribe != null && !mOnError) {
-                mOnCompleteExecuted = true;
-                mSingle.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            } else if (!mOnError && mOnCompleteExecuted) {
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
+            if (!onCompleteExecuted && onSubscribe != null && !onError) {
+                onCompleteExecuted = true;
+                single.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
+            } else if (!onError && onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
             }
             unsubscribe();
@@ -209,31 +209,31 @@ public class Single<T> {
 
         @Override
         public void onStart() {
-            SingleOnSubscribe<T> onSubscribe = mOnSubscribe;
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                mSingle.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+                single.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
-            SingleOnSubscribe<T> onSubscribe = mOnSubscribe;
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                mOnError = true;
-                mSingle.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
+                onError = true;
+                single.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
             unsubscribe();
         }
 
         @Override
         public void onItem(@Nullable T item) {
-            SingleOnSubscribe<T> onSubscribe = mOnSubscribe;
-            if (!mOnCompleteExecuted && !mOnOnlyExecuted && onSubscribe != null && !mOnError) {
-                mOnOnlyExecuted = true;
-                mSingle.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
-            } else if (mOnCompleteExecuted) {
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
+            if (!onCompleteExecuted && !onOnlyExecuted && onSubscribe != null && !onError) {
+                onOnlyExecuted = true;
+                single.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
+            } else if (onCompleteExecuted) {
                 throw new RuntimeException("onItem should not be called after onComplete has been called");
-            } else if (mOnOnlyExecuted) {
+            } else if (onOnlyExecuted) {
                 throw new RuntimeException("onItem should not be called multiple times");
             } else {
                 // Subscription has been unsubscribed, ignore it
@@ -242,7 +242,7 @@ public class Single<T> {
 
         @Override
         public boolean isUnsubscribed() {
-            return mOnSubscribe == null;
+            return onSubscribe == null;
         }
     }
 }

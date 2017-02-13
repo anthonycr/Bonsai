@@ -41,19 +41,19 @@ import android.support.annotation.Nullable;
 @SuppressWarnings("WeakerAccess")
 public class Observable<T> {
 
-    @NonNull private final ObservableAction<T> mAction;
-    @NonNull private final Scheduler mDefaultThread;
-    @Nullable private Scheduler mSubscriberThread;
-    @Nullable private Scheduler mObserverThread;
+    @NonNull private final ObservableAction<T> action;
+    @NonNull private final Scheduler defaultThread;
+    @Nullable private Scheduler subscriberThread;
+    @Nullable private Scheduler observerThread;
 
     private Observable(@NonNull ObservableAction<T> action) {
-        mAction = action;
+        this.action = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
         Looper looper = Looper.myLooper();
         Preconditions.checkNonNull(looper);
-        mDefaultThread = new ThreadScheduler(looper);
+        defaultThread = new ThreadScheduler(looper);
     }
 
     /**
@@ -97,7 +97,7 @@ public class Observable<T> {
      */
     @NonNull
     public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
-        mSubscriberThread = subscribeScheduler;
+        subscriberThread = subscribeScheduler;
         return this;
     }
 
@@ -110,7 +110,7 @@ public class Observable<T> {
      */
     @NonNull
     public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
-        mObserverThread = observerScheduler;
+        observerThread = observerScheduler;
         return this;
     }
 
@@ -123,7 +123,7 @@ public class Observable<T> {
             @Override
             public void run() {
                 try {
-                    mAction.onSubscribe(new SubscriberImpl<>(null, Observable.this));
+                    action.onSubscribe(new SubscriberImpl<>(null, Observable.this));
                 } catch (Exception exception) {
                     // Do nothing because we don't have a subscriber
                 }
@@ -151,7 +151,7 @@ public class Observable<T> {
             @Override
             public void run() {
                 try {
-                    mAction.onSubscribe(subscriber);
+                    action.onSubscribe(subscriber);
                 } catch (Exception exception) {
                     subscriber.onError(exception);
                 }
@@ -162,45 +162,45 @@ public class Observable<T> {
     }
 
     private void executeOnObserverThread(@NonNull Runnable runnable) {
-        if (mObserverThread != null) {
-            mObserverThread.execute(runnable);
+        if (observerThread != null) {
+            observerThread.execute(runnable);
         } else {
-            mDefaultThread.execute(runnable);
+            defaultThread.execute(runnable);
         }
     }
 
     private void executeOnSubscriberThread(@NonNull Runnable runnable) {
-        if (mSubscriberThread != null) {
-            mSubscriberThread.execute(runnable);
+        if (subscriberThread != null) {
+            subscriberThread.execute(runnable);
         } else {
-            mDefaultThread.execute(runnable);
+            defaultThread.execute(runnable);
         }
     }
 
     private static class SubscriberImpl<T> implements ObservableSubscriber<T> {
 
-        @Nullable private volatile ObservableOnSubscribe<T> mOnSubscribe;
-        @NonNull private final Observable<T> mObservable;
-        private boolean mOnCompleteExecuted = false;
-        private boolean mOnError = false;
+        @Nullable private volatile ObservableOnSubscribe<T> onSubscribe;
+        @NonNull private final Observable<T> observable;
+        private boolean onCompleteExecuted = false;
+        private boolean onError = false;
 
         SubscriberImpl(@Nullable ObservableOnSubscribe<T> onSubscribe, @NonNull Observable<T> observable) {
-            mOnSubscribe = onSubscribe;
-            mObservable = observable;
+            this.onSubscribe = onSubscribe;
+            this.observable = observable;
         }
 
         @Override
         public void unsubscribe() {
-            mOnSubscribe = null;
+            onSubscribe = null;
         }
 
         @Override
         public void onComplete() {
-            ObservableOnSubscribe<T> onSubscribe = mOnSubscribe;
-            if (!mOnCompleteExecuted && onSubscribe != null && !mOnError) {
-                mOnCompleteExecuted = true;
-                mObservable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            } else if (!mOnError && mOnCompleteExecuted) {
+            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            if (!onCompleteExecuted && onSubscribe != null && !onError) {
+                onCompleteExecuted = true;
+                observable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
+            } else if (!onError && onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
             }
             unsubscribe();
@@ -208,28 +208,28 @@ public class Observable<T> {
 
         @Override
         public void onStart() {
-            ObservableOnSubscribe<T> onSubscribe = mOnSubscribe;
+            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                mObservable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+                observable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
-            ObservableOnSubscribe<T> onSubscribe = mOnSubscribe;
+            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                mOnError = true;
-                mObservable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
+                onError = true;
+                observable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
             unsubscribe();
         }
 
         @Override
         public void onNext(final T item) {
-            ObservableOnSubscribe<T> onSubscribe = mOnSubscribe;
-            if (!mOnCompleteExecuted && onSubscribe != null && !mOnError) {
-                mObservable.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
-            } else if (mOnCompleteExecuted) {
+            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            if (!onCompleteExecuted && onSubscribe != null && !onError) {
+                observable.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
+            } else if (onCompleteExecuted) {
                 throw new RuntimeException("onNext should not be called after onComplete has been called");
             } else {
                 // Subscription has been unsubscribed, ignore it
@@ -238,7 +238,7 @@ public class Observable<T> {
 
         @Override
         public boolean isUnsubscribed() {
-            return mOnSubscribe == null;
+            return onSubscribe == null;
         }
     }
 

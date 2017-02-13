@@ -37,9 +37,9 @@ import java.util.concurrent.Executors;
  */
 public final class Schedulers {
 
-    @Nullable private static Scheduler sMainScheduler;
-    @Nullable private static Scheduler sWorkerScheduler;
-    @Nullable private static Scheduler sIoScheduler;
+    @Nullable private static Scheduler mainScheduler;
+    @Nullable private static Scheduler workerScheduler;
+    @Nullable private static Scheduler ioScheduler;
 
     private Schedulers() {
         throw new UnsupportedOperationException("This class is not instantiable");
@@ -51,11 +51,11 @@ public final class Schedulers {
      */
     private static class WorkerScheduler implements Scheduler {
 
-        private final Executor mWorker = Executors.newFixedThreadPool(4);
+        private final Executor worker = Executors.newFixedThreadPool(4);
 
         @Override
         public void execute(@NonNull Runnable command) {
-            mWorker.execute(command);
+            worker.execute(command);
         }
     }
 
@@ -65,11 +65,11 @@ public final class Schedulers {
      */
     private static class SingleThreadedScheduler implements Scheduler {
 
-        private final Executor mSingleThreadExecutor = Executors.newSingleThreadExecutor();
+        private final Executor singleThreadExecutor = Executors.newSingleThreadExecutor();
 
         @Override
         public void execute(@NonNull Runnable command) {
-            mSingleThreadExecutor.execute(command);
+            singleThreadExecutor.execute(command);
         }
     }
 
@@ -79,15 +79,15 @@ public final class Schedulers {
     private static class ExecutorScheduler implements Scheduler {
 
         @NonNull
-        private final Executor mBackingExecutor;
+        private final Executor backingExecutor;
 
         public ExecutorScheduler(@NonNull Executor executor) {
-            mBackingExecutor = executor;
+            backingExecutor = executor;
         }
 
         @Override
         public void execute(@NonNull Runnable command) {
-            mBackingExecutor.execute(command);
+            backingExecutor.execute(command);
         }
     }
 
@@ -148,10 +148,10 @@ public final class Schedulers {
      */
     @NonNull
     public static Scheduler worker() {
-        if (sWorkerScheduler == null) {
-            sWorkerScheduler = new WorkerScheduler();
+        if (workerScheduler == null) {
+            workerScheduler = new WorkerScheduler();
         }
-        return sWorkerScheduler;
+        return workerScheduler;
     }
 
     /**
@@ -162,10 +162,10 @@ public final class Schedulers {
      */
     @NonNull
     public static Scheduler main() {
-        if (sMainScheduler == null) {
-            sMainScheduler = new ThreadScheduler(Looper.getMainLooper());
+        if (mainScheduler == null) {
+            mainScheduler = new ThreadScheduler(Looper.getMainLooper());
         }
-        return sMainScheduler;
+        return mainScheduler;
     }
 
     /**
@@ -177,9 +177,9 @@ public final class Schedulers {
      */
     @NonNull
     public static Scheduler io() {
-        if (sIoScheduler == null) {
-            sIoScheduler = new SingleThreadedScheduler();
+        if (ioScheduler == null) {
+            ioScheduler = new SingleThreadedScheduler();
         }
-        return sIoScheduler;
+        return ioScheduler;
     }
 }

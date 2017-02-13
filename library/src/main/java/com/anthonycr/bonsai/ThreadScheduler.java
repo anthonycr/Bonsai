@@ -31,14 +31,14 @@ import android.support.annotation.NonNull;
  */
 class ThreadScheduler implements Scheduler {
 
-    @NonNull private final Handler mHandler;
+    @NonNull private final Handler handler;
 
     ThreadScheduler(@NonNull Looper looper) {
-        mHandler = new Handler(looper);
+        handler = new Handler(looper);
     }
 
     @Override
     public synchronized void execute(@NonNull Runnable command) {
-        mHandler.post(command);
+        handler.post(command);
     }
 }
