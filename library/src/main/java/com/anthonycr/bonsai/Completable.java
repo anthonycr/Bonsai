@@ -54,12 +54,12 @@ public class Completable {
     }
 
     /**
-     * Static creator method that creates an Single from the
+     * Static creator method that creates a Completable from the
      * {@link CompletableAction} that is passed in as the parameter. Action
      * must not be null.
      *
      * @param action the Action to perform
-     * @return a valid non-null Single.
+     * @return a valid non-null Completable.
      */
     @NonNull
     public static Completable create(@NonNull CompletableAction action) {
@@ -68,10 +68,10 @@ public class Completable {
     }
 
     /**
-     * Static creator that creates an Single that is empty
+     * Static creator that creates a Completable that is empty
      * and emits no items, but completes immediately.
      *
-     * @return a valid non-null empty Single.
+     * @return a valid non-null empty Completable.
      */
     @NonNull
     public static Completable empty() {
@@ -84,7 +84,7 @@ public class Completable {
     }
 
     /**
-     * Tells the Single what Scheduler that the onSubscribe
+     * Tells the Completable what Scheduler that the onSubscribe
      * work should run on.
      *
      * @param subscribeScheduler the Scheduler to run the work on.
@@ -97,8 +97,8 @@ public class Completable {
     }
 
     /**
-     * Tells the Single what Scheduler the onSubscribe should observe
-     * the work on.
+     * Tells the Completable what Scheduler the onSubscribe
+     * should observe the work on.
      *
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
@@ -110,8 +110,8 @@ public class Completable {
     }
 
     /**
-     * Subscribes immediately to the Single and ignores
-     * all onComplete and onNext calls.
+     * Subscribes immediately to the Completable and
+     * ignores all onComplete calls.
      */
     public void subscribe() {
         executeOnSubscriberThread(new Runnable() {
@@ -127,11 +127,12 @@ public class Completable {
     }
 
     /**
-     * Immediately subscribes to the Single and starts
-     * sending events from the Single to the {@link ObservableOnSubscribe}.
+     * Immediately subscribes to the Completable and starts
+     * sending events from the Completable to the
+     * {@link ObservableOnSubscribe}.
      *
-     * @param onSubscribe the class that wishes to receive onNext and
-     *                    onComplete callbacks from the Single.
+     * @param onSubscribe the class that wishes to receive onComplete
+     *                    callbacks from the Completable.
      */
     @NonNull
     public Subscription subscribe(@NonNull CompletableOnSubscribe onSubscribe) {
