@@ -35,9 +35,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by anthonycr on 2/9/17.
- */
 public class SingleUnitTest extends BaseUnitTest {
 
     @Test
