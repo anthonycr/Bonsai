@@ -36,6 +36,7 @@ import android.support.annotation.Nullable;
  * of the start and completion of the action, as well as any
  * errors that occur.
  */
+@SuppressWarnings("WeakerAccess")
 public class Completable {
 
     @NonNull private final CompletableAction mAction;

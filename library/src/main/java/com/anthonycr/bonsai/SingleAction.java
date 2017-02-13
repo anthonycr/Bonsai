@@ -23,7 +23,10 @@ package com.anthonycr.bonsai;
 import android.support.annotation.NonNull;
 
 /**
- * Created by anthonycr on 2/8/17.
+ * An action to perform when a consumer
+ * subscribes to the {@link Single}.
+ *
+ * @param <T> the type the action should emit.
  */
 public interface SingleAction<T> {
 

@@ -23,7 +23,13 @@ package com.anthonycr.bonsai;
 import android.support.annotation.Nullable;
 
 /**
- * Created by anthonycr on 2/8/17.
+ * When a consumer subscribes to a {@link SingleOnSubscribe}
+ * it should supply an implementation of this class
+ * with the desired methods overridden.
+ * If {@link #onError(Throwable)} is not overridden,
+ * it will through an exception.
+ *
+ * @param <T> the type that will be emitted by the action.
  */
 public abstract class SingleOnSubscribe<T> extends CompletableOnSubscribe {
 

@@ -22,6 +22,10 @@ package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
 
+/**
+ * The interface through which the {@link CompletableAction}
+ * communicates to the {@link CompletableOnSubscribe}.
+ */
 public interface CompletableSubscriber extends Subscription {
 
     /**

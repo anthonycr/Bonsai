@@ -23,7 +23,11 @@ package com.anthonycr.bonsai;
 import android.support.annotation.NonNull;
 
 /**
- * Created by anthonycr on 2/8/17.
+ * When a consumer subscribes to a {@link Completable}
+ * it should supply an implementation of this class
+ * with the desired methods overridden.
+ * If {@link #onError(Throwable)} is not overridden,
+ * it will through an exception.
  */
 public abstract class CompletableOnSubscribe {
 

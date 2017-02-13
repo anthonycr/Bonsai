@@ -23,7 +23,10 @@ package com.anthonycr.bonsai;
 import android.support.annotation.Nullable;
 
 /**
- * Created by anthonycr on 2/8/17.
+ * The interface through which the {@link SingleAction}
+ * communicates to the {@link SingleOnSubscribe}.
+ *
+ * @param <T> the object type that should be emitted.
  */
 public interface SingleSubscriber<T> extends CompletableSubscriber {
 

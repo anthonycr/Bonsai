@@ -38,6 +38,7 @@ import android.support.annotation.Nullable;
  *
  * @param <T> the type that the Single will emit.
  */
+@SuppressWarnings("WeakerAccess")
 public class Single<T> {
 
     @NonNull private final SingleAction<T> mAction;
