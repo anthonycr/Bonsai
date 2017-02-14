@@ -133,7 +133,7 @@ public class Single<T> {
 
     /**
      * Immediately subscribes to the Single and starts
-     * sending events from the Single to the {@link ObservableOnSubscribe}.
+     * sending events from the Single to the {@link StreamOnSubscribe}.
      *
      * @param onSubscribe the class that wishes to receive onItem and
      *                    onComplete callbacks from the Single.

@@ -30,23 +30,23 @@ import android.support.annotation.Nullable;
  * items to be emitted on a different thread. It is
  * a replacement for {@link android.os.AsyncTask}.
  * <p>
- * It allows the caller of this class to create an observable
+ * It allows the caller of this class to create an stream
  * task that can emit multiple items and then complete.
- * The consumer of the {@link Observable} will be notified
+ * The consumer of the {@link Stream} will be notified
  * of the start and completion of the action, as well as the
  * items that can be emitted, or errors that occur.
  *
- * @param <T> the type that the Observable will emit.
+ * @param <T> the type that the stream will emit.
  */
 @SuppressWarnings("WeakerAccess")
-public class Observable<T> {
+public class Stream<T> {
 
-    @NonNull private final ObservableAction<T> action;
+    @NonNull private final StreamAction<T> action;
     @NonNull private final Scheduler defaultThread;
     @Nullable private Scheduler subscriberThread;
     @Nullable private Scheduler observerThread;
 
-    private Observable(@NonNull ObservableAction<T> action) {
+    private Stream(@NonNull StreamAction<T> action) {
         this.action = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
@@ -57,65 +57,65 @@ public class Observable<T> {
     }
 
     /**
-     * Static creator method that creates an Observable from the
+     * Static creator method that creates an stream from the
      * {@link CompletableAction} that is passed in as the parameter. Action
      * must not be null.
      *
      * @param action the Action to perform
      * @param <T>    the type that will be emitted to the onSubscribe
-     * @return a valid non-null Observable.
+     * @return a valid non-null stream.
      */
     @NonNull
-    public static <T> Observable<T> create(@NonNull ObservableAction<T> action) {
+    public static <T> Stream<T> create(@NonNull StreamAction<T> action) {
         Preconditions.checkNonNull(action);
-        return new Observable<>(action);
+        return new Stream<>(action);
     }
 
     /**
-     * Static creator that creates an Observable that is empty
+     * Static creator that creates an stream that is empty
      * and emits no items, but completes immediately.
      *
      * @param <T> the type that will be emitted to the onSubscribe
-     * @return a valid non-null empty Observable.
+     * @return a valid non-null empty stream.
      */
     @NonNull
-    public static <T> Observable<T> empty() {
-        return new Observable<>(new ObservableAction<T>() {
+    public static <T> Stream<T> empty() {
+        return new Stream<>(new StreamAction<T>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<T> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<T> subscriber) {
                 subscriber.onComplete();
             }
         });
     }
 
     /**
-     * Tells the Observable what Scheduler that the onSubscribe
+     * Tells the stream what Scheduler that the onSubscribe
      * work should run on.
      *
      * @param subscribeScheduler the Scheduler to run the work on.
      * @return returns this so that calls can be conveniently chained.
      */
     @NonNull
-    public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+    public Stream<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
         subscriberThread = subscribeScheduler;
         return this;
     }
 
     /**
-     * Tells the Observable what Scheduler the onSubscribe should observe
+     * Tells the stream what Scheduler the onSubscribe should observe
      * the work on.
      *
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
      */
     @NonNull
-    public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
+    public Stream<T> observeOn(@NonNull Scheduler observerScheduler) {
         observerThread = observerScheduler;
         return this;
     }
 
     /**
-     * Subscribes immediately to the Observable and ignores
+     * Subscribes immediately to the stream and ignores
      * all onComplete and onNext calls.
      */
     public void subscribe() {
@@ -123,7 +123,7 @@ public class Observable<T> {
             @Override
             public void run() {
                 try {
-                    action.onSubscribe(new SubscriberImpl<>(null, Observable.this));
+                    action.onSubscribe(new SubscriberImpl<>(null, Stream.this));
                 } catch (Exception exception) {
                     // Do nothing because we don't have a subscriber
                 }
@@ -132,18 +132,18 @@ public class Observable<T> {
     }
 
     /**
-     * Immediately subscribes to the Observable and starts
-     * sending events from the Observable to the {@link ObservableOnSubscribe}.
+     * Immediately subscribes to the stream and starts
+     * sending events from the stream to the {@link StreamOnSubscribe}.
      *
      * @param onSubscribe the class that wishes to receive onNext and
-     *                    onComplete callbacks from the Observable.
+     *                    onComplete callbacks from the stream.
      */
     @NonNull
-    public Subscription subscribe(@NonNull ObservableOnSubscribe<T> onSubscribe) {
+    public Subscription subscribe(@NonNull StreamOnSubscribe<T> onSubscribe) {
 
         Preconditions.checkNonNull(onSubscribe);
 
-        final ObservableSubscriber<T> subscriber = new SubscriberImpl<>(onSubscribe, this);
+        final StreamSubscriber<T> subscriber = new SubscriberImpl<>(onSubscribe, this);
 
         subscriber.onStart();
 
@@ -177,16 +177,16 @@ public class Observable<T> {
         }
     }
 
-    private static class SubscriberImpl<T> implements ObservableSubscriber<T> {
+    private static class SubscriberImpl<T> implements StreamSubscriber<T> {
 
-        @Nullable private volatile ObservableOnSubscribe<T> onSubscribe;
-        @NonNull private final Observable<T> observable;
+        @Nullable private volatile StreamOnSubscribe<T> onSubscribe;
+        @NonNull private final Stream<T> stream;
         private boolean onCompleteExecuted = false;
         private boolean onError = false;
 
-        SubscriberImpl(@Nullable ObservableOnSubscribe<T> onSubscribe, @NonNull Observable<T> observable) {
+        SubscriberImpl(@Nullable StreamOnSubscribe<T> onSubscribe, @NonNull Stream<T> stream) {
             this.onSubscribe = onSubscribe;
-            this.observable = observable;
+            this.stream = stream;
         }
 
         @Override
@@ -196,10 +196,10 @@ public class Observable<T> {
 
         @Override
         public void onComplete() {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (!onCompleteExecuted && onSubscribe != null && !onError) {
                 onCompleteExecuted = true;
-                observable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
+                stream.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             } else if (!onError && onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
             }
@@ -208,27 +208,27 @@ public class Observable<T> {
 
         @Override
         public void onStart() {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                observable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+                stream.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
                 onError = true;
-                observable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
+                stream.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
             unsubscribe();
         }
 
         @Override
         public void onNext(final T item) {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (!onCompleteExecuted && onSubscribe != null && !onError) {
-                observable.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
+                stream.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
             } else if (onCompleteExecuted) {
                 throw new RuntimeException("onNext should not be called after onComplete has been called");
             } else {

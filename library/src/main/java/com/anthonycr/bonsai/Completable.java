@@ -130,7 +130,7 @@ public class Completable {
     /**
      * Immediately subscribes to the Completable and starts
      * sending events from the Completable to the
-     * {@link ObservableOnSubscribe}.
+     * {@link StreamOnSubscribe}.
      *
      * @param onSubscribe the class that wishes to receive onComplete
      *                    callbacks from the Completable.

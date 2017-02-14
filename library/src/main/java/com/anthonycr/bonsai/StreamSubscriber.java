@@ -20,24 +20,26 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /**
- * An action to perform when a consumer
- * subscribes to the {@link Observable}.
+ * The interface through which the {@link StreamAction}
+ * communicates to the {@link StreamOnSubscribe}.
  *
- * @param <T> the type the action should emit.
+ * @param <T> the object type that should be emitted.
  */
 @SuppressWarnings("WeakerAccess")
-public interface ObservableAction<T> {
+public interface StreamSubscriber<T> extends CompletableSubscriber {
+
     /**
-     * Should be overridden to send the subscriber
-     * events such as {@link ObservableSubscriber#onNext(Object)}
-     * or {@link ObservableSubscriber#onComplete()}.
+     * Called when the Observer emits an
+     * item. It can be called multiple times.
+     * It cannot be called after onComplete
+     * has been called.
      *
-     * @param subscriber the subscriber that is sent in
-     *                   when the user of the Observable
-     *                   subscribes.
+     * @param item the item that has been emitted,
+     *             can be null.
      */
-    void onSubscribe(@NonNull ObservableSubscriber<T> subscriber);
+    void onNext(@Nullable T item);
+
 }
