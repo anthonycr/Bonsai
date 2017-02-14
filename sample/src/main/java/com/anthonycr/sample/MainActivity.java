@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2017 Anthony C. Restaino
+ * <p/>
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package com.anthonycr.sample;
 
 import android.app.DatePickerDialog;
@@ -20,11 +40,13 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.anthonycr.bonsai.OnSubscribe;
+import com.anthonycr.bonsai.CompletableOnSubscribe;
 import com.anthonycr.bonsai.Schedulers;
+import com.anthonycr.bonsai.SingleOnSubscribe;
 import com.anthonycr.bonsai.Subscription;
 
 import java.text.SimpleDateFormat;
@@ -33,21 +55,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Copyright 7/8/2016 Anthony Restaino
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 public class MainActivity extends AppCompatActivity {
 
     private interface DialogCallback {
@@ -72,7 +79,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ListView list = (ListView) findViewById(R.id.list_view);
+        final ListView list = (ListView) findViewById(R.id.list_view);
+        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
+        list.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
 
         adapter = new Adapter(this, R.layout.contact_layout);
 
@@ -84,15 +95,18 @@ public class MainActivity extends AppCompatActivity {
         getAllContactsSubscription = DataModel.allContactsObservable()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.main())
-            .subscribe(new OnSubscribe<List<Contact>>() {
+            .subscribe(new SingleOnSubscribe<List<Contact>>() {
                 @Override
-                public void onNext(@Nullable List<Contact> item) {
+                public void onItem(@Nullable List<Contact> item) {
                     if (item != null) {
                         adapter.addAll(item);
                     } else {
                         adapter.clear();
                     }
                     adapter.notifyDataSetChanged();
+
+                    list.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
                 }
             });
     }
@@ -162,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     addContactSubscription = DataModel.addContactObservable(newContact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
-                        .subscribe(new OnSubscribe<Void>() {
+                        .subscribe(new CompletableOnSubscribe() {
                             @Override
                             public void onComplete() {
                                 adapter.add(newContact);
@@ -200,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 editContactSubscription = DataModel.updateContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new OnSubscribe<Void>() {
+                    .subscribe(new CompletableOnSubscribe() {
                         @Override
                         public void onComplete() {
                             adapter.notifyDataSetChanged();
@@ -218,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 deleteContactSubscription = DataModel.deleteContactObservable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new OnSubscribe<Void>() {
+                    .subscribe(new CompletableOnSubscribe() {
                         @Override
                         public void onComplete() {
                             adapter.remove(contact);

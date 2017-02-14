@@ -22,17 +22,19 @@ package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
 
-class OnErrorRunnable implements Runnable {
-    @NonNull private final CompletableOnSubscribe onSubscribe;
-    @NonNull private final Throwable throwable;
-
-    OnErrorRunnable(@NonNull CompletableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
-        this.onSubscribe = onSubscribe;
-        this.throwable = throwable;
-    }
-
-    @Override
-    public void run() {
-        onSubscribe.onError(throwable);
-    }
+/**
+ * An action to perform when a consumer
+ * subscribes to the {@link Completable}.
+ */
+@SuppressWarnings("WeakerAccess")
+public interface CompletableAction {
+    /**
+     * Should be overridden to send the subscriber
+     * events such as {@link CompletableSubscriber#onComplete()}.
+     *
+     * @param subscriber the subscriber that is sent in
+     *                   when the user of the Observable
+     *                   subscribes.
+     */
+    void onSubscribe(@NonNull CompletableSubscriber subscriber);
 }

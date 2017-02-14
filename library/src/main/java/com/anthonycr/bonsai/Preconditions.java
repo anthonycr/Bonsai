@@ -22,7 +22,11 @@ package com.anthonycr.bonsai;
 
 import android.support.annotation.Nullable;
 
-@SuppressWarnings("unused")
+/**
+ * A class to check certain conditions
+ * and to throw exceptions if they are
+ * not met.
+ */
 final class Preconditions {
 
     private Preconditions() {

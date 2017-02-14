@@ -33,9 +33,9 @@ A miniature reactive Android library.
 
 ##### Basic example
 ```java
-Observable.create(new Action<String>() {
+Observable.create(new ObservableAction<String>() {
     @Override
-    public void onSubscribe(@NonNull Subscriber<String> subscriber) {
+    public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
         subscriber.onNext("string 1");
         subscriber.onNext("string 2");
         subscriber.onNext("string 3");
@@ -43,7 +43,7 @@ Observable.create(new Action<String>() {
     }
 }).subscribeOn(Schedulers.io())
   .observeOn(Schedulers.main())
-  .subscribe(new OnSubscribe<String>() {
+  .subscribe(new ObservableOnSubscribe<String>() {
         @Override
         public void onNext(String item) {
             Log.d(TAG, "Asynchronously received this string: " + item);
@@ -66,9 +66,9 @@ private Subscription subscription;
  * Emitted every half a second.
  */
 private Observable<Integer> allFibonacciNumbersObservable() {
-    return Observable.create(new Action<Integer>() {
+    return Observable.create(new ObservableAction<Integer>() {
         @Override
-        public void onSubscribe(@NonNull Subscriber<Integer> subscriber) {
+        public void onSubscribe(@NonNull ObservableSubscriber<Integer> subscriber) {
             int firstNumber = 0;
             int secondNumber = 1;
             int temp;
@@ -94,7 +94,7 @@ private void doWorkOnMainThread() {
     subscription = allFibonacciNumbersObservable()
         .subscribeOn(Schedulers.worker())
         .observeOn(Schedulers.main())
-        .subscribe(new OnSubscribe<Integer>() {
+        .subscribe(new ObservableOnSubscribe<Integer>() {
             @Override
             public void onStart() {
                 Log.d(TAG, "Started receiving numbers");
@@ -123,10 +123,10 @@ public void onDestroy() {
 
 ##### List Example
 ```java
-List<String> list = new ArrayList();
-Observable.create(new Action<List<String>>() {
+final List<String> list = new ArrayList();
+Observable.create(new ObservableAction<List<String>>() {
     @Override
-    public void onSubscribe(@NonNull Subscriber<List<String>> subscriber) {
+    public void onSubscribe(@NonNull ObservableSubscriber<List<String>> subscriber) {
         List<String> stringList = new ArrayList<>();
         stringList.add("string 1");
         stringList.add("string 2");
@@ -136,7 +136,7 @@ Observable.create(new Action<List<String>>() {
     }
 }).subscribeOn(Schedulers.current())
   .observeOn(Schedulers.current())
-  .subscribe(new OnSubscribe<List<String>>() {
+  .subscribe(new ObservableOnSubscribe<List<String>>() {
         @Override
         public void onNext(List<String> item) {
             list.addAll(item);
@@ -151,6 +151,41 @@ Observable.create(new Action<List<String>>() {
 for(String string : list) {
     Log.d(TAG, "Received: " + string);
 }
+```
+
+##### Completable Example
+```java
+Completable.create(new CompletableAction() {
+    @Override
+    public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+        // Do some work
+    }
+}).subscribeOn(Schedulers.io())
+  .observeOn(Schedulers.main())
+  .subscribe(new CompletableOnSubscribe() {
+        @Override
+        public void onComplete() {
+            Log.d(TAG, "Work is done");
+        }
+  });
+```
+
+##### Single Example
+```java
+Single.create(new SingleAction<Integer>() {
+    @Override
+    public void onSubscribe(@NonNull SingleSubscriber<Integer> subscriber) {
+        subscriber.onItem(1);
+        subscriber.onComplete();
+    }
+}).subscribeOn(Schedulers.io())
+  .observeOn(Schedulers.main())
+  .subscribe(new SingleOnSubscribe<Integer>() {
+        @Override
+        public void onItem(@Nullable Integer item) {
+            Log.d(TAG, "Only item received: " + item);
+        }
+  });
 ```
 
 

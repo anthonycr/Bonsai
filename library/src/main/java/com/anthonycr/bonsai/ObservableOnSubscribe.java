@@ -20,18 +20,29 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-@SuppressWarnings("unused")
-public interface Action<T> {
+/**
+ * When a consumer subscribes to a {@link Observable}
+ * it should supply an implementation of this class
+ * with the desired methods overridden.
+ * If {@link #onError(Throwable)} is not overridden,
+ * it will through an exception.
+ *
+ * @param <T> the type that will be emitted by the action.
+ */
+@SuppressWarnings("WeakerAccess")
+public abstract class ObservableOnSubscribe<T> extends CompletableOnSubscribe {
+
     /**
-     * Should be overridden to send the subscriber
-     * events such as {@link Subscriber#onNext(Object)}
-     * or {@link Subscriber#onComplete()}.
+     * Called when the Observer emits an
+     * item. It can be called multiple times.
+     * It cannot be called after onComplete
+     * has been called.
      *
-     * @param subscriber the subscriber that is sent in
-     *                   when the user of the Observable
-     *                   subscribes.
+     * @param item the item that has been emitted,
+     *             can be null.
      */
-    void onSubscribe(@NonNull Subscriber<T> subscriber);
+    public void onNext(@Nullable T item) {}
+
 }

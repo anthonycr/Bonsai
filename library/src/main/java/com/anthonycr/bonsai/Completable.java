@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,100 +30,96 @@ import android.support.annotation.Nullable;
  * items to be emitted on a different thread. It is
  * a replacement for {@link android.os.AsyncTask}.
  * <p>
- * It allows the caller of this class to create an observable
- * task that can emit multiple items and then complete.
- * The consumer of the {@link Observable} will be notified
- * of the start and completion of the action, as well as the
- * items that can be emitted, or errors that occur.
- *
- * @param <T> the type that the Observable will emit.
+ * It allows the caller of this class to create a completable
+ * task that runs and then finishes with a completion event.
+ * The consumer of the {@link Completable} will be notified
+ * of the start and completion of the action, as well as any
+ * errors that occur.
  */
 @SuppressWarnings("WeakerAccess")
-public class Observable<T> {
+public class Completable {
 
-    @NonNull private final ObservableAction<T> action;
+    @NonNull private final CompletableAction action;
     @NonNull private final Scheduler defaultThread;
     @Nullable private Scheduler subscriberThread;
     @Nullable private Scheduler observerThread;
 
-    private Observable(@NonNull ObservableAction<T> action) {
+    private Completable(@NonNull CompletableAction action) {
         this.action = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
         Looper looper = Looper.myLooper();
         Preconditions.checkNonNull(looper);
-        defaultThread = new ThreadScheduler(looper);
+        this.defaultThread = new ThreadScheduler(looper);
     }
 
     /**
-     * Static creator method that creates an Observable from the
+     * Static creator method that creates a Completable from the
      * {@link CompletableAction} that is passed in as the parameter. Action
      * must not be null.
      *
      * @param action the Action to perform
-     * @param <T>    the type that will be emitted to the onSubscribe
-     * @return a valid non-null Observable.
+     * @return a valid non-null Completable.
      */
     @NonNull
-    public static <T> Observable<T> create(@NonNull ObservableAction<T> action) {
+    public static Completable create(@NonNull CompletableAction action) {
         Preconditions.checkNonNull(action);
-        return new Observable<>(action);
+        return new Completable(action);
     }
 
     /**
-     * Static creator that creates an Observable that is empty
+     * Static creator that creates a Completable that is empty
      * and emits no items, but completes immediately.
      *
-     * @param <T> the type that will be emitted to the onSubscribe
-     * @return a valid non-null empty Observable.
+     * @return a valid non-null empty Completable.
      */
     @NonNull
-    public static <T> Observable<T> empty() {
-        return new Observable<>(new ObservableAction<T>() {
+    public static Completable empty() {
+        return new Completable(new CompletableAction() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<T> subscriber) {
+            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
                 subscriber.onComplete();
             }
         });
     }
 
     /**
-     * Tells the Observable what Scheduler that the onSubscribe
+     * Tells the Completable what Scheduler that the onSubscribe
      * work should run on.
      *
      * @param subscribeScheduler the Scheduler to run the work on.
      * @return returns this so that calls can be conveniently chained.
      */
     @NonNull
-    public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+    public Completable subscribeOn(@NonNull Scheduler subscribeScheduler) {
         subscriberThread = subscribeScheduler;
         return this;
     }
 
     /**
-     * Tells the Observable what Scheduler the onSubscribe should observe
-     * the work on.
+     * Tells the Completable what Scheduler the onSubscribe
+     * should observe the work on.
      *
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
      */
     @NonNull
-    public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
+    public Completable observeOn(@NonNull Scheduler observerScheduler) {
         observerThread = observerScheduler;
         return this;
     }
 
     /**
-     * Subscribes immediately to the Observable and ignores
-     * all onComplete and onNext calls.
+     * Subscribes immediately to the Completable and
+     * ignores all onComplete calls.
      */
     public void subscribe() {
         executeOnSubscriberThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    action.onSubscribe(new SubscriberImpl<>(null, Observable.this));
+                    action.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
                 } catch (Exception exception) {
                     // Do nothing because we don't have a subscriber
                 }
@@ -132,18 +128,19 @@ public class Observable<T> {
     }
 
     /**
-     * Immediately subscribes to the Observable and starts
-     * sending events from the Observable to the {@link ObservableOnSubscribe}.
+     * Immediately subscribes to the Completable and starts
+     * sending events from the Completable to the
+     * {@link ObservableOnSubscribe}.
      *
-     * @param onSubscribe the class that wishes to receive onNext and
-     *                    onComplete callbacks from the Observable.
+     * @param onSubscribe the class that wishes to receive onComplete
+     *                    callbacks from the Completable.
      */
     @NonNull
-    public Subscription subscribe(@NonNull ObservableOnSubscribe<T> onSubscribe) {
+    public Subscription subscribe(@NonNull CompletableOnSubscribe onSubscribe) {
 
         Preconditions.checkNonNull(onSubscribe);
 
-        final ObservableSubscriber<T> subscriber = new SubscriberImpl<>(onSubscribe, this);
+        final CompletableSubscriber subscriber = new Completable.SubscriberImpl(onSubscribe, this);
 
         subscriber.onStart();
 
@@ -177,16 +174,16 @@ public class Observable<T> {
         }
     }
 
-    private static class SubscriberImpl<T> implements ObservableSubscriber<T> {
+    private static class SubscriberImpl implements CompletableSubscriber {
 
-        @Nullable private volatile ObservableOnSubscribe<T> onSubscribe;
-        @NonNull private final Observable<T> observable;
+        @Nullable private volatile CompletableOnSubscribe onSubscribe;
+        @NonNull private final Completable completable;
         private boolean onCompleteExecuted = false;
         private boolean onError = false;
 
-        SubscriberImpl(@Nullable ObservableOnSubscribe<T> onSubscribe, @NonNull Observable<T> observable) {
+        SubscriberImpl(@Nullable CompletableOnSubscribe onSubscribe, @NonNull Completable completable) {
             this.onSubscribe = onSubscribe;
-            this.observable = observable;
+            this.completable = completable;
         }
 
         @Override
@@ -196,10 +193,10 @@ public class Observable<T> {
 
         @Override
         public void onComplete() {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            CompletableOnSubscribe onSubscribe = this.onSubscribe;
             if (!onCompleteExecuted && onSubscribe != null && !onError) {
                 onCompleteExecuted = true;
-                observable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
+                completable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             } else if (!onError && onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
             }
@@ -208,32 +205,20 @@ public class Observable<T> {
 
         @Override
         public void onStart() {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            CompletableOnSubscribe onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                observable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+                completable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            CompletableOnSubscribe onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
                 onError = true;
-                observable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
+                completable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
             unsubscribe();
-        }
-
-        @Override
-        public void onNext(final T item) {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
-            if (!onCompleteExecuted && onSubscribe != null && !onError) {
-                observable.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
-            } else if (onCompleteExecuted) {
-                throw new RuntimeException("onNext should not be called after onComplete has been called");
-            } else {
-                // Subscription has been unsubscribed, ignore it
-            }
         }
 
         @Override
@@ -241,6 +226,4 @@ public class Observable<T> {
             return onSubscribe == null;
         }
     }
-
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,16 +21,22 @@
 package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-@SuppressWarnings("unused")
-public abstract class OnSubscribe<T> {
+/**
+ * When a consumer subscribes to a {@link Completable}
+ * it should supply an implementation of this class
+ * with the desired methods overridden.
+ * If {@link #onError(Throwable)} is not overridden,
+ * it will through an exception.
+ */
+@SuppressWarnings("WeakerAccess")
+public abstract class CompletableOnSubscribe {
 
     /**
      * Called when the observable runs into an error
      * that will cause it to abort and not finish.
      * Receiving this callback means that the observable
-     * is dead and no {@link #onComplete()} or {@link #onNext(Object)}
+     * is dead and no {@link #onComplete()} or other callbacks
      * callbacks will be called. Default implementation
      * throws an exception, so you will get a crash
      * if the Observable throws an exception and this
@@ -49,17 +55,6 @@ public abstract class OnSubscribe<T> {
      * to process and emit items or complete.
      */
     public void onStart() {}
-
-    /**
-     * Called when the Observer emits an
-     * item. It can be called multiple times.
-     * It cannot be called after onComplete
-     * has been called.
-     *
-     * @param item the item that has been emitted,
-     *             can be null.
-     */
-    public void onNext(@Nullable T item) {}
 
     /**
      * This method is called when the observer is

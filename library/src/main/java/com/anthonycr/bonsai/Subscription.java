@@ -20,9 +20,19 @@
  */
 package com.anthonycr.bonsai;
 
-@SuppressWarnings("unused")
+/**
+ * A subscription to an originating
+ * Observable that can be unsubscribed.
+ */
+@SuppressWarnings("WeakerAccess")
 public interface Subscription {
 
+    /**
+     * Calling this method unsubscribes a subscription
+     * from the originating Observable. Once this method
+     * is called, no more calls to the OnSubscribe
+     * callbacks will be made.
+     */
     void unsubscribe();
 
 }

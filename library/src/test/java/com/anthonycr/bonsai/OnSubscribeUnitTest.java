@@ -34,7 +34,7 @@ public class OnSubscribeUnitTest extends BaseUnitTest{
     @Test
     public void testClassType() throws Exception {
         // should be an abstract class
-        Assert.assertTrue(Modifier.isAbstract(OnSubscribe.class.getModifiers()));
+        Assert.assertTrue(Modifier.isAbstract(ObservableOnSubscribe.class.getModifiers()));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class OnSubscribeUnitTest extends BaseUnitTest{
         onSubscribe.onError(new NullPointerException("test exception"));
     }
 
-    private static class TestSubscriberImpl extends OnSubscribe<String> {
+    private static class TestSubscriberImpl extends ObservableOnSubscribe<String> {
 
         public boolean onStart = false;
         public boolean onNext = false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -30,100 +30,100 @@ import android.support.annotation.Nullable;
  * items to be emitted on a different thread. It is
  * a replacement for {@link android.os.AsyncTask}.
  * <p>
- * It allows the caller of this class to create an observable
- * task that can emit multiple items and then complete.
- * The consumer of the {@link Observable} will be notified
+ * It allows the caller of this class to create a single
+ * task that optionally emits a single item and then completes.
+ * The consumer of the {@link Single} will be notified
  * of the start and completion of the action, as well as the
- * items that can be emitted, or errors that occur.
+ * item that could be emitted, or errors that occur.
  *
- * @param <T> the type that the Observable will emit.
+ * @param <T> the type that the Single will emit.
  */
 @SuppressWarnings("WeakerAccess")
-public class Observable<T> {
+public class Single<T> {
 
-    @NonNull private final ObservableAction<T> action;
+    @NonNull private final SingleAction<T> action;
     @NonNull private final Scheduler defaultThread;
     @Nullable private Scheduler subscriberThread;
     @Nullable private Scheduler observerThread;
 
-    private Observable(@NonNull ObservableAction<T> action) {
+    private Single(@NonNull SingleAction<T> action) {
         this.action = action;
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
         Looper looper = Looper.myLooper();
         Preconditions.checkNonNull(looper);
-        defaultThread = new ThreadScheduler(looper);
+        this.defaultThread = new ThreadScheduler(looper);
     }
 
     /**
-     * Static creator method that creates an Observable from the
-     * {@link CompletableAction} that is passed in as the parameter. Action
+     * Static creator method that creates an Single from the
+     * {@link SingleAction} that is passed in as the parameter. Action
      * must not be null.
      *
      * @param action the Action to perform
      * @param <T>    the type that will be emitted to the onSubscribe
-     * @return a valid non-null Observable.
+     * @return a valid non-null Single.
      */
     @NonNull
-    public static <T> Observable<T> create(@NonNull ObservableAction<T> action) {
+    public static <T> Single<T> create(@NonNull SingleAction<T> action) {
         Preconditions.checkNonNull(action);
-        return new Observable<>(action);
+        return new Single<>(action);
     }
 
     /**
-     * Static creator that creates an Observable that is empty
+     * Static creator that creates an Single that is empty
      * and emits no items, but completes immediately.
      *
      * @param <T> the type that will be emitted to the onSubscribe
-     * @return a valid non-null empty Observable.
+     * @return a valid non-null empty Single.
      */
     @NonNull
-    public static <T> Observable<T> empty() {
-        return new Observable<>(new ObservableAction<T>() {
+    public static <T> Single<T> empty() {
+        return new Single<>(new SingleAction<T>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<T> subscriber) {
+            public void onSubscribe(@NonNull SingleSubscriber<T> subscriber) {
                 subscriber.onComplete();
             }
         });
     }
 
     /**
-     * Tells the Observable what Scheduler that the onSubscribe
+     * Tells the Single what Scheduler that the onSubscribe
      * work should run on.
      *
      * @param subscribeScheduler the Scheduler to run the work on.
      * @return returns this so that calls can be conveniently chained.
      */
     @NonNull
-    public Observable<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+    public Single<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
         subscriberThread = subscribeScheduler;
         return this;
     }
 
     /**
-     * Tells the Observable what Scheduler the onSubscribe should observe
+     * Tells the Single what Scheduler the onSubscribe should observe
      * the work on.
      *
      * @param observerScheduler the Scheduler to run to callback on.
      * @return returns this so that calls can be conveniently chained.
      */
     @NonNull
-    public Observable<T> observeOn(@NonNull Scheduler observerScheduler) {
+    public Single<T> observeOn(@NonNull Scheduler observerScheduler) {
         observerThread = observerScheduler;
         return this;
     }
 
     /**
-     * Subscribes immediately to the Observable and ignores
-     * all onComplete and onNext calls.
+     * Subscribes immediately to the Single and ignores
+     * all onComplete and onItem calls.
      */
     public void subscribe() {
         executeOnSubscriberThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    action.onSubscribe(new SubscriberImpl<>(null, Observable.this));
+                    action.onSubscribe(new Single.SubscriberImpl<>(null, Single.this));
                 } catch (Exception exception) {
                     // Do nothing because we don't have a subscriber
                 }
@@ -132,18 +132,18 @@ public class Observable<T> {
     }
 
     /**
-     * Immediately subscribes to the Observable and starts
-     * sending events from the Observable to the {@link ObservableOnSubscribe}.
+     * Immediately subscribes to the Single and starts
+     * sending events from the Single to the {@link ObservableOnSubscribe}.
      *
-     * @param onSubscribe the class that wishes to receive onNext and
-     *                    onComplete callbacks from the Observable.
+     * @param onSubscribe the class that wishes to receive onItem and
+     *                    onComplete callbacks from the Single.
      */
     @NonNull
-    public Subscription subscribe(@NonNull ObservableOnSubscribe<T> onSubscribe) {
+    public Subscription subscribe(@NonNull SingleOnSubscribe<T> onSubscribe) {
 
         Preconditions.checkNonNull(onSubscribe);
 
-        final ObservableSubscriber<T> subscriber = new SubscriberImpl<>(onSubscribe, this);
+        final SingleSubscriber<T> subscriber = new Single.SubscriberImpl<>(onSubscribe, this);
 
         subscriber.onStart();
 
@@ -177,16 +177,17 @@ public class Observable<T> {
         }
     }
 
-    private static class SubscriberImpl<T> implements ObservableSubscriber<T> {
+    private static class SubscriberImpl<T> implements SingleSubscriber<T> {
 
-        @Nullable private volatile ObservableOnSubscribe<T> onSubscribe;
-        @NonNull private final Observable<T> observable;
+        @Nullable private volatile SingleOnSubscribe<T> onSubscribe;
+        @NonNull private final Single<T> single;
         private boolean onCompleteExecuted = false;
+        private boolean onOnlyExecuted = false;
         private boolean onError = false;
 
-        SubscriberImpl(@Nullable ObservableOnSubscribe<T> onSubscribe, @NonNull Observable<T> observable) {
+        SubscriberImpl(@Nullable SingleOnSubscribe<T> onSubscribe, @NonNull Single<T> single) {
             this.onSubscribe = onSubscribe;
-            this.observable = observable;
+            this.single = single;
         }
 
         @Override
@@ -196,10 +197,10 @@ public class Observable<T> {
 
         @Override
         public void onComplete() {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (!onCompleteExecuted && onSubscribe != null && !onError) {
                 onCompleteExecuted = true;
-                observable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
+                single.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             } else if (!onError && onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
             }
@@ -208,29 +209,32 @@ public class Observable<T> {
 
         @Override
         public void onStart() {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
-                observable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+                single.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
             if (onSubscribe != null) {
                 onError = true;
-                observable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
+                single.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
             unsubscribe();
         }
 
         @Override
-        public void onNext(final T item) {
-            ObservableOnSubscribe<T> onSubscribe = this.onSubscribe;
-            if (!onCompleteExecuted && onSubscribe != null && !onError) {
-                observable.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
+        public void onItem(@Nullable T item) {
+            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
+            if (!onCompleteExecuted && !onOnlyExecuted && onSubscribe != null && !onError) {
+                onOnlyExecuted = true;
+                single.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
             } else if (onCompleteExecuted) {
-                throw new RuntimeException("onNext should not be called after onComplete has been called");
+                throw new RuntimeException("onItem should not be called after onComplete has been called");
+            } else if (onOnlyExecuted) {
+                throw new RuntimeException("onItem should not be called multiple times");
             } else {
                 // Subscription has been unsubscribed, ignore it
             }
@@ -241,6 +245,4 @@ public class Observable<T> {
             return onSubscribe == null;
         }
     }
-
 }
-

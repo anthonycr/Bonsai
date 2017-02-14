@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,19 +20,26 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-class OnErrorRunnable implements Runnable {
-    @NonNull private final CompletableOnSubscribe onSubscribe;
-    @NonNull private final Throwable throwable;
+/**
+ * The interface through which the {@link ObservableAction}
+ * communicates to the {@link ObservableOnSubscribe}.
+ *
+ * @param <T> the object type that should be emitted.
+ */
+@SuppressWarnings("WeakerAccess")
+public interface ObservableSubscriber<T> extends CompletableSubscriber {
 
-    OnErrorRunnable(@NonNull CompletableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
-        this.onSubscribe = onSubscribe;
-        this.throwable = throwable;
-    }
+    /**
+     * Called when the Observer emits an
+     * item. It can be called multiple times.
+     * It cannot be called after onComplete
+     * has been called.
+     *
+     * @param item the item that has been emitted,
+     *             can be null.
+     */
+    void onNext(@Nullable T item);
 
-    @Override
-    public void run() {
-        onSubscribe.onError(throwable);
-    }
 }

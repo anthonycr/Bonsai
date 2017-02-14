@@ -27,17 +27,17 @@ public class Assertion<T> {
     }
 
     public Assertion(T defaultValue) {
-        mAssertion = defaultValue;
+        assertion = defaultValue;
     }
 
-    private volatile T mAssertion;
+    private volatile T assertion;
 
     public void set(T assertion) {
-        mAssertion = assertion;
+        this.assertion = assertion;
     }
 
     public T get() {
-        return mAssertion;
+        return assertion;
     }
 
 }

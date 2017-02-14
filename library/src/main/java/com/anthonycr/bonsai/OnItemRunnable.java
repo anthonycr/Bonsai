@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,18 +21,19 @@
 package com.anthonycr.bonsai;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-class OnErrorRunnable implements Runnable {
-    @NonNull private final CompletableOnSubscribe onSubscribe;
-    @NonNull private final Throwable throwable;
+class OnItemRunnable<T> implements Runnable {
+    @NonNull private final SingleOnSubscribe<T> onSubscribe;
+    @Nullable private final T item;
 
-    OnErrorRunnable(@NonNull CompletableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
+    OnItemRunnable(@NonNull SingleOnSubscribe<T> onSubscribe, @Nullable T item) {
         this.onSubscribe = onSubscribe;
-        this.throwable = throwable;
+        this.item = item;
     }
 
     @Override
     public void run() {
-        onSubscribe.onError(throwable);
+        onSubscribe.onItem(item);
     }
 }
