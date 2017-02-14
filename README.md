@@ -161,6 +161,7 @@ Completable.create(new CompletableAction() {
     @Override
     public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
         // Do some work
+        subscriber.onComplete();
     }
 }).subscribeOn(Schedulers.io())
   .observeOn(Schedulers.main())
