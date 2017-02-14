@@ -31,11 +31,11 @@ public interface CompletableSubscriber extends Subscription {
 
     /**
      * Called immediately upon subscribing
-     * and before the Observable begins
+     * and before the observable begins
      * emitting items. This should not be
-     * called by the creator of the Observable
+     * called by the creator of the observable
      * and is rather called internally by the
-     * Observable class itself.
+     * observable class itself.
      */
     void onStart();
 

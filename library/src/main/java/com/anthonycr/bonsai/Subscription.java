@@ -22,14 +22,14 @@ package com.anthonycr.bonsai;
 
 /**
  * A subscription to an originating
- * Observable that can be unsubscribed.
+ * observable that can be unsubscribed.
  */
 @SuppressWarnings("WeakerAccess")
 public interface Subscription {
 
     /**
      * Calling this method unsubscribes a subscription
-     * from the originating Observable. Once this method
+     * from the originating observable. Once this method
      * is called, no more calls to the OnSubscribe
      * callbacks will be made.
      */

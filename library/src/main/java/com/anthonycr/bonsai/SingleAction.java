@@ -37,7 +37,7 @@ public interface SingleAction<T> {
      * or {@link SingleSubscriber#onComplete()}.
      *
      * @param subscriber the subscriber that is sent in
-     *                   when the user of the Observable
+     *                   when the user of the observable
      *                   subscribes.
      */
     void onSubscribe(@NonNull SingleSubscriber<T> subscriber);

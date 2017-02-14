@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         // Loads all the initial data from the database on a separate thread
         // then notifies the main thread after the data is loaded. Then we
         // add all the items we received to the adapter and they get displayed.
-        getAllContactsSubscription = DataModel.allContactsObservable()
+        getAllContactsSubscription = DataModel.allContactsSingle()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.main())
             .subscribe(new SingleOnSubscribe<List<Contact>>() {
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        // Here we unsubscribe from the Observables
+        // Here we unsubscribe from the observables
         // that all these Subscriptions were subscribed
         // to. The purpose for this is to prevent a
         // memory leak. In reality, these database operations
@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                     // the database on the background thread, then receive
                     // notification when it has finished inserting into the
                     // database.
-                    addContactSubscription = DataModel.addContactObservable(newContact)
+                    addContactSubscription = DataModel.addContactCompletable(newContact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
                         .subscribe(new CompletableOnSubscribe() {
@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 // with the new values for the contact. The update is
                 // done on a background thread, and then calls back
                 // onto the main thread, where we update the adapter.
-                editContactSubscription = DataModel.updateContactObservable(contact)
+                editContactSubscription = DataModel.updateContactCompletable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
                     .subscribe(new CompletableOnSubscribe() {
@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
                 // delete the item from the database. When the operation
                 // completes, we call back to the main thread to update
                 // the UI and remove the item from the list.
-                deleteContactSubscription = DataModel.deleteContactObservable(contact)
+                deleteContactSubscription = DataModel.deleteContactCompletable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
                     .subscribe(new CompletableOnSubscribe() {

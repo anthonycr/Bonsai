@@ -36,7 +36,7 @@ public interface StreamAction<T> {
      * or {@link StreamSubscriber#onComplete()}.
      *
      * @param subscriber the subscriber that is sent in
-     *                   when the user of the Observable
+     *                   when the user of the observable
      *                   subscribes.
      */
     void onSubscribe(@NonNull StreamSubscriber<T> subscriber);
