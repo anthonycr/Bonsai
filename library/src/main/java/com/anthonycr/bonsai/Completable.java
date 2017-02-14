@@ -178,6 +178,7 @@ public class Completable {
 
         @Nullable private volatile CompletableOnSubscribe onSubscribe;
         @NonNull private final Completable completable;
+        private boolean onStartExecuted = false;
         private boolean onCompleteExecuted = false;
         private boolean onError = false;
 
@@ -206,8 +207,11 @@ public class Completable {
         @Override
         public void onStart() {
             CompletableOnSubscribe onSubscribe = this.onSubscribe;
-            if (onSubscribe != null) {
+            if (!onStartExecuted && onSubscribe != null) {
+                onStartExecuted = true;
                 completable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+            } else if (onStartExecuted) {
+                throw new RuntimeException("onStart is called internally, do not call it yourself");
             }
         }
 

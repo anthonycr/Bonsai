@@ -181,6 +181,7 @@ public class Stream<T> {
 
         @Nullable private volatile StreamOnSubscribe<T> onSubscribe;
         @NonNull private final Stream<T> stream;
+        private boolean onStartExecuted = false;
         private boolean onCompleteExecuted = false;
         private boolean onError = false;
 
@@ -209,8 +210,11 @@ public class Stream<T> {
         @Override
         public void onStart() {
             StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
-            if (onSubscribe != null) {
+            if (!onStartExecuted && onSubscribe != null) {
+                onStartExecuted = true;
                 stream.executeOnObserverThread(new OnStartRunnable(onSubscribe));
+            } else if (onStartExecuted) {
+                throw new RuntimeException("onStart is called internally, do not call it yourself");
             }
         }
 

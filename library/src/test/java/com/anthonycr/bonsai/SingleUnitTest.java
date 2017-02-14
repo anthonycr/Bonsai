@@ -327,6 +327,22 @@ public class SingleUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testStreamThrowsException_onStartCalled() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Single.create(new SingleAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe(new SingleOnSubscribe<Object>() {});
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
     public void testSingleUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
