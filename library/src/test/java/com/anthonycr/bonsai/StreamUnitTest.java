@@ -618,6 +618,24 @@ public class StreamUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testStreamThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Stream.create(new StreamAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onComplete();
+                    subscriber.onComplete();
+                } catch (RuntimeException e) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
+            errorThrown.get());
+    }
+
+    @Test
     public void testStreamThrowsException_onStartCalled() throws Exception {
         final Assertion<Boolean> errorThrown = new Assertion<>(false);
         Stream.create(new StreamAction<Object>() {

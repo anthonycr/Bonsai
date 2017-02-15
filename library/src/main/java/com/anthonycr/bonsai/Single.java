@@ -181,10 +181,10 @@ public class Single<T> {
 
         @Nullable private volatile SingleOnSubscribe<T> onSubscribe;
         @NonNull private final Single<T> single;
-        private boolean onStartExecuted = false;
-        private boolean onCompleteExecuted = false;
-        private boolean onItemExecuted = false;
-        private boolean onError = false;
+        private volatile boolean onStartExecuted = false;
+        private volatile boolean onCompleteExecuted = false;
+        private volatile boolean onItemExecuted = false;
+        private volatile boolean onErrorExecuted = false;
 
         SubscriberImpl(@Nullable SingleOnSubscribe<T> onSubscribe, @NonNull Single<T> single) {
             this.onSubscribe = onSubscribe;
@@ -199,51 +199,60 @@ public class Single<T> {
         @Override
         public void onComplete() {
             SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-            if (!onCompleteExecuted && onSubscribe != null && !onError) {
-                onCompleteExecuted = true;
-                // TODO: 2/14/17 Fix bug where onSubscribe is null and onComplete can be called multiple times without problem (also affects Stream and Completable)
-                single.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            } else if (!onError && onCompleteExecuted) {
+
+            if (onCompleteExecuted) {
                 throw new RuntimeException("onComplete called more than once");
+            } else if (onSubscribe != null && !onErrorExecuted) {
+                single.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
             }
+
+            onCompleteExecuted = true;
+
             unsubscribe();
         }
 
         @Override
         public void onStart() {
             SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-            if (!onStartExecuted && onSubscribe != null) {
-                onStartExecuted = true;
-                // TODO: 2/14/17 Fix bug where onSubscribe is null and onStart can be called multiple times without problem (also affects Stream and Completable)
-                single.executeOnObserverThread(new OnStartRunnable(onSubscribe));
-            } else if (onStartExecuted) {
+
+            if (onStartExecuted) {
                 throw new RuntimeException("onStart is called internally, do not call it yourself");
+            } else if (onSubscribe != null) {
+                single.executeOnObserverThread(new OnStartRunnable(onSubscribe));
             }
+
+            onStartExecuted = true;
         }
 
         @Override
         public void onError(@NonNull final Throwable throwable) {
             SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
+
             if (onSubscribe != null) {
-                onError = true;
                 single.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
             }
+
+            onErrorExecuted = true;
+
             unsubscribe();
         }
 
         @Override
         public void onItem(@Nullable T item) {
             SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-            if (!onCompleteExecuted && !onItemExecuted && onSubscribe != null && !onError) {
-                onItemExecuted = true;
-                single.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
-            } else if (onCompleteExecuted) {
+
+            if (onCompleteExecuted) {
                 throw new RuntimeException("onItem should not be called after onComplete has been called");
             } else if (onItemExecuted) {
                 throw new RuntimeException("onItem should not be called multiple times");
+            } else if (onSubscribe != null && !onErrorExecuted) {
+                single.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
             } else {
                 // Subscription has been unsubscribed, ignore it
             }
+
+            onItemExecuted = true;
+
         }
 
         @Override
