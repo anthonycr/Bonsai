@@ -115,16 +115,7 @@ public class Completable {
      * ignores all onComplete calls.
      */
     public void subscribe() {
-        executeOnSubscriberThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.onSubscribe(new Completable.SubscriberImpl(null, Completable.this));
-                } catch (Exception exception) {
-                    // Do nothing because we don't have a subscriber
-                }
-            }
-        });
+        startSubscription(null);
     }
 
     /**
@@ -137,9 +128,13 @@ public class Completable {
      */
     @NonNull
     public Subscription subscribe(@NonNull CompletableOnSubscribe onSubscribe) {
-
         Preconditions.checkNonNull(onSubscribe);
 
+        return startSubscription(onSubscribe);
+    }
+
+    @NonNull
+    private Subscription startSubscription(@Nullable CompletableOnSubscribe onSubscribe) {
         final CompletableSubscriber subscriber = new Completable.SubscriberImpl(onSubscribe, this);
 
         subscriber.onStart();

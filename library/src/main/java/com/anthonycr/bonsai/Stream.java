@@ -119,16 +119,7 @@ public class Stream<T> {
      * all onComplete and onNext calls.
      */
     public void subscribe() {
-        executeOnSubscriberThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.onSubscribe(new SubscriberImpl<>(null, Stream.this));
-                } catch (Exception exception) {
-                    // Do nothing because we don't have a subscriber
-                }
-            }
-        });
+        startSubscription(null);
     }
 
     /**
@@ -140,9 +131,13 @@ public class Stream<T> {
      */
     @NonNull
     public Subscription subscribe(@NonNull StreamOnSubscribe<T> onSubscribe) {
-
         Preconditions.checkNonNull(onSubscribe);
 
+        return startSubscription(onSubscribe);
+    }
+
+    @NonNull
+    private Subscription startSubscription(@Nullable StreamOnSubscribe<T> onSubscribe) {
         final StreamSubscriber<T> subscriber = new SubscriberImpl<>(onSubscribe, this);
 
         subscriber.onStart();

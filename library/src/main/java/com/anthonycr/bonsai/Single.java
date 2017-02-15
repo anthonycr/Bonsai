@@ -119,16 +119,7 @@ public class Single<T> {
      * all onComplete and onItem calls.
      */
     public void subscribe() {
-        executeOnSubscriberThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.onSubscribe(new Single.SubscriberImpl<>(null, Single.this));
-                } catch (Exception exception) {
-                    // Do nothing because we don't have a subscriber
-                }
-            }
-        });
+        startSubscription(null);
     }
 
     /**
@@ -140,9 +131,13 @@ public class Single<T> {
      */
     @NonNull
     public Subscription subscribe(@NonNull SingleOnSubscribe<T> onSubscribe) {
-
         Preconditions.checkNonNull(onSubscribe);
 
+        return startSubscription(onSubscribe);
+    }
+
+    @NonNull
+    private Subscription startSubscription(@Nullable SingleOnSubscribe<T> onSubscribe) {
         final SingleSubscriber<T> subscriber = new Single.SubscriberImpl<>(onSubscribe, this);
 
         subscriber.onStart();

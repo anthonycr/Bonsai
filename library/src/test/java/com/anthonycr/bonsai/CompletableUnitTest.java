@@ -440,6 +440,22 @@ public class CompletableUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testCompletableThrowsException_onStartCalled_noOnSubscribe() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Completable.create(new CompletableAction() {
+            @Override
+            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
     public void testCompletableSubscribesWithoutSubscriber() throws Exception {
         final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
         Completable.create(new CompletableAction() {

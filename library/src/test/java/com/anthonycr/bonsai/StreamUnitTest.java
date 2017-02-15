@@ -652,6 +652,22 @@ public class StreamUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testStreamThrowsException_onStartCalled_noOnSubscribe() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Stream.create(new StreamAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
     public void testStreamThrowsException_onNextCalledAfterOnComplete() throws Exception {
         final Assertion<Boolean> errorThrown = new Assertion<>(false);
         Stream.create(new StreamAction<Object>() {
