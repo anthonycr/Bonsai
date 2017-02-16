@@ -12,7 +12,7 @@ A miniature reactive Android library.
 
 ### The API
 
-- `Completable`: The simplest of the reactive API, this observable only allows three events, `onStart`, `onComplete`, and `onError`.
+- `Completable`: The simplest of the reactive API, this observable emits only three events, `onStart`, `onComplete`, and `onError`.
 - `Single`: A sort of extension of the `Completable`, this observable emits the same three events as well as an `onItem` event that only emits a single item.
 - `Stream`: A more complex extension of the `Completable`, this observable emits the same three events as well as an `onNext` event that can be called multiple times to emit multiple items.
 - `CompletableAction`, `SingleAction`, `StreamAction`: Work that you wish to perform when the user subscribes to your observable. `Action.onSubscribe` is called when the user subscribes to the observable. The work is run on the Scheduler specified by the `observable.subscribeOn` method.
