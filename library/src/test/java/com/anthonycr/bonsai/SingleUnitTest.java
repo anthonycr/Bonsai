@@ -327,6 +327,38 @@ public class SingleUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testStreamThrowsException_onStartCalled() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Single.create(new SingleAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe(new SingleOnSubscribe<Object>() {});
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
+    public void testStreamThrowsException_onStartCalled_noOnSubscribe() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Single.create(new SingleAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
     public void testSingleUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -662,6 +694,44 @@ public class SingleUnitTest extends BaseUnitTest {
         }).subscribe(new SingleOnSubscribe<Object>() {
         });
         assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
+            errorThrown.get());
+    }
+
+    @Test
+    public void testCompletableThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Single.create(new SingleAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onComplete();
+                    subscriber.onComplete();
+                } catch (RuntimeException e) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
+            errorThrown.get());
+    }
+
+    @Test
+    public void testSingleThrowsException_onItemCalledTwice() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Single.create(new SingleAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onItem(null);
+                    subscriber.onItem(null);
+                } catch (RuntimeException e) {
+                    errorThrown.set(true);
+                }
+                subscriber.onComplete();
+            }
+        }).subscribe(new SingleOnSubscribe<Object>() {
+        });
+        assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
             errorThrown.get());
     }
 

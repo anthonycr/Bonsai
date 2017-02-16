@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
  */
-public class ObservableUnitTest extends BaseUnitTest {
+public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testMainLooperWorking() throws Exception {
@@ -49,13 +49,13 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableEmissionOrder_singleThread() throws Exception {
+    public void testStreamEmissionOrder_singleThread() throws Exception {
         final int testCount = 7;
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -63,7 +63,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
                     list.add(item);
@@ -78,7 +78,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableEventEmission_withException() throws Exception {
+    public void testStreamEventEmission_withException() throws Exception {
         final int testCount = 7;
 
         final Assertion<Boolean> errorAssertion = new Assertion<>(false);
@@ -87,9 +87,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> startAssertion = new Assertion<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -97,7 +97,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
 
                 @Override
                 public void onStart() {
@@ -122,7 +122,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             });
 
         // Even though error has been broadcast,
-        // observable should still complete.
+        // stream should still complete.
         assertTrue(list.size() == testCount);
         for (int n = 0; n < list.size(); n++) {
             assertTrue(String.valueOf(n).equals(list.get(n)));
@@ -137,12 +137,12 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableEventEmission_withoutSubscriber_withException() throws Exception {
+    public void testStreamEventEmission_withoutSubscriber_withException() throws Exception {
         final int testCount = 7;
 
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -156,7 +156,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableEventEmission_withError() throws Exception {
+    public void testStreamEventEmission_withError() throws Exception {
         final int testCount = 7;
 
         final Assertion<Boolean> errorAssertion = new Assertion<>(false);
@@ -165,9 +165,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> startAssertion = new Assertion<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -180,7 +180,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
 
                 @Override
                 public void onStart() {
@@ -205,7 +205,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             });
 
         // Even though error has been broadcast,
-        // observable should still complete.
+        // stream should still complete.
         assertTrue(list.size() == testCount);
         for (int n = 0; n < list.size(); n++) {
             assertTrue(String.valueOf(n).equals(list.get(n)));
@@ -220,7 +220,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableEventEmission_withoutError() throws Exception {
+    public void testStreamEventEmission_withoutError() throws Exception {
         final int testCount = 7;
 
         final Assertion<Boolean> errorAssertion = new Assertion<>(false);
@@ -229,9 +229,9 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> startAssertion = new Assertion<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 for (int n = 0; n < testCount; n++) {
                     subscriber.onNext(String.valueOf(n));
                 }
@@ -239,7 +239,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
 
                 @Override
                 public void onStart() {
@@ -264,7 +264,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             });
 
         // Even though error has been broadcast,
-        // observable should still complete.
+        // stream should still complete.
         assertTrue(list.size() == testCount);
         for (int n = 0; n < list.size(); n++) {
             assertTrue(String.valueOf(n).equals(list.get(n)));
@@ -279,14 +279,14 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableUnsubscribe_unsubscribesSuccessfully() throws Exception {
+    public void testStreamUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
         final Assertion<Boolean> assertion = new Assertion<>(false);
-        Subscription stringSubscription = Observable.create(new ObservableAction<String>() {
+        Subscription stringSubscription = Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 try {
                     subscribeLatch.await();
                 } catch (InterruptedException e) {
@@ -297,7 +297,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(Schedulers.io())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
                     assertion.set(true);
@@ -312,7 +312,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThread_onStart_isCorrect() throws Exception {
+    public void testStreamThread_onStart_isCorrect() throws Exception {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
@@ -322,17 +322,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
 
@@ -370,7 +370,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThread_onNext_isCorrect() throws Exception {
+    public void testStreamThread_onNext_isCorrect() throws Exception {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
@@ -380,10 +380,10 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onNext(null);
@@ -391,7 +391,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -424,7 +424,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThread_onComplete_isCorrect() throws Exception {
+    public void testStreamThread_onComplete_isCorrect() throws Exception {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
@@ -434,17 +434,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -477,7 +477,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThread_onError_isCorrect() throws Exception {
+    public void testStreamThread_onError_isCorrect() throws Exception {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
@@ -487,17 +487,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 subscriber.onError(new RuntimeException("There was a problem"));
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -530,7 +530,7 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThread_ThrownException_isCorrect() throws Exception {
+    public void testStreamThread_ThrownException_isCorrect() throws Exception {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
@@ -540,17 +540,17 @@ public class ObservableUnitTest extends BaseUnitTest {
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
         final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
 
-        Observable.create(new ObservableAction<String>() {
+        Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 subscribeThreadAssertion.set(Thread.currentThread().toString());
                 subscribeLatch.countDown();
                 throw new RuntimeException("There was a problem");
             }
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -583,11 +583,11 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableSubscribesWithoutSubscriber() throws Exception {
+    public void testStreamSubscribesWithoutSubscriber() throws Exception {
         final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
-        Observable.create(new ObservableAction<Object>() {
+        Stream.create(new StreamAction<Object>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
                 subscriber.onNext(null);
                 subscriber.onComplete();
                 isCalledAssertion.set(true);
@@ -599,11 +599,11 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableThrowsException_onCompleteCalledTwice() throws Exception {
+    public void testStreamThrowsException_onCompleteCalledTwice() throws Exception {
         final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Observable.create(new ObservableAction<Object>() {
+        Stream.create(new StreamAction<Object>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onComplete();
@@ -611,18 +611,68 @@ public class ObservableUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new ObservableOnSubscribe<Object>() {
+        }).subscribe(new StreamOnSubscribe<Object>() {
         });
         assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
     }
 
     @Test
-    public void testObservableThrowsException_onNextCalledAfterOnComplete() throws Exception {
+    public void testStreamThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
         final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Observable.create(new ObservableAction<Object>() {
+        Stream.create(new StreamAction<Object>() {
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onComplete();
+                    subscriber.onComplete();
+                } catch (RuntimeException e) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
+            errorThrown.get());
+    }
+
+    @Test
+    public void testStreamThrowsException_onStartCalled() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Stream.create(new StreamAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe(new StreamOnSubscribe<Object>() {});
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
+    public void testStreamThrowsException_onStartCalled_noOnSubscribe() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Stream.create(new StreamAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+                try {
+                    subscriber.onStart();
+                } catch (Exception exception) {
+                    errorThrown.set(true);
+                }
+            }
+        }).subscribe();
+        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+    }
+
+    @Test
+    public void testStreamThrowsException_onNextCalledAfterOnComplete() throws Exception {
+        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        Stream.create(new StreamAction<Object>() {
+            @Override
+            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onNext(null);
@@ -630,14 +680,12 @@ public class ObservableUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new ObservableOnSubscribe<Object>() {
-        });
-        assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete",
-            errorThrown.get());
+        }).subscribe(new StreamOnSubscribe<Object>() {});
+        assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete", errorThrown.get());
     }
 
     @Test
-    public void testObservableCreatesLooperIfNotThere() throws Exception {
+    public void testStreamCreatesLooperIfNotThere() throws Exception {
         final Assertion<Boolean> looperInitiallyNull = new Assertion<>(false);
         final Assertion<Boolean> looperFinallyNotNull = new Assertion<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -646,9 +694,9 @@ public class ObservableUnitTest extends BaseUnitTest {
             public void run() {
                 // No looper associated with this thread yet
                 looperInitiallyNull.set(Looper.myLooper() == null);
-                Observable.create(new ObservableAction<Object>() {
+                Stream.create(new StreamAction<Object>() {
                     @Override
-                    public void onSubscribe(@NonNull ObservableSubscriber<Object> subscriber) {
+                    public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
                         looperFinallyNotNull.set(Looper.myLooper() != null);
                     }
                 }).subscribe();
@@ -657,20 +705,20 @@ public class ObservableUnitTest extends BaseUnitTest {
         });
         latch.await();
         assertTrue("Looper should initially be null", looperInitiallyNull.get());
-        assertTrue("Looper should be initialized by observable class", looperFinallyNotNull.get());
+        assertTrue("Looper should be initialized by stream class", looperFinallyNotNull.get());
     }
 
     @Test
-    public void testObservableSubscriberIsUnsubscribed() throws Exception {
+    public void testStreamSubscriberIsUnsubscribed() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onNextLatch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
         final Assertion<Boolean> unsubscribed = new Assertion<>(false);
         final List<String> list = new ArrayList<>();
-        Subscription subscription = Observable.create(new ObservableAction<String>() {
+        Subscription subscription = Stream.create(new StreamAction<String>() {
 
             @Override
-            public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 1");
                 }
@@ -688,7 +736,7 @@ public class ObservableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.newSingleThreadedScheduler())
             .observeOn(Schedulers.newSingleThreadedScheduler())
-            .subscribe(new ObservableOnSubscribe<String>() {
+            .subscribe(new StreamOnSubscribe<String>() {
                 @Override
                 public void onNext(@Nullable String item) {
                     list.add(item);
@@ -707,10 +755,10 @@ public class ObservableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testObservableEmpty_emitsNothingImmediately() throws Exception {
+    public void testStreamEmpty_emitsNothingImmediately() throws Exception {
         final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
         final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        Observable.empty().subscribe(new ObservableOnSubscribe<Object>() {
+        Stream.empty().subscribe(new StreamOnSubscribe<Object>() {
 
             @Override
             public void onNext(@Nullable Object item) {

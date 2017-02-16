@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Anthony C. Restaino
+ * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -23,13 +23,16 @@ package com.anthonycr.bonsai;
 import android.support.annotation.Nullable;
 
 /**
- * The interface through which the {@link ObservableAction}
- * communicates to the {@link ObservableOnSubscribe}.
+ * When a consumer subscribes to a {@link Stream}
+ * it should supply an implementation of this class
+ * with the desired methods overridden.
+ * If {@link #onError(Throwable)} is not overridden,
+ * it will through an exception.
  *
- * @param <T> the object type that should be emitted.
+ * @param <T> the type that will be emitted by the action.
  */
 @SuppressWarnings("WeakerAccess")
-public interface ObservableSubscriber<T> extends CompletableSubscriber {
+public abstract class StreamOnSubscribe<T> extends CompletableOnSubscribe {
 
     /**
      * Called when the Observer emits an
@@ -40,6 +43,6 @@ public interface ObservableSubscriber<T> extends CompletableSubscriber {
      * @param item the item that has been emitted,
      *             can be null.
      */
-    void onNext(@Nullable T item);
+    public void onNext(@Nullable T item) {}
 
 }

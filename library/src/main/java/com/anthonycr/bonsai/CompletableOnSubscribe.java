@@ -39,7 +39,7 @@ public abstract class CompletableOnSubscribe {
      * is dead and no {@link #onComplete()} or other callbacks
      * callbacks will be called. Default implementation
      * throws an exception, so you will get a crash
-     * if the Observable throws an exception and this
+     * if the observable throws an exception and this
      * method is not overridden. Do not call super when
      * you override this method.
      *

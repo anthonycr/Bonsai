@@ -12,13 +12,15 @@ A miniature reactive Android library.
 
 ### The API
 
-- `Observable`: A manager class that handles communication between an `Action` and a `Subscriber` by scheduling events to occur on different threads using a `Scheduler`
-- `Action`: Work that you wish to perform when the user subscribes to your observable. `Action.onSubscribe` is called when the user subscribes to the Observable. The work is run on the Scheduler specified by the `Observable.subscribeOn` method.
-- `Subscriber`, `OnSubscribe`: The consumer of the observable is the Subscriber. There are two classes describing this in order to separate communication between the subscriber thread (where the work is done) and the observer thread (where it is emitted). Subscriber is used by the subscriber thread to pass events to the OnSubscribe implementation (provided by ths subscriber), which is called on the observe thread.
+- `Completable`: The simplest of the reactive API, this observable emits only three events, `onStart`, `onComplete`, and `onError`.
+- `Single`: A sort of extension of the `Completable`, this observable emits the same three events as well as an `onItem` event that only emits a single item.
+- `Stream`: A more complex extension of the `Completable`, this observable emits the same three events as well as an `onNext` event that can be called multiple times to emit multiple items.
+- `CompletableAction`, `SingleAction`, `StreamAction`: Work that you wish to perform when the user subscribes to your observable. `Action.onSubscribe` is called when the user subscribes to the observable. The work is run on the Scheduler specified by the `observable.subscribeOn` method.
+- `CompletableSubscriber`, `SingleSubscriber`, `StreamSubscriber`/`CompletableOnSubscribe`, `SingleOnSubscribe`, `StreamOnSubscribe`: The consumer of the observable is the Subscriber. There are two classes describing this in order to separate communication between the subscriber thread (where the work is done) and the observer thread (where it is emitted). Subscriber is used by the subscriber thread to pass events to the OnSubscribe implementation (provided by ths subscriber), which is called on the observe thread.
     - `onStart()`: Always called when the observable starts (called internally)
-    - `onNext(T item)`: Called by the Observable if it has an item to pass to you
-    - `onComplete()`: Should be called by the Observable when it is done emitting items, this will release the resources used by the Observable/Subscription unless they are held elsewhere. Not calling this indicates that the Observable has more items to emit.
-    - `onError(Exception exception)`: The Observable should call this if an error occurs. If this method is called, onComplete or onNext should not be called. This method will also be called automatically if your onSubscribe method throws an exception.
+    - `onNext(T item)`: Called by the observable if it has an item to pass to you
+    - `onComplete()`: Should be called by the observable when it is done emitting items, this will release the resources used by the observable/subscription unless they are held elsewhere. Not calling this indicates that the observable has more items to emit.
+    - `onError(Exception exception)`: The observable should call this if an error occurs. If this method is called, onComplete or onNext should not be called. This method will also be called automatically if your onSubscribe method throws an exception.
 - `Scheduler`: A thin wrapper around a thread that schedules work to be done.
 - `Schedulers`: A utility class that creates `Scheduler` instances for you. See below for a list of provided ones:
     - `io()`: A single thread that you should reserve for talking to disk. Android disk IO is single threaded for write operations, which is why one thread is used here.
@@ -27,15 +29,15 @@ A miniature reactive Android library.
     - `newSingleThreadScheduler()`: Creates a new single thread scheduler (like the `io()` scheduler).
     - `current()`: Runs work on the thread that this method was called on.
     - `from(Executor)`: Allows you to construct a scheduler backed by an `Executor` of your choice.
-- `Subscription`: This is returned when you subscribe to an Observable. It allows you to unsubscribe from the work. If you unsubscribe, you will no longer receive events. This is especially helpful in Android if we are observing long lasting work in an Activity, we want to unsubscribe in `Activity.onDestroy()` in order to avoid leaking the Activity.
+- `Subscription`: This is returned when you subscribe to an observable. It allows you to unsubscribe from the work. If you unsubscribe, you will no longer receive events. This is especially helpful in Android if we are observing long lasting work in an Activity, we want to unsubscribe in `Activity.onDestroy()` in order to avoid leaking the Activity.
 
 ### How to use
 
 ##### Basic example
 ```java
-Observable.create(new ObservableAction<String>() {
+Stream.create(new StreamAction<String>() {
     @Override
-    public void onSubscribe(@NonNull ObservableSubscriber<String> subscriber) {
+    public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
         subscriber.onNext("string 1");
         subscriber.onNext("string 2");
         subscriber.onNext("string 3");
@@ -43,7 +45,7 @@ Observable.create(new ObservableAction<String>() {
     }
 }).subscribeOn(Schedulers.io())
   .observeOn(Schedulers.main())
-  .subscribe(new ObservableOnSubscribe<String>() {
+  .subscribe(new StreamOnSubscribe<String>() {
         @Override
         public void onNext(String item) {
             Log.d(TAG, "Asynchronously received this string: " + item);
@@ -65,10 +67,10 @@ private Subscription subscription;
  * as the Subscriber is subscribed to it. Fibonacci numbers are
  * Emitted every half a second.
  */
-private Observable<Integer> allFibonacciNumbersObservable() {
-    return Observable.create(new ObservableAction<Integer>() {
+private Stream<Integer> allFibonacciNumbersStream() {
+    return Stream.create(new StreamAction<Integer>() {
         @Override
-        public void onSubscribe(@NonNull ObservableSubscriber<Integer> subscriber) {
+        public void onSubscribe(@NonNull StreamSubscriber<Integer> subscriber) {
             int firstNumber = 0;
             int secondNumber = 1;
             int temp;
@@ -91,10 +93,10 @@ private Observable<Integer> allFibonacciNumbersObservable() {
 }
 
 private void doWorkOnMainThread() {
-    subscription = allFibonacciNumbersObservable()
+    subscription = allFibonacciNumbersStream()
         .subscribeOn(Schedulers.worker())
         .observeOn(Schedulers.main())
-        .subscribe(new ObservableOnSubscribe<Integer>() {
+        .subscribe(new StreamOnSubscribe<Integer>() {
             @Override
             public void onStart() {
                 Log.d(TAG, "Started receiving numbers");
@@ -124,9 +126,9 @@ public void onDestroy() {
 ##### List Example
 ```java
 final List<String> list = new ArrayList();
-Observable.create(new ObservableAction<List<String>>() {
+Stream.create(new StreamAction<List<String>>() {
     @Override
-    public void onSubscribe(@NonNull ObservableSubscriber<List<String>> subscriber) {
+    public void onSubscribe(@NonNull StreamSubscriber<List<String>> subscriber) {
         List<String> stringList = new ArrayList<>();
         stringList.add("string 1");
         stringList.add("string 2");
@@ -136,7 +138,7 @@ Observable.create(new ObservableAction<List<String>>() {
     }
 }).subscribeOn(Schedulers.current())
   .observeOn(Schedulers.current())
-  .subscribe(new ObservableOnSubscribe<List<String>>() {
+  .subscribe(new StreamOnSubscribe<List<String>>() {
         @Override
         public void onNext(List<String> item) {
             list.addAll(item);

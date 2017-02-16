@@ -33,7 +33,7 @@ public interface CompletableAction {
      * events such as {@link CompletableSubscriber#onComplete()}.
      *
      * @param subscriber the subscriber that is sent in
-     *                   when the user of the Observable
+     *                   when the user of the observable
      *                   subscribes.
      */
     void onSubscribe(@NonNull CompletableSubscriber subscriber);

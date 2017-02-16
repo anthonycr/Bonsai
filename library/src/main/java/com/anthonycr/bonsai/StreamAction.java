@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,29 +20,24 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 
 /**
- * When a consumer subscribes to a {@link Observable}
- * it should supply an implementation of this class
- * with the desired methods overridden.
- * If {@link #onError(Throwable)} is not overridden,
- * it will through an exception.
+ * An action to perform when a consumer
+ * subscribes to the {@link Stream}.
  *
- * @param <T> the type that will be emitted by the action.
+ * @param <T> the type the action should emit.
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class ObservableOnSubscribe<T> extends CompletableOnSubscribe {
-
+public interface StreamAction<T> {
     /**
-     * Called when the Observer emits an
-     * item. It can be called multiple times.
-     * It cannot be called after onComplete
-     * has been called.
+     * Should be overridden to send the subscriber
+     * events such as {@link StreamSubscriber#onNext(Object)}
+     * or {@link StreamSubscriber#onComplete()}.
      *
-     * @param item the item that has been emitted,
-     *             can be null.
+     * @param subscriber the subscriber that is sent in
+     *                   when the user of the observable
+     *                   subscribes.
      */
-    public void onNext(@Nullable T item) {}
-
+    void onSubscribe(@NonNull StreamSubscriber<T> subscriber);
 }

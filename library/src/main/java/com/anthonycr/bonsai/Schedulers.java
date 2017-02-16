@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 
 /**
  * A class of default {@link Scheduler} provided
- * for use with {@link Observable}, {@link Single},
+ * for use with {@link Stream}, {@link Single},
  * and {@link Completable}.
  * <p>
  * If the options available here are not sufficient,

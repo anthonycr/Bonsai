@@ -49,7 +49,7 @@ public final class DataModel {
      * be emitted.
      */
     @NonNull
-    public static Single<List<Contact>> allContactsObservable() {
+    public static Single<List<Contact>> allContactsSingle() {
         return Single.create(new SingleAction<List<Contact>>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<List<Contact>> subscriber) {
@@ -87,7 +87,7 @@ public final class DataModel {
      * which will notify you when the observable finishes completing.
      */
     @NonNull
-    public static Completable addContactObservable(@NonNull final Contact contact) {
+    public static Completable addContactCompletable(@NonNull final Contact contact) {
         return Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -106,7 +106,7 @@ public final class DataModel {
      * which will notify you when the observable finishes completing.
      */
     @NonNull
-    public static Completable updateContactObservable(@NonNull final Contact contact) {
+    public static Completable updateContactCompletable(@NonNull final Contact contact) {
         return Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -125,7 +125,7 @@ public final class DataModel {
      * which will notify you when the observable finishes completing.
      */
     @NonNull
-    public static Completable deleteContactObservable(@NonNull final Contact contact) {
+    public static Completable deleteContactCompletable(@NonNull final Contact contact) {
         return Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
