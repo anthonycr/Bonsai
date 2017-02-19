@@ -135,7 +135,8 @@ public class Completable {
 
     @NonNull
     private Subscription startSubscription(@Nullable CompletableOnSubscribe onSubscribe) {
-        final CompletableSubscriber subscriber = new Completable.SubscriberImpl(onSubscribe, this);
+        final CompletableSubscriberWrapper<CompletableOnSubscribe> subscriber =
+            new CompletableSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
 
         subscriber.onStart();
 
@@ -153,15 +154,7 @@ public class Completable {
         return subscriber;
     }
 
-    private void executeOnObserverThread(@NonNull Runnable runnable) {
-        if (observerThread != null) {
-            observerThread.execute(runnable);
-        } else {
-            defaultThread.execute(runnable);
-        }
-    }
-
-    private void executeOnSubscriberThread(@NonNull Runnable runnable) {
+    void executeOnSubscriberThread(@NonNull Runnable runnable) {
         if (subscriberThread != null) {
             subscriberThread.execute(runnable);
         } else {
@@ -169,67 +162,4 @@ public class Completable {
         }
     }
 
-    private static class SubscriberImpl implements CompletableSubscriber {
-
-        @Nullable private volatile CompletableOnSubscribe onSubscribe;
-        @NonNull private final Completable completable;
-        private volatile boolean onStartExecuted = false;
-        private volatile boolean onCompleteExecuted = false;
-        private volatile boolean onErrorExecuted = false;
-
-        SubscriberImpl(@Nullable CompletableOnSubscribe onSubscribe, @NonNull Completable completable) {
-            this.onSubscribe = onSubscribe;
-            this.completable = completable;
-        }
-
-        @Override
-        public void unsubscribe() {
-            onSubscribe = null;
-        }
-
-        @Override
-        public void onComplete() {
-            CompletableOnSubscribe onSubscribe = this.onSubscribe;
-
-            if (onCompleteExecuted) {
-                throw new RuntimeException("onComplete called more than once");
-            } else if (onSubscribe != null && !onErrorExecuted) {
-                completable.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            }
-
-            onCompleteExecuted = true;
-
-            unsubscribe();
-        }
-
-        @Override
-        public void onStart() {
-            CompletableOnSubscribe onSubscribe = this.onSubscribe;
-
-            if (onStartExecuted) {
-                throw new RuntimeException("onStart is called internally, do not call it yourself");
-            } else if (onSubscribe != null) {
-                completable.executeOnObserverThread(new OnStartRunnable(onSubscribe));
-            }
-
-            onStartExecuted = true;
-        }
-
-        @Override
-        public void onError(@NonNull final Throwable throwable) {
-            CompletableOnSubscribe onSubscribe = this.onSubscribe;
-            if (onSubscribe != null) {
-                completable.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
-            }
-
-            onErrorExecuted = true;
-
-            unsubscribe();
-        }
-
-        @Override
-        public boolean isUnsubscribed() {
-            return onSubscribe == null;
-        }
-    }
 }

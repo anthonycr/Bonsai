@@ -138,7 +138,8 @@ public class Single<T> {
 
     @NonNull
     private Subscription startSubscription(@Nullable SingleOnSubscribe<T> onSubscribe) {
-        final SingleSubscriber<T> subscriber = new Single.SubscriberImpl<>(onSubscribe, this);
+        final SingleSubscriberWrapper<T> subscriber =
+            new SingleSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
 
         subscriber.onStart();
 
@@ -156,14 +157,6 @@ public class Single<T> {
         return subscriber;
     }
 
-    private void executeOnObserverThread(@NonNull Runnable runnable) {
-        if (observerThread != null) {
-            observerThread.execute(runnable);
-        } else {
-            defaultThread.execute(runnable);
-        }
-    }
-
     private void executeOnSubscriberThread(@NonNull Runnable runnable) {
         if (subscriberThread != null) {
             subscriberThread.execute(runnable);
@@ -172,87 +165,4 @@ public class Single<T> {
         }
     }
 
-    private static class SubscriberImpl<T> implements SingleSubscriber<T> {
-
-        @Nullable private volatile SingleOnSubscribe<T> onSubscribe;
-        @NonNull private final Single<T> single;
-        private volatile boolean onStartExecuted = false;
-        private volatile boolean onCompleteExecuted = false;
-        private volatile boolean onItemExecuted = false;
-        private volatile boolean onErrorExecuted = false;
-
-        SubscriberImpl(@Nullable SingleOnSubscribe<T> onSubscribe, @NonNull Single<T> single) {
-            this.onSubscribe = onSubscribe;
-            this.single = single;
-        }
-
-        @Override
-        public void unsubscribe() {
-            onSubscribe = null;
-        }
-
-        @Override
-        public void onComplete() {
-            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onCompleteExecuted) {
-                throw new RuntimeException("onComplete called more than once");
-            } else if (onSubscribe != null && !onErrorExecuted) {
-                single.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            }
-
-            onCompleteExecuted = true;
-
-            unsubscribe();
-        }
-
-        @Override
-        public void onStart() {
-            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onStartExecuted) {
-                throw new RuntimeException("onStart is called internally, do not call it yourself");
-            } else if (onSubscribe != null) {
-                single.executeOnObserverThread(new OnStartRunnable(onSubscribe));
-            }
-
-            onStartExecuted = true;
-        }
-
-        @Override
-        public void onError(@NonNull final Throwable throwable) {
-            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onSubscribe != null) {
-                single.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
-            }
-
-            onErrorExecuted = true;
-
-            unsubscribe();
-        }
-
-        @Override
-        public void onItem(@Nullable T item) {
-            SingleOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onCompleteExecuted) {
-                throw new RuntimeException("onItem should not be called after onComplete has been called");
-            } else if (onItemExecuted) {
-                throw new RuntimeException("onItem should not be called multiple times");
-            } else if (onSubscribe != null && !onErrorExecuted) {
-                single.executeOnObserverThread(new OnItemRunnable<>(onSubscribe, item));
-            } else {
-                // Subscription has been unsubscribed, ignore it
-            }
-
-            onItemExecuted = true;
-
-        }
-
-        @Override
-        public boolean isUnsubscribed() {
-            return onSubscribe == null;
-        }
-    }
 }
