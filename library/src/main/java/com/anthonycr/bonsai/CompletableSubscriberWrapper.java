@@ -71,6 +71,7 @@ class CompletableSubscriberWrapper<T extends CompletableOnSubscribe> implements 
     @Override
     public void onError(@NonNull final Throwable throwable) {
         CompletableOnSubscribe onSubscribe = this.onSubscribe;
+
         if (onSubscribe != null) {
             executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
         }
