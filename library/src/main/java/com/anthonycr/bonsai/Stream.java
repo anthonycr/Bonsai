@@ -138,7 +138,8 @@ public class Stream<T> {
 
     @NonNull
     private Subscription startSubscription(@Nullable StreamOnSubscribe<T> onSubscribe) {
-        final StreamSubscriber<T> subscriber = new SubscriberImpl<>(onSubscribe, this);
+        final StreamSubscriberWrapper<T> subscriber =
+            new StreamSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
 
         subscriber.onStart();
 
@@ -156,98 +157,11 @@ public class Stream<T> {
         return subscriber;
     }
 
-    private void executeOnObserverThread(@NonNull Runnable runnable) {
-        if (observerThread != null) {
-            observerThread.execute(runnable);
-        } else {
-            defaultThread.execute(runnable);
-        }
-    }
-
     private void executeOnSubscriberThread(@NonNull Runnable runnable) {
         if (subscriberThread != null) {
             subscriberThread.execute(runnable);
         } else {
             defaultThread.execute(runnable);
-        }
-    }
-
-    private static class SubscriberImpl<T> implements StreamSubscriber<T> {
-
-        @Nullable private volatile StreamOnSubscribe<T> onSubscribe;
-        @NonNull private final Stream<T> stream;
-        private volatile boolean onStartExecuted = false;
-        private volatile boolean onCompleteExecuted = false;
-        private volatile boolean onErrorExecuted = false;
-
-        SubscriberImpl(@Nullable StreamOnSubscribe<T> onSubscribe, @NonNull Stream<T> stream) {
-            this.onSubscribe = onSubscribe;
-            this.stream = stream;
-        }
-
-        @Override
-        public void unsubscribe() {
-            onSubscribe = null;
-        }
-
-        @Override
-        public void onComplete() {
-            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onCompleteExecuted) {
-                throw new RuntimeException("onComplete called more than once");
-            } else if (onSubscribe != null && !onErrorExecuted) {
-                stream.executeOnObserverThread(new OnCompleteRunnable(onSubscribe));
-            }
-
-            onCompleteExecuted = true;
-
-            unsubscribe();
-        }
-
-        @Override
-        public void onStart() {
-            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onStartExecuted) {
-                throw new RuntimeException("onStart is called internally, do not call it yourself");
-            } else if (onSubscribe != null) {
-                stream.executeOnObserverThread(new OnStartRunnable(onSubscribe));
-            }
-
-            onStartExecuted = true;
-
-        }
-
-        @Override
-        public void onError(@NonNull final Throwable throwable) {
-            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onSubscribe != null) {
-                stream.executeOnObserverThread(new OnErrorRunnable(onSubscribe, throwable));
-            }
-
-            onErrorExecuted = true;
-
-            unsubscribe();
-        }
-
-        @Override
-        public void onNext(final T item) {
-            StreamOnSubscribe<T> onSubscribe = this.onSubscribe;
-
-            if (onCompleteExecuted) {
-                throw new RuntimeException("onNext should not be called after onComplete has been called");
-            } else if (onSubscribe != null && !onErrorExecuted) {
-                stream.executeOnObserverThread(new OnNextRunnable<>(onSubscribe, item));
-            } else {
-                // Subscription has been unsubscribed, ignore it
-            }
-        }
-
-        @Override
-        public boolean isUnsubscribed() {
-            return onSubscribe == null;
         }
     }
 
