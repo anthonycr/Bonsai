@@ -20,7 +20,6 @@
  */
 package com.anthonycr.bonsai;
 
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -39,21 +38,10 @@ import android.support.annotation.Nullable;
  * @param <T> the type that the Single will emit.
  */
 @SuppressWarnings("WeakerAccess")
-public class Single<T> {
-
-    @NonNull private final SingleAction<T> action;
-    @NonNull private final Scheduler defaultThread;
-    @Nullable private Scheduler subscriberThread;
-    @Nullable private Scheduler observerThread;
+public class Single<T> extends Observable<SingleAction<T>, SingleOnSubscribe<T>, SingleSubscriber<T>> {
 
     private Single(@NonNull SingleAction<T> action) {
-        this.action = action;
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
-        Looper looper = Looper.myLooper();
-        Preconditions.checkNonNull(looper);
-        this.defaultThread = new ThreadScheduler(looper);
+        super(action);
     }
 
     /**
@@ -88,81 +76,10 @@ public class Single<T> {
         });
     }
 
-    /**
-     * Tells the Single what Scheduler that the onSubscribe
-     * work should run on.
-     *
-     * @param subscribeScheduler the Scheduler to run the work on.
-     * @return returns this so that calls can be conveniently chained.
-     */
     @NonNull
-    public Single<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
-        subscriberThread = subscribeScheduler;
-        return this;
-    }
-
-    /**
-     * Tells the Single what Scheduler the onSubscribe should observe
-     * the work on.
-     *
-     * @param observerScheduler the Scheduler to run to callback on.
-     * @return returns this so that calls can be conveniently chained.
-     */
-    @NonNull
-    public Single<T> observeOn(@NonNull Scheduler observerScheduler) {
-        observerThread = observerScheduler;
-        return this;
-    }
-
-    /**
-     * Subscribes immediately to the Single and ignores
-     * all onComplete and onItem calls.
-     */
-    public void subscribe() {
-        startSubscription(null);
-    }
-
-    /**
-     * Immediately subscribes to the Single and starts
-     * sending events from the Single to the {@link StreamOnSubscribe}.
-     *
-     * @param onSubscribe the class that wishes to receive onItem and
-     *                    onComplete callbacks from the Single.
-     */
-    @NonNull
-    public Subscription subscribe(@NonNull SingleOnSubscribe<T> onSubscribe) {
-        Preconditions.checkNonNull(onSubscribe);
-
-        return startSubscription(onSubscribe);
-    }
-
-    @NonNull
-    private Subscription startSubscription(@Nullable SingleOnSubscribe<T> onSubscribe) {
-        final SingleSubscriberWrapper<T> subscriber =
-            new SingleSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
-
-        subscriber.onStart();
-
-        executeOnSubscriberThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.onSubscribe(subscriber);
-                } catch (Exception exception) {
-                    subscriber.onError(exception);
-                }
-            }
-        });
-
-        return subscriber;
-    }
-
-    private void executeOnSubscriberThread(@NonNull Runnable runnable) {
-        if (subscriberThread != null) {
-            subscriberThread.execute(runnable);
-        } else {
-            defaultThread.execute(runnable);
-        }
+    @Override
+    protected SingleSubscriber<T> createSubscriberWrapper(@Nullable SingleOnSubscribe<T> onSubscribe, @Nullable Scheduler observerThread, @NonNull Scheduler defaultThread) {
+        return new SingleSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
     }
 
 }

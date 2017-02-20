@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,11 +20,21 @@
  */
 package com.anthonycr.bonsai;
 
-/**
- * An action to perform when a consumer
- * subscribes to the {@link Completable}.
- */
-@SuppressWarnings("WeakerAccess")
-public interface CompletableAction extends Action<CompletableSubscriber> {
+import android.support.annotation.NonNull;
 
+/**
+ * Created by anthonycr on 2/20/17.
+ */
+interface Action<T> {
+
+    /**
+     * Should be overridden to send the subscriber
+     * events such as {@link SingleSubscriber#onItem(Object)}
+     * or {@link SingleSubscriber#onComplete()}.
+     *
+     * @param subscriber the subscriber that is sent in
+     *                   when the user of the observable
+     *                   subscribes.
+     */
+    void onSubscribe(@NonNull T subscriber);
 }
