@@ -40,6 +40,37 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
         Assert.assertFalse(onErrorCalled.get());
     }
 
+    @Test(expected = RuntimeException.class)
+    public void onCompleteTest_calledMultipleTimes_throwsException() throws Exception {
+        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
+        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
+        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
+            @Override
+            public void onError(@NonNull Throwable throwable) {
+                onErrorCalled.set(true);
+            }
+
+            @Override
+            public void onComplete() {
+                onCompleteCalled.set(true);
+            }
+
+            @Override
+            public void onStart() {
+                onStartCalled.set(true);
+            }
+        };
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        wrapper.onComplete();
+
+        Assert.assertFalse(onStartCalled.get());
+        Assert.assertTrue(onCompleteCalled.get());
+        Assert.assertFalse(onErrorCalled.get());
+
+        wrapper.onComplete();
+    }
+
     @Test
     public void onErrorTest_Succeeds_overridden() throws Exception {
         final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
@@ -140,6 +171,41 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
         Assert.assertFalse(onErrorCalled.get());
 
         wrapper.onStart();
+    }
+
+    @Test
+    public void unsubscribeTest() throws Exception {
+        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
+        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
+        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
+            @Override
+            public void onError(@NonNull Throwable throwable) {
+                onErrorCalled.set(true);
+            }
+
+            @Override
+            public void onComplete() {
+                onCompleteCalled.set(true);
+            }
+
+            @Override
+            public void onStart() {
+                onStartCalled.set(true);
+            }
+        };
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        wrapper.unsubscribe();
+
+        Assert.assertTrue(wrapper.isUnsubscribed());
+
+        wrapper.onStart();
+        wrapper.onComplete();
+        wrapper.onError(new Exception("Test exception"));
+
+        Assert.assertFalse(onStartCalled.get());
+        Assert.assertFalse(onCompleteCalled.get());
+        Assert.assertFalse(onErrorCalled.get());
     }
 
 }
