@@ -28,8 +28,12 @@ import android.support.annotation.Nullable;
  * @param <ActionType>      The {@link Action} that will be provided
  *                          to the {@link OnSubscribeType} when the
  *                          consumer subscribes.
- * @param <OnSubscribeType>
- * @param <SubscriberType>
+ * @param <OnSubscribeType> The {@link CompletableOnSubscribe} or type that
+ *                          extends it that will be supplied when the consumer
+ *                          subscribes.
+ * @param <SubscriberType>  The {@link CompletableSubscriber} or type that
+ *                          extends it that will be supplied to the {@link Action}
+ *                          when the consumer subscribes.
  */
 @SuppressWarnings("WeakerAccess")
 public abstract class Observable<ActionType extends Action<SubscriberType>,
@@ -111,12 +115,18 @@ public abstract class Observable<ActionType extends Action<SubscriberType>,
     }
 
     /**
-     * Creates a subscriber
+     * Creates a {@link SubscriberType} that
+     * wraps the {@link OnSubscribeType} in order
+     * to properly execute method calls on the
+     * appropriate observer thread.
      *
-     * @param onSubscribe
-     * @param observerThread
-     * @param defaultThread
-     * @return
+     * @param onSubscribe    the {@link OnSubscribeType} supplied when
+     *                       the consumer subscribed.
+     * @param observerThread the thread that the {@link OnSubscribeType}
+     *                       should be notified on, may be null.
+     * @param defaultThread  the thread to notify the {@link OnSubscribeType}
+     *                       on if the provided observer is null.
+     * @return a valid {@link SubscriberType} that wraps the {@link OnSubscribeType}.
      */
     @NonNull
     protected abstract SubscriberType createSubscriberWrapper(@Nullable OnSubscribeType onSubscribe,
