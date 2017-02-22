@@ -25,27 +25,27 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * @param <ActionType>      The {@link Action} that will be provided
- *                          to the {@link OnSubscribeType} when the
- *                          consumer subscribes.
- * @param <OnSubscribeType> The {@link CompletableOnSubscribe} or type that
- *                          extends it that will be supplied when the consumer
- *                          subscribes.
- * @param <SubscriberType>  The {@link CompletableSubscriber} or type that
- *                          extends it that will be supplied to the {@link Action}
- *                          when the consumer subscribes.
+ * @param <ActionT>      The {@link Action} that will be provided
+ *                       to the {@link OnSubscribeT} when the
+ *                       consumer subscribes.
+ * @param <OnSubscribeT> The {@link CompletableOnSubscribe} or type that
+ *                       extends it that will be supplied when the consumer
+ *                       subscribes.
+ * @param <SubscriberT>  The {@link CompletableSubscriber} or type that
+ *                       extends it that will be supplied to the {@link Action}
+ *                       when the consumer subscribes.
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class Observable<ActionType extends Action<SubscriberType>,
-    OnSubscribeType extends CompletableOnSubscribe,
-    SubscriberType extends CompletableSubscriber> {
+public abstract class Observable<ActionT extends Action<SubscriberT>,
+    OnSubscribeT extends CompletableOnSubscribe,
+    SubscriberT extends CompletableSubscriber> {
 
-    @NonNull private final ActionType action;
+    @NonNull private final ActionT action;
     @Nullable private Scheduler subscriberThread;
     @Nullable private Scheduler observerThread;
     @NonNull private final Scheduler defaultThread;
 
-    protected Observable(@NonNull ActionType action) {
+    protected Observable(@NonNull ActionT action) {
         this.action = action;
         this.defaultThread = getCurrentScheduler();
     }
@@ -66,12 +66,9 @@ public abstract class Observable<ActionType extends Action<SubscriberType>,
      * the onSubscribe work should run on.
      *
      * @param subscribeScheduler the {@link Scheduler} to run the work on.
-     * @return returns itself so that calls can be conveniently chained.
      */
-    @NonNull
-    public final Observable<ActionType, OnSubscribeType, SubscriberType> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+    protected final void setActionScheduler(@NonNull Scheduler subscribeScheduler) {
         subscriberThread = subscribeScheduler;
-        return this;
     }
 
     /**
@@ -79,12 +76,9 @@ public abstract class Observable<ActionType extends Action<SubscriberType>,
      * the onSubscribe should observe the work on.
      *
      * @param observerScheduler the {@link Scheduler} to run to callback on.
-     * @return returns itself so that calls can be conveniently chained.
      */
-    @NonNull
-    public final Observable<ActionType, OnSubscribeType, SubscriberType> observeOn(@NonNull Scheduler observerScheduler) {
+    protected final void setObserverScheduler(@NonNull Scheduler observerScheduler) {
         observerThread = observerScheduler;
-        return this;
     }
 
     /**
@@ -101,41 +95,41 @@ public abstract class Observable<ActionType extends Action<SubscriberType>,
     /**
      * Immediately subscribes to the {@link Observable} and
      * starts sending events from the {@link Observable} to the
-     * {@link OnSubscribeType}.
+     * {@link OnSubscribeT}.
      *
      * @param onSubscribe the class that wishes to receive onComplete
      *                    callbacks from the Completable.
      * @return a work subscription that can be cancelled.
      */
     @NonNull
-    public final Subscription subscribe(@NonNull OnSubscribeType onSubscribe) {
+    public final Subscription subscribe(@NonNull OnSubscribeT onSubscribe) {
         Preconditions.checkNonNull(onSubscribe);
 
         return startSubscription(onSubscribe);
     }
 
     /**
-     * Creates a {@link SubscriberType} that
-     * wraps the {@link OnSubscribeType} in order
+     * Creates a {@link SubscriberT} that
+     * wraps the {@link OnSubscribeT} in order
      * to properly execute method calls on the
      * appropriate observer thread.
      *
-     * @param onSubscribe    the {@link OnSubscribeType} supplied when
+     * @param onSubscribe    the {@link OnSubscribeT} supplied when
      *                       the consumer subscribed.
-     * @param observerThread the thread that the {@link OnSubscribeType}
+     * @param observerThread the thread that the {@link OnSubscribeT}
      *                       should be notified on, may be null.
-     * @param defaultThread  the thread to notify the {@link OnSubscribeType}
+     * @param defaultThread  the thread to notify the {@link OnSubscribeT}
      *                       on if the provided observer is null.
-     * @return a valid {@link SubscriberType} that wraps the {@link OnSubscribeType}.
+     * @return a valid {@link SubscriberT} that wraps the {@link OnSubscribeT}.
      */
     @NonNull
-    protected abstract SubscriberType createSubscriberWrapper(@Nullable OnSubscribeType onSubscribe,
-                                                              @Nullable Scheduler observerThread,
-                                                              @NonNull Scheduler defaultThread);
+    protected abstract SubscriberT createSubscriberWrapper(@Nullable OnSubscribeT onSubscribe,
+                                                           @Nullable Scheduler observerThread,
+                                                           @NonNull Scheduler defaultThread);
 
     @NonNull
-    private Subscription startSubscription(@Nullable OnSubscribeType onSubscribe) {
-        final SubscriberType subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultThread);
+    private Subscription startSubscription(@Nullable OnSubscribeT onSubscribe) {
+        final SubscriberT subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultThread);
 
         subscriber.onStart();
 

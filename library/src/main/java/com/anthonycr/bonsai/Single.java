@@ -76,9 +76,37 @@ public class Single<T> extends Observable<SingleAction<T>, SingleOnSubscribe<T>,
         });
     }
 
+    /**
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe work should run on.
+     *
+     * @param subscribeScheduler the {@link Scheduler} to run the work on.
+     * @return returns itself so that calls can be conveniently chained.
+     */
+    @NonNull
+    public final Single<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+        setActionScheduler(subscribeScheduler);
+        return this;
+    }
+
+    /**
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe should observe the work on.
+     *
+     * @param observerScheduler the {@link Scheduler} to run to callback on.
+     * @return returns itself so that calls can be conveniently chained.
+     */
+    @NonNull
+    public final Single<T> observeOn(@NonNull Scheduler observerScheduler) {
+        setObserverScheduler(observerScheduler);
+        return this;
+    }
+
     @NonNull
     @Override
-    protected SingleSubscriber<T> createSubscriberWrapper(@Nullable SingleOnSubscribe<T> onSubscribe, @Nullable Scheduler observerThread, @NonNull Scheduler defaultThread) {
+    protected SingleSubscriber<T> createSubscriberWrapper(@Nullable SingleOnSubscribe<T> onSubscribe,
+                                                          @Nullable Scheduler observerThread,
+                                                          @NonNull Scheduler defaultThread) {
         return new SingleSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
     }
 

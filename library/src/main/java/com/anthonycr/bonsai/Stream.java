@@ -76,6 +76,32 @@ public class Stream<T> extends Observable<StreamAction<T>, StreamOnSubscribe<T>,
         });
     }
 
+    /**
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe work should run on.
+     *
+     * @param subscribeScheduler the {@link Scheduler} to run the work on.
+     * @return returns itself so that calls can be conveniently chained.
+     */
+    @NonNull
+    public final Stream<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+        setActionScheduler(subscribeScheduler);
+        return this;
+    }
+
+    /**
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe should observe the work on.
+     *
+     * @param observerScheduler the {@link Scheduler} to run to callback on.
+     * @return returns itself so that calls can be conveniently chained.
+     */
+    @NonNull
+    public final Stream<T> observeOn(@NonNull Scheduler observerScheduler) {
+        setObserverScheduler(observerScheduler);
+        return this;
+    }
+
     @NonNull
     @Override
     protected StreamSubscriber<T> createSubscriberWrapper(@Nullable StreamOnSubscribe<T> onSubscribe,
