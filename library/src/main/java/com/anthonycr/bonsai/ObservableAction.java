@@ -25,7 +25,7 @@ import android.support.annotation.NonNull;
 /**
  * Created by anthonycr on 2/20/17.
  */
-interface Action<T> {
+interface ObservableAction<T> {
 
     /**
      * Should be overridden to send the subscriber

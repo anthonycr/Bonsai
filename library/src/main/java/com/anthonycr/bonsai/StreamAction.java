@@ -27,6 +27,6 @@ package com.anthonycr.bonsai;
  * @param <T> the type the action should emit.
  */
 @SuppressWarnings("WeakerAccess")
-public interface StreamAction<T> extends Action<StreamSubscriber<T>> {
+public interface StreamAction<T> extends ObservableAction<StreamSubscriber<T>> {
 
 }

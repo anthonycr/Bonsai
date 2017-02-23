@@ -27,6 +27,6 @@ package com.anthonycr.bonsai;
  * @param <T> the type the action should emit.
  */
 @SuppressWarnings("WeakerAccess")
-public interface SingleAction<T> extends Action<SingleSubscriber<T>> {
+public interface SingleAction<T> extends ObservableAction<SingleSubscriber<T>> {
 
 }

@@ -25,6 +25,6 @@ package com.anthonycr.bonsai;
  * subscribes to the {@link Completable}.
  */
 @SuppressWarnings("WeakerAccess")
-public interface CompletableAction extends Action<CompletableSubscriber> {
+public interface CompletableAction extends ObservableAction<CompletableSubscriber> {
 
 }

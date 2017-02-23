@@ -23,10 +23,10 @@ package com.anthonycr.bonsai;
 import android.support.annotation.NonNull;
 
 class OnErrorRunnable implements Runnable {
-    @NonNull private final CompletableOnSubscribe onSubscribe;
+    @NonNull private final ObservableOnSubscribe onSubscribe;
     @NonNull private final Throwable throwable;
 
-    OnErrorRunnable(@NonNull CompletableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
+    OnErrorRunnable(@NonNull ObservableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
         this.onSubscribe = onSubscribe;
         this.throwable = throwable;
     }

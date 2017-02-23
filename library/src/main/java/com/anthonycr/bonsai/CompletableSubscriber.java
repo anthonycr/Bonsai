@@ -20,38 +20,12 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
-
 /**
  * The interface through which the {@link CompletableAction}
  * communicates to the {@link CompletableOnSubscribe}.
  */
 @SuppressWarnings("WeakerAccess")
-public interface CompletableSubscriber extends Subscription {
-
-    /**
-     * Called immediately upon subscribing
-     * and before the observable begins
-     * emitting items. This should not be
-     * called by the creator of the observable
-     * and is rather called internally by the
-     * observable class itself.
-     */
-    void onStart();
-
-    /**
-     * Called when the observable
-     * runs into an error that will
-     * cause it to abort and not finish.
-     * Receiving this callback means that
-     * the observable is dead and no
-     * {@link #onComplete()}
-     * callbacks will be called.
-     *
-     * @param throwable an optional throwable that could
-     *                  be sent.
-     */
-    void onError(@NonNull Throwable throwable);
+public interface CompletableSubscriber extends ObservableSubscriber {
 
     /**
      * This method is called when the observer is

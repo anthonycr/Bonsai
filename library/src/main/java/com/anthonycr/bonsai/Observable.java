@@ -25,20 +25,20 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * @param <ActionT>      The {@link Action} that will be provided
+ * @param <ActionT>      The {@link ObservableAction} that will be provided
  *                       to the {@link OnSubscribeT} when the
  *                       consumer subscribes.
- * @param <OnSubscribeT> The {@link CompletableOnSubscribe} or type that
+ * @param <OnSubscribeT> The {@link ObservableOnSubscribe} or type that
  *                       extends it that will be supplied when the consumer
  *                       subscribes.
- * @param <SubscriberT>  The {@link CompletableSubscriber} or type that
- *                       extends it that will be supplied to the {@link Action}
+ * @param <SubscriberT>  The {@link ObservableSubscriber} or type that
+ *                       extends it that will be supplied to the {@link ObservableAction}
  *                       when the consumer subscribes.
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class Observable<ActionT extends Action<SubscriberT>,
-    OnSubscribeT extends CompletableOnSubscribe,
-    SubscriberT extends CompletableSubscriber> {
+public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
+    OnSubscribeT extends ObservableOnSubscribe,
+    SubscriberT extends ObservableSubscriber> {
 
     @NonNull private final ActionT action;
     @Nullable private Scheduler subscriberThread;
@@ -83,7 +83,7 @@ public abstract class Observable<ActionT extends Action<SubscriberT>,
 
     /**
      * Subscribes immediately to the {@link Observable} and
-     * ignores all onComplete calls.
+     * ignores all calls to the subscriber.
      *
      * @return a work subscription that can be cancelled.
      */
@@ -97,8 +97,8 @@ public abstract class Observable<ActionT extends Action<SubscriberT>,
      * starts sending events from the {@link Observable} to the
      * {@link OnSubscribeT}.
      *
-     * @param onSubscribe the class that wishes to receive onComplete
-     *                    callbacks from the Completable.
+     * @param onSubscribe the class that wishes to receive
+     *                    callbacks from the observable.
      * @return a work subscription that can be cancelled.
      */
     @NonNull
