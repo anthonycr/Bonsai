@@ -47,18 +47,7 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
 
     protected Observable(@NonNull ActionT action) {
         this.action = action;
-        this.defaultThread = getCurrentScheduler();
-    }
-
-    @NonNull
-    private Scheduler getCurrentScheduler() {
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
-        Looper looper = Looper.myLooper();
-        Preconditions.checkNonNull(looper);
-
-        return new ThreadScheduler(looper);
+        this.defaultThread = Schedulers.current();
     }
 
     /**
