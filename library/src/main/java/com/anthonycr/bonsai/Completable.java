@@ -20,7 +20,6 @@
  */
 package com.anthonycr.bonsai;
 
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -37,21 +36,10 @@ import android.support.annotation.Nullable;
  * errors that occur.
  */
 @SuppressWarnings("WeakerAccess")
-public class Completable {
-
-    @NonNull private final CompletableAction action;
-    @NonNull private final Scheduler defaultThread;
-    @Nullable private Scheduler subscriberThread;
-    @Nullable private Scheduler observerThread;
+public class Completable extends Observable<CompletableAction, CompletableOnSubscribe, CompletableSubscriber> {
 
     private Completable(@NonNull CompletableAction action) {
-        this.action = action;
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
-        Looper looper = Looper.myLooper();
-        Preconditions.checkNonNull(looper);
-        this.defaultThread = new ThreadScheduler(looper);
+        super(action);
     }
 
     /**
@@ -85,81 +73,37 @@ public class Completable {
     }
 
     /**
-     * Tells the Completable what Scheduler that the onSubscribe
-     * work should run on.
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe work should run on.
      *
-     * @param subscribeScheduler the Scheduler to run the work on.
-     * @return returns this so that calls can be conveniently chained.
+     * @param subscribeScheduler the {@link Scheduler} to run the work on.
+     * @return returns itself so that calls can be conveniently chained.
      */
     @NonNull
-    public Completable subscribeOn(@NonNull Scheduler subscribeScheduler) {
-        subscriberThread = subscribeScheduler;
+    public final Completable subscribeOn(@NonNull Scheduler subscribeScheduler) {
+        setActionScheduler(subscribeScheduler);
         return this;
     }
 
     /**
-     * Tells the Completable what Scheduler the onSubscribe
-     * should observe the work on.
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe should observe the work on.
      *
-     * @param observerScheduler the Scheduler to run to callback on.
-     * @return returns this so that calls can be conveniently chained.
+     * @param observerScheduler the {@link Scheduler} to run to callback on.
+     * @return returns itself so that calls can be conveniently chained.
      */
     @NonNull
-    public Completable observeOn(@NonNull Scheduler observerScheduler) {
-        observerThread = observerScheduler;
+    public final Completable observeOn(@NonNull Scheduler observerScheduler) {
+        setObserverScheduler(observerScheduler);
         return this;
     }
 
-    /**
-     * Subscribes immediately to the Completable and
-     * ignores all onComplete calls.
-     */
-    public void subscribe() {
-        startSubscription(null);
-    }
-
-    /**
-     * Immediately subscribes to the Completable and starts
-     * sending events from the Completable to the
-     * {@link StreamOnSubscribe}.
-     *
-     * @param onSubscribe the class that wishes to receive onComplete
-     *                    callbacks from the Completable.
-     */
     @NonNull
-    public Subscription subscribe(@NonNull CompletableOnSubscribe onSubscribe) {
-        Preconditions.checkNonNull(onSubscribe);
-
-        return startSubscription(onSubscribe);
-    }
-
-    @NonNull
-    private Subscription startSubscription(@Nullable CompletableOnSubscribe onSubscribe) {
-        final CompletableSubscriberWrapper<CompletableOnSubscribe> subscriber =
-            new CompletableSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
-
-        subscriber.onStart();
-
-        executeOnSubscriberThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.onSubscribe(subscriber);
-                } catch (Exception exception) {
-                    subscriber.onError(exception);
-                }
-            }
-        });
-
-        return subscriber;
-    }
-
-    void executeOnSubscriberThread(@NonNull Runnable runnable) {
-        if (subscriberThread != null) {
-            subscriberThread.execute(runnable);
-        } else {
-            defaultThread.execute(runnable);
-        }
+    @Override
+    protected CompletableSubscriber createSubscriberWrapper(@Nullable CompletableOnSubscribe onSubscribe,
+                                                            @Nullable Scheduler observerThread,
+                                                            @NonNull Scheduler defaultThread) {
+        return new CompletableSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
     }
 
 }

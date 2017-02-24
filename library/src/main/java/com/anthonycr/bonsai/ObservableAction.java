@@ -20,22 +20,21 @@
  */
 package com.anthonycr.bonsai;
 
+import android.support.annotation.NonNull;
+
 /**
- * When a consumer subscribes to a {@link Completable}
- * it should supply an implementation of this class
- * with the desired methods overridden.
- * If {@link #onError(Throwable)} is not overridden,
- * it will throw an exception.
+ * Created by anthonycr on 2/20/17.
  */
-@SuppressWarnings("WeakerAccess")
-public abstract class CompletableOnSubscribe extends ObservableOnSubscribe {
+interface ObservableAction<T> {
 
     /**
-     * This method is called when the observer is
-     * finished sending the subscriber events. It
-     * is guaranteed that no other methods will be
-     * called on the OnSubscribe after this method
-     * has been called.
+     * Should be overridden to send the subscriber
+     * events such as {@link SingleSubscriber#onItem(Object)}
+     * or {@link SingleSubscriber#onComplete()}.
+     *
+     * @param subscriber the subscriber that is sent in
+     *                   when the user of the observable
+     *                   subscribes.
      */
-    public void onComplete() {}
+    void onSubscribe(@NonNull T subscriber);
 }

@@ -35,4 +35,16 @@ public interface Subscription {
      */
     void unsubscribe();
 
+    /**
+     * This method tells the caller whether or not
+     * the subscriber to this observable has unsubscribed
+     * or not. Useful for long running or never ending
+     * operations that would otherwise needlessly use
+     * resources.
+     *
+     * @return true if the the Subscriber has unsubscribed,
+     * false otherwise.
+     */
+    boolean isUnsubscribed();
+
 }

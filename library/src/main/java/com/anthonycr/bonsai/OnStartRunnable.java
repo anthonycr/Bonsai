@@ -23,9 +23,9 @@ package com.anthonycr.bonsai;
 import android.support.annotation.NonNull;
 
 class OnStartRunnable implements Runnable {
-    @NonNull private final CompletableOnSubscribe onSubscribe;
+    @NonNull private final ObservableOnSubscribe onSubscribe;
 
-    OnStartRunnable(@NonNull CompletableOnSubscribe onSubscribe) {this.onSubscribe = onSubscribe;}
+    OnStartRunnable(@NonNull ObservableOnSubscribe onSubscribe) {this.onSubscribe = onSubscribe;}
 
     @Override
     public void run() {

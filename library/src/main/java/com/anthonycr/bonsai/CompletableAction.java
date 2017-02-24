@@ -20,21 +20,11 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
-
 /**
  * An action to perform when a consumer
  * subscribes to the {@link Completable}.
  */
 @SuppressWarnings("WeakerAccess")
-public interface CompletableAction {
-    /**
-     * Should be overridden to send the subscriber
-     * events such as {@link CompletableSubscriber#onComplete()}.
-     *
-     * @param subscriber the subscriber that is sent in
-     *                   when the user of the observable
-     *                   subscribes.
-     */
-    void onSubscribe(@NonNull CompletableSubscriber subscriber);
+public interface CompletableAction extends ObservableAction<CompletableSubscriber> {
+
 }

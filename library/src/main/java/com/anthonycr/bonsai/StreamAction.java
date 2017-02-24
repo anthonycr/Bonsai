@@ -20,8 +20,6 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
-
 /**
  * An action to perform when a consumer
  * subscribes to the {@link Stream}.
@@ -29,15 +27,6 @@ import android.support.annotation.NonNull;
  * @param <T> the type the action should emit.
  */
 @SuppressWarnings("WeakerAccess")
-public interface StreamAction<T> {
-    /**
-     * Should be overridden to send the subscriber
-     * events such as {@link StreamSubscriber#onNext(Object)}
-     * or {@link StreamSubscriber#onComplete()}.
-     *
-     * @param subscriber the subscriber that is sent in
-     *                   when the user of the observable
-     *                   subscribes.
-     */
-    void onSubscribe(@NonNull StreamSubscriber<T> subscriber);
+public interface StreamAction<T> extends ObservableAction<StreamSubscriber<T>> {
+
 }

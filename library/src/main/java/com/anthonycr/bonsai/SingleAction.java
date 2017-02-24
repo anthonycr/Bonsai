@@ -20,8 +20,6 @@
  */
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
-
 /**
  * An action to perform when a consumer
  * subscribes to the {@link Single}.
@@ -29,16 +27,6 @@ import android.support.annotation.NonNull;
  * @param <T> the type the action should emit.
  */
 @SuppressWarnings("WeakerAccess")
-public interface SingleAction<T> {
+public interface SingleAction<T> extends ObservableAction<SingleSubscriber<T>> {
 
-    /**
-     * Should be overridden to send the subscriber
-     * events such as {@link SingleSubscriber#onItem(Object)}
-     * or {@link SingleSubscriber#onComplete()}.
-     *
-     * @param subscriber the subscriber that is sent in
-     *                   when the user of the observable
-     *                   subscribes.
-     */
-    void onSubscribe(@NonNull SingleSubscriber<T> subscriber);
 }

@@ -20,7 +20,6 @@
  */
 package com.anthonycr.bonsai;
 
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -39,26 +38,15 @@ import android.support.annotation.Nullable;
  * @param <T> the type that the stream will emit.
  */
 @SuppressWarnings("WeakerAccess")
-public class Stream<T> {
-
-    @NonNull private final StreamAction<T> action;
-    @NonNull private final Scheduler defaultThread;
-    @Nullable private Scheduler subscriberThread;
-    @Nullable private Scheduler observerThread;
+public class Stream<T> extends Observable<StreamAction<T>, StreamOnSubscribe<T>, StreamSubscriber<T>> {
 
     private Stream(@NonNull StreamAction<T> action) {
-        this.action = action;
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
-        Looper looper = Looper.myLooper();
-        Preconditions.checkNonNull(looper);
-        defaultThread = new ThreadScheduler(looper);
+        super(action);
     }
 
     /**
      * Static creator method that creates an stream from the
-     * {@link CompletableAction} that is passed in as the parameter. Action
+     * {@link StreamAction} that is passed in as the parameter. Action
      * must not be null.
      *
      * @param action the Action to perform
@@ -89,81 +77,37 @@ public class Stream<T> {
     }
 
     /**
-     * Tells the stream what Scheduler that the onSubscribe
-     * work should run on.
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe work should run on.
      *
-     * @param subscribeScheduler the Scheduler to run the work on.
-     * @return returns this so that calls can be conveniently chained.
+     * @param subscribeScheduler the {@link Scheduler} to run the work on.
+     * @return returns itself so that calls can be conveniently chained.
      */
     @NonNull
-    public Stream<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
-        subscriberThread = subscribeScheduler;
+    public final Stream<T> subscribeOn(@NonNull Scheduler subscribeScheduler) {
+        setActionScheduler(subscribeScheduler);
         return this;
     }
 
     /**
-     * Tells the stream what Scheduler the onSubscribe should observe
-     * the work on.
+     * Tells the observable what {@link Scheduler} that
+     * the onSubscribe should observe the work on.
      *
-     * @param observerScheduler the Scheduler to run to callback on.
-     * @return returns this so that calls can be conveniently chained.
+     * @param observerScheduler the {@link Scheduler} to run to callback on.
+     * @return returns itself so that calls can be conveniently chained.
      */
     @NonNull
-    public Stream<T> observeOn(@NonNull Scheduler observerScheduler) {
-        observerThread = observerScheduler;
+    public final Stream<T> observeOn(@NonNull Scheduler observerScheduler) {
+        setObserverScheduler(observerScheduler);
         return this;
     }
 
-    /**
-     * Subscribes immediately to the stream and ignores
-     * all onComplete and onNext calls.
-     */
-    public void subscribe() {
-        startSubscription(null);
-    }
-
-    /**
-     * Immediately subscribes to the stream and starts
-     * sending events from the stream to the {@link StreamOnSubscribe}.
-     *
-     * @param onSubscribe the class that wishes to receive onNext and
-     *                    onComplete callbacks from the stream.
-     */
     @NonNull
-    public Subscription subscribe(@NonNull StreamOnSubscribe<T> onSubscribe) {
-        Preconditions.checkNonNull(onSubscribe);
-
-        return startSubscription(onSubscribe);
+    @Override
+    protected StreamSubscriber<T> createSubscriberWrapper(@Nullable StreamOnSubscribe<T> onSubscribe,
+                                                          @Nullable Scheduler observerThread,
+                                                          @NonNull Scheduler defaultThread) {
+        return new StreamSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
     }
-
-    @NonNull
-    private Subscription startSubscription(@Nullable StreamOnSubscribe<T> onSubscribe) {
-        final StreamSubscriberWrapper<T> subscriber =
-            new StreamSubscriberWrapper<>(onSubscribe, observerThread, defaultThread);
-
-        subscriber.onStart();
-
-        executeOnSubscriberThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    action.onSubscribe(subscriber);
-                } catch (Exception exception) {
-                    subscriber.onError(exception);
-                }
-            }
-        });
-
-        return subscriber;
-    }
-
-    private void executeOnSubscriberThread(@NonNull Runnable runnable) {
-        if (subscriberThread != null) {
-            subscriberThread.execute(runnable);
-        } else {
-            defaultThread.execute(runnable);
-        }
-    }
-
 }
 

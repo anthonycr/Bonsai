@@ -20,22 +20,36 @@
  */
 package com.anthonycr.bonsai;
 
+import android.support.annotation.NonNull;
+
 /**
- * When a consumer subscribes to a {@link Completable}
- * it should supply an implementation of this class
- * with the desired methods overridden.
- * If {@link #onError(Throwable)} is not overridden,
- * it will throw an exception.
+ * The interface through which the {@link ObservableAction}
+ * communicates to the {@link ObservableOnSubscribe}.
  */
 @SuppressWarnings("WeakerAccess")
-public abstract class CompletableOnSubscribe extends ObservableOnSubscribe {
+public interface ObservableSubscriber extends Subscription {
 
     /**
-     * This method is called when the observer is
-     * finished sending the subscriber events. It
-     * is guaranteed that no other methods will be
-     * called on the OnSubscribe after this method
-     * has been called.
+     * Called immediately upon subscribing
+     * and before the observable begins
+     * emitting items. This should not be
+     * called by the creator of the observable
+     * and is rather called internally by the
+     * observable class itself.
      */
-    public void onComplete() {}
+    void onStart();
+
+    /**
+     * Called when the observable
+     * runs into an error that will
+     * cause it to abort and not finish.
+     * Receiving this callback means that
+     * the observable is dead and will
+     * be unsubscribed.
+     *
+     * @param throwable an optional throwable that could
+     *                  be sent.
+     */
+    void onError(@NonNull Throwable throwable);
+
 }

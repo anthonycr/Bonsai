@@ -27,7 +27,7 @@ import android.support.annotation.Nullable;
  * it should supply an implementation of this class
  * with the desired methods overridden.
  * If {@link #onError(Throwable)} is not overridden,
- * it will through an exception.
+ * it will throw an exception.
  *
  * @param <T> the type that will be emitted by the action.
  */
