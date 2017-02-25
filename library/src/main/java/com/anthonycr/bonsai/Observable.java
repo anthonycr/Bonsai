@@ -119,6 +119,8 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
     private Subscription startSubscription(@Nullable OnSubscribeT onSubscribe) {
         final SubscriberT subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultThread);
 
+        Preconditions.checkNonNull(subscriber);
+
         subscriber.onStart();
 
         executeOnSubscriberThread(new Runnable() {
