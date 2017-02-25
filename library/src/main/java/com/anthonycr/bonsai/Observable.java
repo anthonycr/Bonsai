@@ -20,7 +20,6 @@
  */
 package com.anthonycr.bonsai;
 
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -119,6 +118,8 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
     @NonNull
     private Subscription startSubscription(@Nullable OnSubscribeT onSubscribe) {
         final SubscriberT subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultThread);
+
+        Preconditions.checkNonNull(subscriber);
 
         subscriber.onStart();
 

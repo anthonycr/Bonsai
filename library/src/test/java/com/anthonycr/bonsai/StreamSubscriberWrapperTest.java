@@ -21,9 +21,9 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         final Assertion<Boolean> onStartCalled = new Assertion<>(false);
         final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
 
-        List<String> testlist = Arrays.asList("one", "two", "three", "four", "five");
+        List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        final List<String> subscriptionList = new ArrayList<>(testlist.size());
+        final List<String> subscriptionList = new ArrayList<>(testList.size());
 
         StreamOnSubscribe<String> onSubscribe = new StreamOnSubscribe<String>() {
             @Override
@@ -44,14 +44,14 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
 
         wrapper.onStart();
-        for (String item : testlist) {
+        for (String item : testList) {
             wrapper.onNext(item);
         }
         wrapper.onComplete();
 
         Assert.assertTrue(onStartCalled.get());
         Assert.assertTrue(onCompleteCalled.get());
-        Assert.assertEquals(testlist, subscriptionList);
+        Assert.assertEquals(testList, subscriptionList);
     }
 
     @Test(expected = RuntimeException.class)
@@ -59,9 +59,9 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         final Assertion<Boolean> onStartCalled = new Assertion<>(false);
         final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
 
-        List<String> testlist = Arrays.asList("one", "two", "three", "four", "five");
+        List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        final List<String> subscriptionList = new ArrayList<>(testlist.size());
+        final List<String> subscriptionList = new ArrayList<>(testList.size());
 
         StreamOnSubscribe<String> onSubscribe = new StreamOnSubscribe<String>() {
             @Override
@@ -84,7 +84,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         wrapper.onStart();
         wrapper.onComplete();
 
-        for (String item : testlist) {
+        for (String item : testList) {
             wrapper.onNext(item);
         }
     }
@@ -95,9 +95,9 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         final Assertion<Boolean> onStartCalled = new Assertion<>(false);
         final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
 
-        List<String> testlist = Arrays.asList("one", "two", "three", "four", "five");
+        List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        final List<String> subscriptionList = new ArrayList<>(testlist.size());
+        final List<String> subscriptionList = new ArrayList<>(testList.size());
 
         StreamOnSubscribe<String> onSubscribe = new StreamOnSubscribe<String>() {
             @Override
@@ -126,7 +126,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         // Unsubscribe from the stream
         wrapper.unsubscribe();
 
-        for (String item : testlist) {
+        for (String item : testList) {
             wrapper.onNext(item);
         }
         wrapper.onComplete();

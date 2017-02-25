@@ -23,7 +23,8 @@ package com.anthonycr.bonsai;
 import android.support.annotation.NonNull;
 
 /**
- * Created by anthonycr on 2/20/17.
+ * An action to perform when a consumer
+ * subscribes to the {@link Observable}.
  */
 interface ObservableAction<T> {
 
