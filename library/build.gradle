@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion project.targetSdkVersion
+    compileSdkVersion project.compileSdkVersion
     buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
@@ -27,3 +27,5 @@ dependencies {
 tasks.withType(Test) {
     systemProperty "robolectric.logging", "stdout"
 }
+
+apply from: '../library-release.gradle'

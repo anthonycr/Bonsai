@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion project.targetSdkVersion
+    compileSdkVersion project.compileSdkVersion
     buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
-        applicationId "com.anthonycr.sample"
+        applicationId "com.anthonycr.sample.bonsai"
         minSdkVersion project.minSdkVersion
         targetSdkVersion project.targetSdkVersion
         versionCode project.versionCode

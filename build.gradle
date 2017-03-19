@@ -7,9 +7,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
     }
 }
 
@@ -24,10 +21,14 @@ task clean(type: Delete) {
 }
 
 ext {
+    minSdkVersion = 14
+    compileSdkVersion = 25
+    targetSdkVersion = compileSdkVersion
+    buildToolsVersion = '25.0.2'
+
     versionCode = 1
     versionName = '1.0'
 
-    minSdkVersion = 14
-    targetSdkVersion = 25
-    buildToolsVersion = '25.0.2'
+    PUBLISH_GROUP_ID = 'com.anthonycr.bonsai'
+    PUBLISH_ARTIFACT_ID = 'bonsai'
 }
