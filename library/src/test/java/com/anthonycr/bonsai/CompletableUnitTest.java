@@ -26,6 +26,7 @@ import android.support.annotation.NonNull;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -44,9 +45,9 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableEventEmission_withException() throws Exception {
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
             @Override
@@ -96,9 +97,9 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableEventEmission_withError() throws Exception {
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
             @Override
@@ -139,10 +140,10 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableEventEmission_withoutError() throws Exception {
-        final Assertion<Boolean> onSubscribeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onSubscribeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
             @Override
@@ -182,7 +183,7 @@ public class CompletableUnitTest extends BaseUnitTest {
     public void testCompletableUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
-        final Assertion<Boolean> assertion = new Assertion<>(false);
+        final AtomicReference<Boolean> assertion = new AtomicReference<>(false);
         Subscription stringSubscription = Completable.create(new CompletableAction() {
 
             @Override
@@ -216,11 +217,11 @@ public class CompletableUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
 
@@ -269,11 +270,11 @@ public class CompletableUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
 
@@ -322,11 +323,11 @@ public class CompletableUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
 
@@ -375,11 +376,11 @@ public class CompletableUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
 
@@ -425,7 +426,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableThrowsException_onStartCalled() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -441,7 +442,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableThrowsException_onStartCalled_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -457,7 +458,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableSubscribesWithoutSubscriber() throws Exception {
-        final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> isCalledAssertion = new AtomicReference<>(false);
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -472,7 +473,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableThrowsException_onCompleteCalledTwice() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -495,7 +496,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
@@ -513,8 +514,8 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableCreatesLooperIfNotThere() throws Exception {
-        final Assertion<Boolean> looperInitiallyNull = new Assertion<>(false);
-        final Assertion<Boolean> looperFinallyNotNull = new Assertion<>(false);
+        final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -539,8 +540,8 @@ public class CompletableUnitTest extends BaseUnitTest {
     public void testCompletableSubscriberIsUnsubscribed() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
-        final Assertion<Boolean> unsubscribed = new Assertion<>(false);
-        final Assertion<Boolean> workAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> unsubscribed = new AtomicReference<>(false);
+        final AtomicReference<Boolean> workAssertion = new AtomicReference<>(false);
         Subscription subscription = Completable.create(new CompletableAction() {
 
             @Override
@@ -576,7 +577,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableEmpty_emitsNothingImmediately() throws Exception {
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
         Completable.empty().subscribe(new CompletableOnSubscribe() {
             @Override
             public void onComplete() {

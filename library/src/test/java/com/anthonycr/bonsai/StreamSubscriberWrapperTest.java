@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by anthonycr on 2/19/17.
@@ -18,8 +19,8 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
     @Test
     public void onNextTest_Succeeds() throws Exception {
 
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
 
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
@@ -56,8 +57,8 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
 
     @Test(expected = RuntimeException.class)
     public void onNextTest_Fails_calledAfterOnComplete() throws Exception {
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
 
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
@@ -92,8 +93,8 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
     @Test
     public void unsubscribe_itemsNotEmitted() throws Exception {
 
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
 
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 

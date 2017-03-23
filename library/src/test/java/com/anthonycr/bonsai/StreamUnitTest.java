@@ -29,6 +29,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -81,10 +82,10 @@ public class StreamUnitTest extends BaseUnitTest {
     public void testStreamEventEmission_withException() throws Exception {
         final int testCount = 7;
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
         Stream.create(new StreamAction<String>() {
@@ -159,10 +160,10 @@ public class StreamUnitTest extends BaseUnitTest {
     public void testStreamEventEmission_withError() throws Exception {
         final int testCount = 7;
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
         Stream.create(new StreamAction<String>() {
@@ -223,10 +224,10 @@ public class StreamUnitTest extends BaseUnitTest {
     public void testStreamEventEmission_withoutError() throws Exception {
         final int testCount = 7;
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
         Stream.create(new StreamAction<String>() {
@@ -282,7 +283,7 @@ public class StreamUnitTest extends BaseUnitTest {
     public void testStreamUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
-        final Assertion<Boolean> assertion = new Assertion<>(false);
+        final AtomicReference<Boolean> assertion = new AtomicReference<>(false);
         Subscription stringSubscription = Stream.create(new StreamAction<String>() {
 
             @Override
@@ -316,11 +317,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -374,11 +375,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onNextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -428,11 +429,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -481,11 +482,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -534,11 +535,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -584,7 +585,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamSubscribesWithoutSubscriber() throws Exception {
-        final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> isCalledAssertion = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -600,7 +601,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onCompleteCalledTwice() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -619,7 +620,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -637,7 +638,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onStartCalled() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -653,7 +654,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onStartCalled_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -669,7 +670,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onNextCalledAfterOnComplete() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -686,8 +687,8 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamCreatesLooperIfNotThere() throws Exception {
-        final Assertion<Boolean> looperInitiallyNull = new Assertion<>(false);
-        final Assertion<Boolean> looperFinallyNotNull = new Assertion<>(false);
+        final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -713,7 +714,7 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onNextLatch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
-        final Assertion<Boolean> unsubscribed = new Assertion<>(false);
+        final AtomicReference<Boolean> unsubscribed = new AtomicReference<>(false);
         final List<String> list = new ArrayList<>();
         Subscription subscription = Stream.create(new StreamAction<String>() {
 
@@ -756,8 +757,8 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamEmpty_emitsNothingImmediately() throws Exception {
-        final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onNextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
         Stream.empty().subscribe(new StreamOnSubscribe<Object>() {
 
             @Override

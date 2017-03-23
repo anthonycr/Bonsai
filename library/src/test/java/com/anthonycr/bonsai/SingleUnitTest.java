@@ -29,6 +29,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -77,9 +78,9 @@ public class SingleUnitTest extends BaseUnitTest {
     public void testSingleMultipleEventEmission_throwsException() throws Exception {
         final int testCount = 2;
 
-        final Assertion<Boolean> exceptionWasThrown = new Assertion<>(false);
-        final Assertion<Boolean> exceptionWasCause = new Assertion<>(false);
-        final Assertion<Throwable> throwableAssertion = new Assertion<>(null);
+        final AtomicReference<Boolean> exceptionWasThrown = new AtomicReference<>(false);
+        final AtomicReference<Boolean> exceptionWasCause = new AtomicReference<>(false);
+        final AtomicReference<Throwable> throwableAssertion = new AtomicReference<>(null);
 
         final CountDownLatch onErrorCountdown = new CountDownLatch(1);
         final CountDownLatch onCompleteCountdown = new CountDownLatch(1);
@@ -148,10 +149,10 @@ public class SingleUnitTest extends BaseUnitTest {
     public void testSingleEventEmission_withException() throws Exception {
         final int testCount = 1;
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
@@ -207,10 +208,10 @@ public class SingleUnitTest extends BaseUnitTest {
     public void testSingleEventEmission_withError() throws Exception {
         final int testCount = 1;
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
@@ -271,10 +272,10 @@ public class SingleUnitTest extends BaseUnitTest {
     public void testSingleEventEmission_withoutError() throws Exception {
         final int testCount = 1;
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
@@ -328,7 +329,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onStartCalled() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -344,7 +345,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onStartCalled_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -362,7 +363,7 @@ public class SingleUnitTest extends BaseUnitTest {
     public void testSingleUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
-        final Assertion<Boolean> assertion = new Assertion<>(false);
+        final AtomicReference<Boolean> assertion = new AtomicReference<>(false);
         Subscription stringSubscription = Single.create(new SingleAction<String>() {
 
             @Override
@@ -396,11 +397,11 @@ public class SingleUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Single.create(new SingleAction<String>() {
 
@@ -454,11 +455,11 @@ public class SingleUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onItemAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onItemAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Single.create(new SingleAction<String>() {
 
@@ -508,11 +509,11 @@ public class SingleUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Single.create(new SingleAction<String>() {
 
@@ -561,11 +562,11 @@ public class SingleUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Single.create(new SingleAction<String>() {
 
@@ -614,11 +615,11 @@ public class SingleUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Single.create(new SingleAction<String>() {
 
@@ -664,7 +665,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleSubscribesWithoutSubscriber() throws Exception {
-        final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> isCalledAssertion = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -680,7 +681,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleThrowsException_onCompleteCalledTwice() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -699,7 +700,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -717,7 +718,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleThrowsException_onItemCalledTwice() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -737,7 +738,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleThrowsException_onItemCalledAfterOnComplete() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Single.create(new SingleAction<Object>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
@@ -756,8 +757,8 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleCreatesLooperIfNotThere() throws Exception {
-        final Assertion<Boolean> looperInitiallyNull = new Assertion<>(false);
-        final Assertion<Boolean> looperFinallyNotNull = new Assertion<>(false);
+        final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -782,7 +783,7 @@ public class SingleUnitTest extends BaseUnitTest {
     public void testSingleSubscriberIsUnsubscribed() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
-        final Assertion<Boolean> unsubscribed = new Assertion<>(false);
+        final AtomicReference<Boolean> unsubscribed = new AtomicReference<>(false);
         final List<String> list = new ArrayList<>();
         Subscription subscription = Single.create(new SingleAction<String>() {
 
@@ -819,8 +820,8 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleEmpty_emitsNothingImmediately() throws Exception {
-        final Assertion<Boolean> onItemAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onItemAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
         Single.empty().subscribe(new SingleOnSubscribe<Object>() {
 
             @Override

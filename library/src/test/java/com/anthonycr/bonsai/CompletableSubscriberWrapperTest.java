@@ -6,6 +6,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Created by anthonycr on 2/19/17.
  */
@@ -13,9 +15,9 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onCompleteTest_Succeeds() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
             @Override
             public void onError(@NonNull Throwable throwable) {
@@ -42,9 +44,9 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test(expected = RuntimeException.class)
     public void onCompleteTest_calledMultipleTimes_throwsException() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
             @Override
             public void onError(@NonNull Throwable throwable) {
@@ -73,9 +75,9 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onErrorTest_Succeeds_overridden() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
             @Override
             public void onStart() {
@@ -115,9 +117,9 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onStartTest_Succeeds() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
             @Override
             public void onError(@NonNull Throwable throwable) {
@@ -144,9 +146,9 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test(expected = RuntimeException.class)
     public void onStartTest_calledMultipleTimes_throwsException() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
             @Override
             public void onError(@NonNull Throwable throwable) {
@@ -175,9 +177,9 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void unsubscribeTest() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
             @Override
             public void onError(@NonNull Throwable throwable) {

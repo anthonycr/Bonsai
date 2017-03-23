@@ -7,6 +7,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Created by anthonycr on 2/19/17.
  */
@@ -15,10 +17,10 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     @Test
     public void onItemTest_Succeeds() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
+        final AtomicReference<String> emittedItem = new AtomicReference<>(null);
 
         SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
             @Override
@@ -56,10 +58,10 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     @Test(expected = RuntimeException.class)
     public void onItemTest_Fails_calledAfterOnComplete() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
+        final AtomicReference<String> emittedItem = new AtomicReference<>(null);
 
         SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
             @Override
@@ -91,10 +93,10 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     @Test(expected = RuntimeException.class)
     public void onItemTest_Fails_calledMultipleTimes() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
+        final AtomicReference<String> emittedItem = new AtomicReference<>(null);
 
         SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
             @Override
@@ -127,10 +129,10 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     @Test
     public void unsubscribe_itemNotEmitted() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
+        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorCalled = new AtomicReference<>(false);
+        final AtomicReference<String> emittedItem = new AtomicReference<>(null);
 
         SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
             @Override
