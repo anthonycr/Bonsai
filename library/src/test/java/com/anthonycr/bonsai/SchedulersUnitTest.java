@@ -29,11 +29,12 @@ import org.junit.Test;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class SchedulersUnitTest extends BaseUnitTest{
+public class SchedulersUnitTest extends BaseUnitTest {
 
     @Test
     public void testIsFinalClass() throws Exception {
@@ -42,7 +43,7 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testMainScheduler_isCorrect() throws Exception {
-        final Assertion<Boolean> mainScheduler = new Assertion<>();
+        final AtomicReference<Boolean> mainScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.main().execute(new Runnable() {
             @Override
@@ -57,8 +58,8 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testCurrentScheduler_initializesLooper() throws Exception {
-        final Assertion<Boolean> currentScheduler = new Assertion<>();
-        final Assertion<Boolean> nullScheduler = new Assertion<>();
+        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
+        final AtomicReference<Boolean> nullScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.worker().execute(new Runnable() {
             @Override
@@ -83,7 +84,7 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testCurrentScheduler_isCorrect() throws Exception {
-        final Assertion<Boolean> currentScheduler = new Assertion<>();
+        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         Utils.prepareLooper();
         final Looper currentLooper = Looper.myLooper();
@@ -102,7 +103,7 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testIoScheduler_isOnDifferentThread() throws Exception {
-        final Assertion<Boolean> currentScheduler = new Assertion<>();
+        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         Utils.prepareLooper();
         final Looper currentLooper = Looper.myLooper();
@@ -121,7 +122,7 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testWorkerScheduler_isOnDifferentThread() throws Exception {
-        final Assertion<Boolean> currentScheduler = new Assertion<>();
+        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         Utils.prepareLooper();
         final Looper currentLooper = Looper.myLooper();
@@ -140,7 +141,7 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testNewSingleThreadScheduler_isOnDifferentThread() throws Exception {
-        final Assertion<Boolean> currentScheduler = new Assertion<>();
+        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
         Utils.prepareLooper();
         final Looper currentLooper = Looper.myLooper();
@@ -159,8 +160,8 @@ public class SchedulersUnitTest extends BaseUnitTest{
 
     @Test
     public void testFromScheduler_isOnRightThread() throws Exception {
-        final Assertion<Looper> executorAssertion = new Assertion<>();
-        final Assertion<Looper> schedulerAssertion = new Assertion<>();
+        final AtomicReference<Looper> executorAssertion = new AtomicReference<>();
+        final AtomicReference<Looper> schedulerAssertion = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(2);
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable() {
