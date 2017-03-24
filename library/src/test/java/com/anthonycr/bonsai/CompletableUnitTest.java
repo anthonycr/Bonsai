@@ -144,11 +144,7 @@ public class CompletableUnitTest extends BaseUnitTest {
 
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
-                try {
-                    subscribeLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(subscribeLatch);
                 subscriber.onComplete();
                 latch.countDown();
             }
@@ -509,17 +505,20 @@ public class CompletableUnitTest extends BaseUnitTest {
     public void testCompletableSubscriberIsUnsubscribed() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
+        final CountDownLatch onStartLatch = new CountDownLatch(1);
+
+        final AtomicReference<Boolean> onStart = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onComplete = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onError = new AtomicReference<>(false);
+
         final AtomicReference<Boolean> unsubscribed = new AtomicReference<>(false);
         final AtomicReference<Boolean> workAssertion = new AtomicReference<>(false);
+
         Subscription subscription = Completable.create(new CompletableAction() {
 
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(latch);
                 // should be unsubscribed after the latch countdown occurs
                 if (!subscriber.isUnsubscribed()) {
                     workAssertion.set(true);
@@ -530,17 +529,35 @@ public class CompletableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.newSingleThreadedScheduler())
             .observeOn(Schedulers.newSingleThreadedScheduler())
-            .subscribe(completableOnSubscribe);
+            .subscribe(new CompletableOnSubscribe() {
+                @Override
+                public void onComplete() {
+                    onComplete.set(true);
+                }
+
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    onError.set(true);
+                }
+
+                @Override
+                public void onStart() {
+                    onStart.set(true);
+                    onStartLatch.countDown();
+                }
+            });
 
         subscription.unsubscribe();
         latch.countDown();
         onFinalLatch.await();
+        onStartLatch.await();
 
         assertFalse(workAssertion.get());
         assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
+        assertTrue(onStart.get());
+        assertFalse(onComplete.get());
+        assertFalse(onError.get());
 
-        Mockito.verify(completableOnSubscribe).onStart();
-        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test

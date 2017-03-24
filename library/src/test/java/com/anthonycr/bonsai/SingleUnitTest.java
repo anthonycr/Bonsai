@@ -25,6 +25,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +41,9 @@ import static org.junit.Assert.assertTrue;
 
 public class SingleUnitTest extends BaseUnitTest {
 
+    @Mock
+    private SingleOnSubscribe<String> singleOnSubscribe;
+
     @Test
     public void testMainLooperWorking() throws Exception {
         if (Looper.getMainLooper() == null) {
@@ -48,30 +54,25 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleEmissionOrder_singleThread() throws Exception {
-        final int testCount = 1;
+        final String testItem = "1";
 
-        final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onItem(String.valueOf(n));
-                }
+                subscriber.onItem(testItem);
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new SingleOnSubscribe<String>() {
-                @Override
-                public void onItem(@Nullable String item) {
-                    list.add(item);
-                }
+            .subscribe(singleOnSubscribe);
 
-            });
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
-        }
+        InOrder inOrder = Mockito.inOrder(singleOnSubscribe);
+
+        inOrder.verify(singleOnSubscribe).onStart();
+        inOrder.verify(singleOnSubscribe).onItem(testItem);
+        inOrder.verify(singleOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(singleOnSubscribe);
     }
 
     @Test
@@ -368,11 +369,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
-                try {
-                    subscribeLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(subscribeLatch);
                 subscriber.onItem("test");
                 latch.countDown();
             }
@@ -789,11 +786,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(latch);
                 // should be unsubscribed after the latch countdown occurs
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onItem("test 1");

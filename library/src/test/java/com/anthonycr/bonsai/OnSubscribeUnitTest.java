@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Modifier;
 
-public class OnSubscribeUnitTest extends BaseUnitTest{
+public class OnSubscribeUnitTest extends BaseUnitTest {
 
     @Test
     public void testClassType() throws Exception {

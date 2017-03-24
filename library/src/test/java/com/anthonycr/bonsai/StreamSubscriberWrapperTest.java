@@ -5,6 +5,9 @@ import android.support.annotation.Nullable;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,33 +19,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class StreamSubscriberWrapperTest extends BaseUnitTest {
 
+    @Mock
+    private StreamOnSubscribe<String> stringStreamOnSubscribe;
+
     @Test
     public void onNextTest_Succeeds() throws Exception {
 
-        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
-        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
-
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        final List<String> subscriptionList = new ArrayList<>(testList.size());
-
-        StreamOnSubscribe<String> onSubscribe = new StreamOnSubscribe<String>() {
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onNext(@Nullable String item) {
-                subscriptionList.add(item);
-            }
-        };
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
 
         wrapper.onStart();
         for (String item : testList) {
@@ -50,40 +35,32 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         }
         wrapper.onComplete();
 
-        Assert.assertTrue(onStartCalled.get());
-        Assert.assertTrue(onCompleteCalled.get());
-        Assert.assertEquals(testList, subscriptionList);
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(0));
+        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(1));
+        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(2));
+        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(3));
+        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(4));
+        inOrder.verify(stringStreamOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test(expected = RuntimeException.class)
     public void onNextTest_Fails_calledAfterOnComplete() throws Exception {
-        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
-        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
-
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        final List<String> subscriptionList = new ArrayList<>(testList.size());
-
-        StreamOnSubscribe<String> onSubscribe = new StreamOnSubscribe<String>() {
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onNext(@Nullable String item) {
-                subscriptionList.add(item);
-            }
-        };
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
 
         wrapper.onStart();
         wrapper.onComplete();
+
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
 
         for (String item : testList) {
             wrapper.onNext(item);
@@ -92,31 +69,9 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void unsubscribe_itemsNotEmitted() throws Exception {
-
-        final AtomicReference<Boolean> onStartCalled = new AtomicReference<>(false);
-        final AtomicReference<Boolean> onCompleteCalled = new AtomicReference<>(false);
-
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        final List<String> subscriptionList = new ArrayList<>(testList.size());
-
-        StreamOnSubscribe<String> onSubscribe = new StreamOnSubscribe<String>() {
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onNext(@Nullable String item) {
-                subscriptionList.add(item);
-            }
-        };
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
 
         wrapper.onStart();
 
@@ -132,10 +87,11 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         }
         wrapper.onComplete();
 
-        Assert.assertTrue(onStartCalled.get());
-        Assert.assertFalse(onCompleteCalled.get());
-        Assert.assertTrue(subscriptionList.size() == 1);
-        Assert.assertTrue(subscriptionList.get(0).equals(onlyItem));
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onNext(onlyItem);
+        inOrder.verifyNoMoreInteractions();
     }
 
 }

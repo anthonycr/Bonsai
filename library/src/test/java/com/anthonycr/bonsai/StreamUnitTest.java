@@ -288,11 +288,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                try {
-                    subscribeLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(subscribeLatch);
                 subscriber.onNext("test");
                 latch.countDown();
             }
@@ -723,11 +719,7 @@ public class StreamUnitTest extends BaseUnitTest {
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 1");
                 }
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(latch);
                 // should be unsubscribed after the latch countdown occurs
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 2");
