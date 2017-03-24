@@ -34,15 +34,17 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class SingleUnitTest extends BaseUnitTest {
 
     @Mock
-    private SingleOnSubscribe<String> singleOnSubscribe;
+    private SingleOnSubscribe<String> stringSingleOnSubscribe;
 
     @Test
     public void testMainLooperWorking() throws Exception {
@@ -64,40 +66,37 @@ public class SingleUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(singleOnSubscribe);
+            .subscribe(stringSingleOnSubscribe);
 
-        InOrder inOrder = Mockito.inOrder(singleOnSubscribe);
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
 
-        inOrder.verify(singleOnSubscribe).onStart();
-        inOrder.verify(singleOnSubscribe).onItem(testItem);
-        inOrder.verify(singleOnSubscribe).onComplete();
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
 
-        Mockito.verifyNoMoreInteractions(singleOnSubscribe);
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
     public void testSingleMultipleEventEmission_throwsException() throws Exception {
-        final int testCount = 2;
+        final String testItem = "2";
 
-        final AtomicReference<Boolean> exceptionWasThrown = new AtomicReference<>(false);
         final AtomicReference<Boolean> exceptionWasCause = new AtomicReference<>(false);
         final AtomicReference<Throwable> throwableAssertion = new AtomicReference<>(null);
+        final AtomicReference<String> stringItem = new AtomicReference<>(null);
 
         final CountDownLatch onErrorCountdown = new CountDownLatch(1);
         final CountDownLatch onCompleteCountdown = new CountDownLatch(1);
 
-        final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
                 try {
-                    for (int n = 0; n < testCount; n++) {
-                        subscriber.onItem(String.valueOf(n));
-                    }
-                } catch (Exception ignored) {
-                    throwableAssertion.set(ignored);
-                    exceptionWasThrown.set(true);
-                    subscriber.onError(ignored);
+                    subscriber.onItem(testItem);
+                    subscriber.onItem(testItem);
+                } catch (Exception e) {
+                    throwableAssertion.set(e);
+                    subscriber.onError(e);
                 }
                 subscriber.onComplete();
             }
@@ -112,7 +111,7 @@ public class SingleUnitTest extends BaseUnitTest {
 
                 @Override
                 public void onItem(@Nullable String item) {
-                    list.add(item);
+                    stringItem.set(item);
                     onCompleteCountdown.countDown();
                 }
 
@@ -123,12 +122,7 @@ public class SingleUnitTest extends BaseUnitTest {
         onCompleteCountdown.await();
 
         assertTrue(exceptionWasCause.get());
-        assertTrue(exceptionWasThrown.get());
-
-        assertTrue(list.size() == 1);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
-        }
+        assertEquals(testItem, stringItem.get());
     }
 
     @Test
@@ -148,81 +142,38 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleEventEmission_withException() throws Exception {
-        final int testCount = 1;
+        final String testItem = "1";
+        final RuntimeException runtimeException = new RuntimeException("Test failure");
 
-        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
-
-        final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onItem(String.valueOf(n));
-                }
-                throw new RuntimeException("Test failure");
+                subscriber.onItem(testItem);
+                throw runtimeException;
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new SingleOnSubscribe<String>() {
+            .subscribe(stringSingleOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
 
-                @Override
-                public void onItem(@Nullable String item) {
-                    nextAssertion.set(true);
-                    list.add(item);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Even though error has been broadcast,
-        // Single should still complete.
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
-        }
-
-        // Assert that each of the events was
-        // received by the subscriber
-        assertTrue(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertFalse(completeAssertion.get());
-        assertTrue(nextAssertion.get());
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
+        inOrder.verify(stringSingleOnSubscribe).onError(runtimeException);
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
     public void testSingleEventEmission_withError() throws Exception {
-        final int testCount = 1;
+        final String testItem = "1";
+        final Exception exception = new Exception("Test failure");
 
-        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
-
-        final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onItem(String.valueOf(n));
-                }
+                subscriber.onItem(testItem);
                 try {
-                    throw new Exception("Test failure");
+                    throw exception;
                 } catch (Exception e) {
                     subscriber.onError(e);
                 }
@@ -230,118 +181,57 @@ public class SingleUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new SingleOnSubscribe<String>() {
+            .subscribe(stringSingleOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
 
-                @Override
-                public void onItem(@Nullable String item) {
-                    nextAssertion.set(true);
-                    list.add(item);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Even though error has been broadcast,
-        // Single should still complete.
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
-        }
-
-        // Assert that each of the events was
-        // received by the subscriber
-        assertTrue(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertFalse(completeAssertion.get());
-        assertTrue(nextAssertion.get());
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
+        inOrder.verify(stringSingleOnSubscribe).onError(exception);
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
     public void testSingleEventEmission_withoutError() throws Exception {
-        final int testCount = 1;
+        final String testItem = "1";
 
-        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> nextAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
-
-        final List<String> list = new ArrayList<>(testCount);
         Single.create(new SingleAction<String>() {
             @Override
             public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onItem(String.valueOf(n));
-                }
+                subscriber.onItem(testItem);
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new SingleOnSubscribe<String>() {
+            .subscribe(stringSingleOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
 
-                @Override
-                public void onItem(@Nullable String item) {
-                    nextAssertion.set(true);
-                    list.add(item);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Even though error has been broadcast,
-        // Single should still complete.
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
-        }
-
-        // Assert that each of the events was
-        // received by the subscriber
-        assertFalse(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertTrue(completeAssertion.get());
-        assertTrue(nextAssertion.get());
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
     public void testStreamThrowsException_onStartCalled() throws Exception {
-        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
-        Single.create(new SingleAction<Object>() {
+        final AtomicReference<Throwable> throwableReference = new AtomicReference<>(null);
+        Single.create(new SingleAction<String>() {
             @Override
-            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
                 try {
                     subscriber.onStart();
-                } catch (Exception exception) {
-                    errorThrown.set(true);
+                } catch (Exception e) {
+                    throwableReference.set(e);
+                    subscriber.onError(e);
                 }
             }
-        }).subscribe(new SingleOnSubscribe<Object>() {});
-        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+        }).subscribe(stringSingleOnSubscribe);
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onError(throwableReference.get());
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
@@ -679,9 +569,9 @@ public class SingleUnitTest extends BaseUnitTest {
     @Test
     public void testSingleThrowsException_onCompleteCalledTwice() throws Exception {
         final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
-        Single.create(new SingleAction<Object>() {
+        Single.create(new SingleAction<String>() {
             @Override
-            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onComplete();
@@ -689,10 +579,15 @@ public class SingleUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new SingleOnSubscribe<Object>() {
-        });
+        }).subscribe(stringSingleOnSubscribe);
         assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
@@ -716,9 +611,9 @@ public class SingleUnitTest extends BaseUnitTest {
     @Test
     public void testSingleThrowsException_onItemCalledTwice() throws Exception {
         final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
-        Single.create(new SingleAction<Object>() {
+        Single.create(new SingleAction<String>() {
             @Override
-            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
                 try {
                     subscriber.onItem(null);
                     subscriber.onItem(null);
@@ -727,18 +622,24 @@ public class SingleUnitTest extends BaseUnitTest {
                 }
                 subscriber.onComplete();
             }
-        }).subscribe(new SingleOnSubscribe<Object>() {
-        });
+        }).subscribe(stringSingleOnSubscribe);
         assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
             errorThrown.get());
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(null);
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
     public void testSingleThrowsException_onItemCalledAfterOnComplete() throws Exception {
         final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
-        Single.create(new SingleAction<Object>() {
+        Single.create(new SingleAction<String>() {
             @Override
-            public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull SingleSubscriber<String> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onItem(null);
@@ -746,10 +647,15 @@ public class SingleUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new SingleOnSubscribe<Object>() {
-        });
+        }).subscribe(stringSingleOnSubscribe);
         assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
             errorThrown.get());
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
     }
 
     @Test
@@ -813,24 +719,14 @@ public class SingleUnitTest extends BaseUnitTest {
 
     @Test
     public void testSingleEmpty_emitsNothingImmediately() throws Exception {
-        final AtomicReference<Boolean> onItemAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
-        Single.empty().subscribe(new SingleOnSubscribe<Object>() {
+        Single<String> stringSingle = Single.empty();
+        stringSingle.subscribe(stringSingleOnSubscribe);
 
-            @Override
-            public void onItem(@Nullable Object item) {
-                onItemAssertion.set(true);
-            }
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
 
-            @Override
-            public void onComplete() {
-                onCompleteAssertion.set(true);
-            }
-
-        });
-
-        assertFalse(onItemAssertion.get());
-        assertTrue(onCompleteAssertion.get());
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+        inOrder.verifyNoMoreInteractions();
     }
 
 }
