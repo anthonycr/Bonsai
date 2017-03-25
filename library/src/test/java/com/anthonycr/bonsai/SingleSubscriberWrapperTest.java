@@ -34,7 +34,8 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onItem(itemToBeEmitted);
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
 
     }
 
@@ -50,7 +51,8 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
 
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
 
         wrapper.onItem(itemToBeEmitted);
     }
@@ -67,7 +69,8 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
 
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onItem(itemToBeEmitted);
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
 
         wrapper.onItem(itemToBeEmitted);
     }

@@ -160,7 +160,8 @@ public class SingleUnitTest extends BaseUnitTest {
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
         inOrder.verify(stringSingleOnSubscribe).onError(runtimeException);
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -188,7 +189,8 @@ public class SingleUnitTest extends BaseUnitTest {
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
         inOrder.verify(stringSingleOnSubscribe).onError(exception);
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -210,7 +212,8 @@ public class SingleUnitTest extends BaseUnitTest {
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onItem(testItem);
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -231,7 +234,8 @@ public class SingleUnitTest extends BaseUnitTest {
         InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onError(throwableReference.get());
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -587,7 +591,8 @@ public class SingleUnitTest extends BaseUnitTest {
 
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -631,7 +636,8 @@ public class SingleUnitTest extends BaseUnitTest {
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onItem(null);
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -655,7 +661,8 @@ public class SingleUnitTest extends BaseUnitTest {
 
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
     @Test
@@ -726,7 +733,8 @@ public class SingleUnitTest extends BaseUnitTest {
 
         inOrder.verify(stringSingleOnSubscribe).onStart();
         inOrder.verify(stringSingleOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
 }

@@ -38,13 +38,12 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
 
         inOrder.verify(stringStreamOnSubscribe).onStart();
-        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(0));
-        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(1));
-        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(2));
-        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(3));
-        inOrder.verify(stringStreamOnSubscribe).onNext(testList.get(4));
+        for (String item : testList) {
+            inOrder.verify(stringStreamOnSubscribe).onNext(item);
+        }
         inOrder.verify(stringStreamOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test(expected = RuntimeException.class)
@@ -60,7 +59,8 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
 
         inOrder.verify(stringStreamOnSubscribe).onStart();
         inOrder.verify(stringStreamOnSubscribe).onComplete();
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
 
         for (String item : testList) {
             wrapper.onNext(item);
@@ -91,7 +91,8 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
 
         inOrder.verify(stringStreamOnSubscribe).onStart();
         inOrder.verify(stringStreamOnSubscribe).onNext(onlyItem);
-        inOrder.verifyNoMoreInteractions();
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
 }
