@@ -24,6 +24,9 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,6 +38,9 @@ import static org.junit.Assert.assertTrue;
 
 public class CompletableUnitTest extends BaseUnitTest {
 
+    @Mock
+    private CompletableOnSubscribe completableOnSubscribe;
+
     @Test
     public void testMainLooperWorking() throws Exception {
         if (Looper.getMainLooper() == null) {
@@ -45,40 +51,23 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableEventEmission_withException() throws Exception {
-        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
+        final RuntimeException runtimeException = new RuntimeException("Test failure");
 
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
-                throw new RuntimeException("Test failure");
+                throw runtimeException;
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new CompletableOnSubscribe() {
+            .subscribe(completableOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
 
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
+        inOrder.verify(completableOnSubscribe).onStart();
+        inOrder.verify(completableOnSubscribe).onError(runtimeException);
 
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Assert that each of the events was
-        // received by the subscriber
-        assertTrue(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertFalse(completeAssertion.get());
+        Mockito.verify(completableOnSubscribe, Mockito.never()).onComplete();
     }
 
     @Test
@@ -97,15 +86,13 @@ public class CompletableUnitTest extends BaseUnitTest {
 
     @Test
     public void testCompletableEventEmission_withError() throws Exception {
-        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
+        final Exception exception = new Exception("Test failure");
 
         Completable.create(new CompletableAction() {
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
                 try {
-                    throw new Exception("Test failure");
+                    throw exception;
                 } catch (Exception e) {
                     subscriber.onError(e);
                 }
@@ -113,37 +100,19 @@ public class CompletableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new CompletableOnSubscribe() {
+            .subscribe(completableOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
 
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
+        inOrder.verify(completableOnSubscribe).onStart();
+        inOrder.verify(completableOnSubscribe).onError(exception);
 
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Assert that each of the events was
-        // received by the subscriber
-        assertTrue(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertFalse(completeAssertion.get());
+        Mockito.verify(completableOnSubscribe, Mockito.never()).onComplete();
     }
 
     @Test
     public void testCompletableEventEmission_withoutError() throws Exception {
         final AtomicReference<Boolean> onSubscribeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> errorAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> completeAssertion = new AtomicReference<>(false);
-        final AtomicReference<Boolean> startAssertion = new AtomicReference<>(false);
 
         Completable.create(new CompletableAction() {
             @Override
@@ -153,63 +122,42 @@ public class CompletableUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new CompletableOnSubscribe() {
-
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
+            .subscribe(completableOnSubscribe);
 
         // Assert that each of the events was
         // received by the subscriber
         assertTrue(onSubscribeAssertion.get());
-        assertFalse(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertTrue(completeAssertion.get());
+
+        InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
+
+        inOrder.verify(completableOnSubscribe).onStart();
+        inOrder.verify(completableOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test
     public void testCompletableUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
-        final AtomicReference<Boolean> assertion = new AtomicReference<>(false);
         Subscription stringSubscription = Completable.create(new CompletableAction() {
 
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
-                try {
-                    subscribeLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(subscribeLatch);
                 subscriber.onComplete();
                 latch.countDown();
             }
         }).subscribeOn(Schedulers.io())
             .observeOn(Schedulers.io())
-            .subscribe(new CompletableOnSubscribe() {
-                @Override
-                public void onComplete() {
-                    assertion.set(true);
-                }
-            });
+            .subscribe(completableOnSubscribe);
 
         stringSubscription.unsubscribe();
         subscribeLatch.countDown();
         latch.await();
 
-        assertFalse(assertion.get());
+        Mockito.verify(completableOnSubscribe).onStart();
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test
@@ -435,9 +383,18 @@ public class CompletableUnitTest extends BaseUnitTest {
                 } catch (Exception exception) {
                     errorThrown.set(true);
                 }
+                subscriber.onComplete();
             }
-        }).subscribe(new CompletableOnSubscribe() {});
+        }).subscribe(completableOnSubscribe);
+
         assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+
+        InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
+
+        inOrder.verify(completableOnSubscribe).onStart();
+        inOrder.verify(completableOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test
@@ -453,6 +410,7 @@ public class CompletableUnitTest extends BaseUnitTest {
                 }
             }
         }).subscribe();
+
         assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
     }
 
@@ -468,6 +426,7 @@ public class CompletableUnitTest extends BaseUnitTest {
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
             .subscribe();
+
         assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
     }
 
@@ -484,14 +443,17 @@ public class CompletableUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new CompletableOnSubscribe() {
-            @Override
-            public void onComplete() {
+        }).subscribe(completableOnSubscribe);
 
-            }
-        });
         assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
+
+        InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
+
+        inOrder.verify(completableOnSubscribe).onStart();
+        inOrder.verify(completableOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test
@@ -508,6 +470,7 @@ public class CompletableUnitTest extends BaseUnitTest {
                 }
             }
         }).subscribe();
+
         assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
             errorThrown.get());
     }
@@ -531,7 +494,9 @@ public class CompletableUnitTest extends BaseUnitTest {
                 latch.countDown();
             }
         });
+
         latch.await();
+
         assertTrue("Looper should initially be null", looperInitiallyNull.get());
         assertTrue("Looper should be initialized by Completable class", looperFinallyNotNull.get());
     }
@@ -540,22 +505,26 @@ public class CompletableUnitTest extends BaseUnitTest {
     public void testCompletableSubscriberIsUnsubscribed() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
+        final CountDownLatch onStartLatch = new CountDownLatch(1);
+
+        final AtomicReference<Boolean> onStart = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onComplete = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onError = new AtomicReference<>(false);
+
         final AtomicReference<Boolean> unsubscribed = new AtomicReference<>(false);
         final AtomicReference<Boolean> workAssertion = new AtomicReference<>(false);
+
         Subscription subscription = Completable.create(new CompletableAction() {
 
             @Override
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(latch);
                 // should be unsubscribed after the latch countdown occurs
                 if (!subscriber.isUnsubscribed()) {
                     workAssertion.set(true);
                 }
                 unsubscribed.set(subscriber.isUnsubscribed());
+                subscriber.onComplete();
                 onFinalLatch.countDown();
             }
         }).subscribeOn(Schedulers.newSingleThreadedScheduler())
@@ -563,30 +532,44 @@ public class CompletableUnitTest extends BaseUnitTest {
             .subscribe(new CompletableOnSubscribe() {
                 @Override
                 public void onComplete() {
+                    onComplete.set(true);
+                }
 
+                @Override
+                public void onError(@NonNull Throwable throwable) {
+                    onError.set(true);
+                }
+
+                @Override
+                public void onStart() {
+                    onStart.set(true);
+                    onStartLatch.countDown();
                 }
             });
 
         subscription.unsubscribe();
         latch.countDown();
         onFinalLatch.await();
+        onStartLatch.await();
 
         assertFalse(workAssertion.get());
         assertTrue("isUnsubscribed() was not correct", unsubscribed.get());
+        assertTrue(onStart.get());
+        assertFalse(onComplete.get());
+        assertFalse(onError.get());
+
     }
 
     @Test
     public void testCompletableEmpty_emitsNothingImmediately() throws Exception {
-        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
-        Completable.empty().subscribe(new CompletableOnSubscribe() {
-            @Override
-            public void onComplete() {
-                onCompleteAssertion.set(true);
-            }
+        Completable.empty().subscribe(completableOnSubscribe);
 
-        });
+        InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
 
-        assertTrue(onCompleteAssertion.get());
+        inOrder.verify(completableOnSubscribe).onStart();
+        inOrder.verify(completableOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
 }

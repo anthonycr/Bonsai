@@ -28,6 +28,7 @@ import junit.framework.Assert;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.CountDownLatch;
 
 public class Utils {
 
@@ -69,6 +70,14 @@ public class Utils {
 
     public static void log(@NonNull CharSequence message) {
         log(DEFAULT_LOG_TAG, message);
+    }
+
+    public static void safeWait(@NonNull CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
