@@ -30,10 +30,9 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("WeakerAccess")
 @WorkerThread
 public final class Database extends SQLiteOpenHelper {
 
@@ -80,12 +79,8 @@ public final class Database extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if it exists
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CONTACTS);
-        // Create tables again
+        // Create table again
         onCreate(db);
-    }
-
-    private static long currentTimeDiff(long nanos) {
-        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - nanos);
     }
 
     /**
@@ -141,34 +136,65 @@ public final class Database extends SQLiteOpenHelper {
     }
 
     /**
-     * Retrieves all contacts from the database synchronously.
-     * Should not be run on the main thread.
+     * Returns a cursor over all the contacts
+     * in the database. This is a blocking operation
+     * and should be consumed from a worker thread.
      *
-     * @return a valid list of all Contacts in the database.
+     * @return a cursor over the entire data set.
      */
     @WorkerThread
     @NonNull
-    public synchronized List<Contact> getAllContacts() {
+    public synchronized Cursor getAllContactsCursor() {
         long time = System.nanoTime();
-        List<Contact> list = new ArrayList<>();
 
         Cursor cursor = database.query(TABLE_CONTACTS, null, null, null, null, null, null);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getColumnIndex(KEY_ID);
-            int name = cursor.getColumnIndex(KEY_NAME);
-            int number = cursor.getColumnIndex(KEY_NUMBER);
-            int birthday = cursor.getColumnIndex(KEY_BIRTHDAY);
-            do {
-                Contact contact = new Contact(cursor.getString(name),
-                    cursor.getLong(number),
-                    cursor.getLong(birthday));
-                contact.setId(cursor.getInt(id));
-                list.add(contact);
-            } while (cursor.moveToNext());
-            cursor.close();
-        }
         Log.d(TAG, "Retrieved all contacts from database in " + currentTimeDiff(time) + " milliseconds");
-        return list;
+
+        return cursor;
+    }
+
+    /**
+     * Parses a {@link Contact} from
+     * a cursor.
+     *
+     * @param cursor the cursor to parse.
+     * @return a valid {@link Contact} retrieved
+     * from the cursor.
+     */
+    @WorkerThread
+    @NonNull
+    public static Contact getContactFromCursor(@NonNull Cursor cursor) {
+        int id = cursor.getColumnIndex(KEY_ID);
+        int name = cursor.getColumnIndex(KEY_NAME);
+        int number = cursor.getColumnIndex(KEY_NUMBER);
+        int birthday = cursor.getColumnIndex(KEY_BIRTHDAY);
+
+        try {
+            // Simulate complex data parsing by sleeping here
+            Thread.sleep(100);
+        } catch (InterruptedException ignored) {
+            // Ignoring the exception
+        }
+
+        Contact contact = new Contact(cursor.getString(name),
+            cursor.getLong(number),
+            cursor.getLong(birthday));
+        contact.setId(cursor.getInt(id));
+
+        return contact;
+    }
+
+    /**
+     * Returns the difference between the current
+     * time in nanoseconds and the parameter passed
+     * to the method.
+     *
+     * @param nanos the starting time in nano seconds
+     * @return the difference between {@link System#nanoTime()}
+     * and the parameter passed to this method.
+     */
+    private static long currentTimeDiff(long nanos) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - nanos);
     }
 }

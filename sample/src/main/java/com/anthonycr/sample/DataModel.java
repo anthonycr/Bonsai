@@ -20,23 +20,20 @@
  */
 package com.anthonycr.sample;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import com.anthonycr.bonsai.Completable;
 import com.anthonycr.bonsai.CompletableAction;
 import com.anthonycr.bonsai.CompletableSubscriber;
-import com.anthonycr.bonsai.Single;
-import com.anthonycr.bonsai.SingleAction;
-import com.anthonycr.bonsai.SingleSubscriber;
+import com.anthonycr.bonsai.Stream;
+import com.anthonycr.bonsai.StreamAction;
+import com.anthonycr.bonsai.StreamSubscriber;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+@SuppressWarnings("WeakerAccess")
 public final class DataModel {
 
-    private DataModel() {
-
-    }
+    private DataModel() {}
 
     /**
      * An observable that retrieves all the contacts
@@ -44,35 +41,25 @@ public final class DataModel {
      * that should be consumed on a background
      * {@link com.anthonycr.bonsai.Scheduler}.
      *
-     * @return an observable that will return a list
-     * when you subscribe to it. Only one list will
-     * be emitted.
+     * @return an observable that will emit the items
+     * in a list when you subscribe.
      */
     @NonNull
-    public static Single<List<Contact>> allContactsSingle() {
-        return Single.create(new SingleAction<List<Contact>>() {
+    public static Stream<Contact> allContactsStream() {
+        return Stream.create(new StreamAction<Contact>() {
             @Override
-            public void onSubscribe(@NonNull SingleSubscriber<List<Contact>> subscriber) {
-                long currentTime = System.nanoTime();
+            public void onSubscribe(@NonNull StreamSubscriber<Contact> subscriber) {
+                Cursor contactsCursor = Database.getInstance().getAllContactsCursor();
 
-                // Get all the contacts from the database.
-                // This will be fast in practice, but because it
-                // is slow, it should be done on a background thread.
-                List<Contact> allContacts = Database.getInstance().getAllContacts();
+                if (contactsCursor.moveToFirst()) {
 
-                long diffMillis = (System.nanoTime() - currentTime) / TimeUnit.MILLISECONDS.toNanos(1);
+                    do {
+                        subscriber.onNext(Database.getContactFromCursor(contactsCursor));
+                    } while (contactsCursor.moveToNext());
 
-                if (diffMillis > 0) {
-                    try {
-                        // Simulate the effect of a long disk operation or
-                        // network request that takes at least 1 second.
-                        Thread.sleep(TimeUnit.SECONDS.toMillis(1) - diffMillis);
-                    } catch (InterruptedException e) {
-                        subscriber.onError(e);
-                    }
+                    contactsCursor.close();
                 }
 
-                subscriber.onItem(allContacts);
                 subscriber.onComplete();
             }
         });
