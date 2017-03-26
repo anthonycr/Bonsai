@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("WeakerAccess")
 @WorkerThread
 public final class Database extends SQLiteOpenHelper {
 
@@ -84,10 +85,6 @@ public final class Database extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    private static long currentTimeDiff(long nanos) {
-        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - nanos);
-    }
-
     /**
      * Adds a contact to the database synchronously.
      * Should not be run on the main thread.
@@ -103,7 +100,7 @@ public final class Database extends SQLiteOpenHelper {
         values.put(KEY_BIRTHDAY, contact.getBirthday());
 
         database.insert(TABLE_CONTACTS, null, values);
-        Log.d(TAG, "Contact added in " + currentTimeDiff(time) + " milliseconds");
+        Log.d(TAG, "Contact added in " + Utils.currentTimeDiff(time) + " milliseconds");
     }
 
     /**
@@ -123,7 +120,7 @@ public final class Database extends SQLiteOpenHelper {
         values.put(KEY_BIRTHDAY, contact.getBirthday());
 
         database.update(TABLE_CONTACTS, values, KEY_ID + "= ?", new String[]{String.valueOf(contact.getId())});
-        Log.d(TAG, "Contact updated in " + currentTimeDiff(time) + " milliseconds");
+        Log.d(TAG, "Contact updated in " + Utils.currentTimeDiff(time) + " milliseconds");
     }
 
     /**
@@ -137,38 +134,49 @@ public final class Database extends SQLiteOpenHelper {
     public synchronized void deleteContact(@NonNull Contact contact) {
         long time = System.nanoTime();
         database.delete(TABLE_CONTACTS, KEY_ID + "= ?", new String[]{String.valueOf(contact.getId())});
-        Log.d(TAG, "Contact deleted in " + currentTimeDiff(time) + " milliseconds");
+        Log.d(TAG, "Contact deleted in " + Utils.currentTimeDiff(time) + " milliseconds");
     }
 
     /**
-     * Retrieves all contacts from the database synchronously.
-     * Should not be run on the main thread.
+     * Returns a cursor over all the contacts
+     * in the database. This is a blocking operation
+     * and should be consumed from a worker thread.
      *
-     * @return a valid list of all Contacts in the database.
+     * @return a cursor over the entire data set.
      */
     @WorkerThread
     @NonNull
-    public synchronized List<Contact> getAllContacts() {
-        long time = System.nanoTime();
-        List<Contact> list = new ArrayList<>();
+    public synchronized Cursor getAllContactsCursor() {
+        return database.query(TABLE_CONTACTS, null, null, null, null, null, null);
+    }
 
-        Cursor cursor = database.query(TABLE_CONTACTS, null, null, null, null, null, null);
+    /**
+     * Parses a {@link Contact} from
+     * a cursor.
+     *
+     * @param cursor the cursor to parse.
+     * @return a valid {@link Contact} retrieved
+     * from the cursor.
+     */
+    @WorkerThread
+    @NonNull
+    public static Contact getContactFromCursor(@NonNull Cursor cursor) {
+        int id = cursor.getColumnIndex(KEY_ID);
+        int name = cursor.getColumnIndex(KEY_NAME);
+        int number = cursor.getColumnIndex(KEY_NUMBER);
+        int birthday = cursor.getColumnIndex(KEY_BIRTHDAY);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getColumnIndex(KEY_ID);
-            int name = cursor.getColumnIndex(KEY_NAME);
-            int number = cursor.getColumnIndex(KEY_NUMBER);
-            int birthday = cursor.getColumnIndex(KEY_BIRTHDAY);
-            do {
-                Contact contact = new Contact(cursor.getString(name),
-                    cursor.getLong(number),
-                    cursor.getLong(birthday));
-                contact.setId(cursor.getInt(id));
-                list.add(contact);
-            } while (cursor.moveToNext());
-            cursor.close();
+        try {
+            // Simulate complex data parsing by sleeping here
+            Thread.sleep(100);
+        } catch (InterruptedException ignored) {
         }
-        Log.d(TAG, "Retrieved all contacts from database in " + currentTimeDiff(time) + " milliseconds");
-        return list;
+
+        Contact contact = new Contact(cursor.getString(name),
+            cursor.getLong(number),
+            cursor.getLong(birthday));
+        contact.setId(cursor.getInt(id));
+
+        return contact;
     }
 }
