@@ -100,7 +100,7 @@ public final class Database extends SQLiteOpenHelper {
         values.put(KEY_BIRTHDAY, contact.getBirthday());
 
         database.insert(TABLE_CONTACTS, null, values);
-        Log.d(TAG, "Contact added in " + Utils.currentTimeDiff(time) + " milliseconds");
+        Log.d(TAG, "Contact added in " + currentTimeDiff(time) + " milliseconds");
     }
 
     /**
@@ -120,7 +120,7 @@ public final class Database extends SQLiteOpenHelper {
         values.put(KEY_BIRTHDAY, contact.getBirthday());
 
         database.update(TABLE_CONTACTS, values, KEY_ID + "= ?", new String[]{String.valueOf(contact.getId())});
-        Log.d(TAG, "Contact updated in " + Utils.currentTimeDiff(time) + " milliseconds");
+        Log.d(TAG, "Contact updated in " + currentTimeDiff(time) + " milliseconds");
     }
 
     /**
@@ -134,7 +134,7 @@ public final class Database extends SQLiteOpenHelper {
     public synchronized void deleteContact(@NonNull Contact contact) {
         long time = System.nanoTime();
         database.delete(TABLE_CONTACTS, KEY_ID + "= ?", new String[]{String.valueOf(contact.getId())});
-        Log.d(TAG, "Contact deleted in " + Utils.currentTimeDiff(time) + " milliseconds");
+        Log.d(TAG, "Contact deleted in " + currentTimeDiff(time) + " milliseconds");
     }
 
     /**
@@ -147,7 +147,13 @@ public final class Database extends SQLiteOpenHelper {
     @WorkerThread
     @NonNull
     public synchronized Cursor getAllContactsCursor() {
-        return database.query(TABLE_CONTACTS, null, null, null, null, null, null);
+        long time = System.nanoTime();
+
+        Cursor cursor = database.query(TABLE_CONTACTS, null, null, null, null, null, null);
+
+        Log.d(TAG, "Retrieved all contacts from database in " + currentTimeDiff(time) + " milliseconds");
+
+        return cursor;
     }
 
     /**
@@ -170,6 +176,7 @@ public final class Database extends SQLiteOpenHelper {
             // Simulate complex data parsing by sleeping here
             Thread.sleep(100);
         } catch (InterruptedException ignored) {
+            // Ignoring the exception
         }
 
         Contact contact = new Contact(cursor.getString(name),
@@ -178,5 +185,18 @@ public final class Database extends SQLiteOpenHelper {
         contact.setId(cursor.getInt(id));
 
         return contact;
+    }
+
+    /**
+     * Returns the difference between the current
+     * time in nanoseconds and the parameter passed
+     * to the method.
+     *
+     * @param nanos the starting time in nano seconds
+     * @return the difference between {@link System#nanoTime()}
+     * and the parameter passed to this method.
+     */
+    private static long currentTimeDiff(long nanos) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - nanos);
     }
 }

@@ -47,16 +47,13 @@ public final class DataModel {
      * {@link com.anthonycr.bonsai.Scheduler}.
      *
      * @return an observable that will emit the items
-     * in a list when you subscribe
+     * in a list when you subscribe.
      */
     @NonNull
     public static Stream<Contact> allContactsStream() {
         return Stream.create(new StreamAction<Contact>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Contact> subscriber) {
-
-                long time = System.nanoTime();
-
                 Cursor contactsCursor = Database.getInstance().getAllContactsCursor();
 
                 if (contactsCursor.moveToFirst()) {
@@ -67,8 +64,6 @@ public final class DataModel {
 
                     contactsCursor.close();
                 }
-
-                Log.d(TAG, "Retrieved all contacts from database in " + Utils.currentTimeDiff(time) + " milliseconds");
 
                 subscriber.onComplete();
             }
