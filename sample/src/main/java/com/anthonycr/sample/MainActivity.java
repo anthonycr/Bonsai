@@ -60,8 +60,22 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private interface DialogCallback {
+        /**
+         * Called when the positive button on the
+         * dialog is pressed.
+         *
+         * @param contact the contact contained by
+         *                the dialog.
+         */
         void onPositiveClicked(@NonNull Contact contact);
 
+        /**
+         * Called when the negative button on the
+         * dialog is pressed.
+         *
+         * @param contact the contact contained by
+         *                the dialog.
+         */
         void onNegativeClicked(@NonNull Contact contact);
     }
 

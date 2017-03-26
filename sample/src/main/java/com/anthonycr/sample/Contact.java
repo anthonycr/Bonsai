@@ -22,6 +22,7 @@ package com.anthonycr.sample;
 
 import android.support.annotation.NonNull;
 
+@SuppressWarnings("WeakerAccess")
 public class Contact {
 
     private int id;

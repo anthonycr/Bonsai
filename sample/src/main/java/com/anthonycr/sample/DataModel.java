@@ -22,7 +22,6 @@ package com.anthonycr.sample;
 
 import android.database.Cursor;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.anthonycr.bonsai.Completable;
 import com.anthonycr.bonsai.CompletableAction;
@@ -34,11 +33,7 @@ import com.anthonycr.bonsai.StreamSubscriber;
 @SuppressWarnings("WeakerAccess")
 public final class DataModel {
 
-    private static final String TAG = "DataModel";
-
-    private DataModel() {
-
-    }
+    private DataModel() {}
 
     /**
      * An observable that retrieves all the contacts

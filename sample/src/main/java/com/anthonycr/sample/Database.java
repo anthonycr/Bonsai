@@ -30,8 +30,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("WeakerAccess")
@@ -81,7 +79,7 @@ public final class Database extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if it exists
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CONTACTS);
-        // Create tables again
+        // Create table again
         onCreate(db);
     }
 
