@@ -18,6 +18,7 @@ before_install:
 install:
   - ./gradlew
 script:
-  - ./gradlew :library:assembleDebug --stacktrace
-  - ./gradlew :sample:assembleDebug --stacktrace
-  - ./gradlew :library:testDebug --stacktrace
+  - ./gradlew :library:build jacocoTestReport --stacktrace
+  - ./gradlew :sample:build --stacktrace
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
