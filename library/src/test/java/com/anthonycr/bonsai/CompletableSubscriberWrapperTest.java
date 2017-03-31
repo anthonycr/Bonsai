@@ -51,6 +51,20 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
         Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
+    @Test
+    public void onErrorTest_onCompleteNotCalled() throws Exception {
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+
+        Exception exception = new Exception("Test exception");
+
+        wrapper.onError(exception);
+        wrapper.onComplete();
+
+        Mockito.verify(completableOnSubscribe).onError(exception);
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
+    }
+
     @Test(expected = RuntimeException.class)
     public void onErrorTest_throwsException_notOverridden() throws Exception {
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
