@@ -21,3 +21,6 @@ script:
   - ./gradlew :library:assembleDebug --stacktrace
   - ./gradlew :sample:assembleDebug --stacktrace
   - ./gradlew :library:testDebug --stacktrace
+  - ./gradlew jacocoTestReport --stacktrace
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
