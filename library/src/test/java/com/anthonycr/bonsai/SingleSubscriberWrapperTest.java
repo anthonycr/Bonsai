@@ -1,16 +1,9 @@
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-import junit.framework.Assert;
-
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by anthonycr on 2/19/17.
