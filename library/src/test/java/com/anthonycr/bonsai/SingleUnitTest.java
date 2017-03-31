@@ -116,7 +116,6 @@ public class SingleUnitTest extends BaseUnitTest {
 
             });
 
-
         onErrorCountdown.await();
         onCompleteCountdown.await();
 
