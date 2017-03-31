@@ -5,6 +5,7 @@ jdk:
 android:
   components:
     - tools
+    - platform-tools
     - build-tools-25.0.2
     - android-25
     - extra-android-support
@@ -20,7 +21,7 @@ install:
 script:
   - ./gradlew :library:assembleDebug --stacktrace
   - ./gradlew :sample:assembleDebug --stacktrace
-  - ./gradlew :library:testDebug --stacktrace
+  - ./gradlew :library:test --stacktrace
   - ./gradlew jacocoTestReport --stacktrace
 after_success:
   - bash <(curl -s https://codecov.io/bash)
