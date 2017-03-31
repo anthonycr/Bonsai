@@ -89,4 +89,33 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
         Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
+    @Test
+    public void onError_itemsNotEmitted() throws Exception {
+        List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
+
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
+
+        wrapper.onStart();
+
+        String onlyItem = "onlyItem";
+
+        wrapper.onNext(onlyItem);
+
+        // Throw an error after on start
+        Throwable throwable = new Exception("Test exception");
+        wrapper.onError(throwable);
+
+        for (String item : testList) {
+            wrapper.onNext(item);
+        }
+
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onNext(onlyItem);
+        inOrder.verify(stringStreamOnSubscribe).onError(throwable);
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
+    }
+
 }
