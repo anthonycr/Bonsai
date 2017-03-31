@@ -21,6 +21,14 @@ android {
             testCoverageEnabled true
         }
     }
+    testOptions {
+        unitTests.all {
+            jacoco {
+                // This option needs to be included for robolectric tests
+                includeNoLocationClasses = true
+            }
+        }
+    }
 }
 
 dependencies {
