@@ -107,4 +107,26 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
         Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
+    @Test
+    public void onError_unsubscribe_itemNotEmitted() throws Exception {
+        final String itemToBeEmitted = "test";
+
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        wrapper.onStart();
+
+        // Throw an error after onStart and then unsubscribe
+        Throwable throwable = new Exception("Test exception");
+        wrapper.onError(throwable);
+        wrapper.unsubscribe();
+
+        wrapper.onItem(itemToBeEmitted);
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onError(throwable);
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
+    }
+
 }
