@@ -216,11 +216,6 @@ public class StreamUnitTest extends BaseUnitTest {
             .observeOn(Schedulers.io())
             .subscribe(new StreamOnSubscribe<String>() {
                 @Override
-                public void onNext(@Nullable String item) {
-
-                }
-
-                @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
                     observerThreadAssertion.set(Thread.currentThread().toString());

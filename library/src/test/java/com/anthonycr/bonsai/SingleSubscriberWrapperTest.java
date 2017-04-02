@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 /**
- * Created by anthonycr on 2/19/17.
+ * Test for {@link SingleSubscriberWrapper}.
  */
 public class SingleSubscriberWrapperTest extends BaseUnitTest {
 

@@ -304,11 +304,6 @@ public class SingleUnitTest extends BaseUnitTest {
             .observeOn(Schedulers.io())
             .subscribe(new SingleOnSubscribe<String>() {
                 @Override
-                public void onItem(@Nullable String item) {
-
-                }
-
-                @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
                     observerThreadAssertion.set(Thread.currentThread().toString());
