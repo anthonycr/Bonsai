@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by anthonycr on 2/19/17.
+ * Test for {@link StreamSubscriberWrapper}.
  */
 public class StreamSubscriberWrapperTest extends BaseUnitTest {
 

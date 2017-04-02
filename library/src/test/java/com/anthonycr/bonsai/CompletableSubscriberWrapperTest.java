@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 /**
- * Created by anthonycr on 2/19/17.
+ * Test for {@link CompletableSubscriberWrapper}.
  */
 public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
@@ -83,6 +83,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
     @Test(expected = RuntimeException.class)
     public void onErrorTest_throwsException_notOverridden() throws Exception {
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
+            @SuppressWarnings("EmptyMethod")
             @Override
             public void onError(@NonNull Throwable throwable) {
                 // By not doing anything and calling super, we should throw an exception
