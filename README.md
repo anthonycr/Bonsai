@@ -201,6 +201,11 @@ Single.create(new SingleAction<Integer>() {
   });
 ```
 
+### What's missing
+- Backpressure. If an observable emits events faster than the subscriber can consume them, the subscriber thread will get backed up with a queue of unhandled items. This is an important ReactiveX feature that is not supported by this minimal implementation.
+- Replaying events. Related to backpressure, events are not cached and are not able to be replayed.
+- Multiple subscribers. Only one subscriber per observable instance is supported.
+- Transformers. There is currently no way to transform or re-map a stream of items.
 
 ### License
 
