@@ -22,7 +22,9 @@ package com.anthonycr.bonsai;
 
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -558,6 +560,74 @@ public class CompletableUnitTest extends BaseUnitTest {
         assertFalse(onComplete.get());
         assertFalse(onError.get());
 
+    }
+
+    @Test
+    public void testDefaultSubscriber_createdOnSubscribeThread() throws Exception {
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final CountDownLatch threadInitializationLatch = new CountDownLatch(2);
+        final AtomicReference<String> singleThreadRef1 = new AtomicReference<>(null);
+        final AtomicReference<String> singleThreadRef2 = new AtomicReference<>(null);
+
+        final Scheduler singleThread1 = Schedulers.newSingleThreadedScheduler();
+        Scheduler singleThread2 = Schedulers.newSingleThreadedScheduler();
+        singleThread1.execute(new Runnable() {
+            @Override
+            public void run() {
+                singleThreadRef1.set(Thread.currentThread().toString());
+                threadInitializationLatch.countDown();
+            }
+        });
+
+        singleThread2.execute(new Runnable() {
+            @Override
+            public void run() {
+                singleThreadRef2.set(Thread.currentThread().toString());
+                threadInitializationLatch.countDown();
+            }
+        });
+        // Wait until we know the thread names
+        threadInitializationLatch.await();
+
+        // Ensure that the inner completable is executed on the subscribe
+        // thread, not the thread that the completable was created on.
+        final Completable innerCompletable = Completable.create(new CompletableAction() {
+            @Override
+            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+                Assert.assertEquals(singleThreadRef1.get(), Thread.currentThread().toString());
+                subscriber.onComplete();
+            }
+        });
+
+        // Ensure that the outer completable observes the inner completable
+        // on the same thread on which it subscribed, not the thread it was
+        // created on.
+        Completable outerCompletable = Completable.create(new CompletableAction() {
+            @Override
+            public void onSubscribe(@NonNull final CompletableSubscriber subscriber) {
+                final String currentThread = Thread.currentThread().toString();
+                innerCompletable.subscribe(new CompletableOnSubscribe() {
+                    @Override
+                    public void onComplete() {
+                        Assert.assertEquals(Thread.currentThread().toString(), currentThread);
+                        subscriber.onComplete();
+                    }
+                });
+            }
+        });
+
+        outerCompletable
+            .subscribeOn(singleThread1)
+            .observeOn(singleThread2)
+            .subscribe(new CompletableOnSubscribe() {
+                @Override
+                public void onComplete() {
+                    Assert.assertEquals(singleThreadRef2.get(), Thread.currentThread().toString());
+                    countDownLatch.countDown();
+                }
+            });
+
+        countDownLatch.await();
     }
 
     @Test

@@ -42,11 +42,9 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
     @NonNull private final ActionT action;
     @Nullable private Scheduler subscriberThread;
     @Nullable private Scheduler observerThread;
-    @NonNull private final Scheduler defaultThread;
 
     protected Observable(@NonNull ActionT action) {
         this.action = action;
-        this.defaultThread = Schedulers.current();
     }
 
     /**
@@ -117,7 +115,8 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
 
     @NonNull
     private Subscription startSubscription(@Nullable OnSubscribeT onSubscribe) {
-        final SubscriberT subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultThread);
+        final Scheduler defaultSubscriber = Schedulers.current();
+        final SubscriberT subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultSubscriber);
 
         Preconditions.checkNonNull(subscriber);
 
@@ -132,16 +131,16 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
                     subscriber.onError(exception);
                 }
             }
-        });
+        }, defaultSubscriber);
 
         return subscriber;
     }
 
-    private void executeOnSubscriberThread(@NonNull Runnable runnable) {
+    private void executeOnSubscriberThread(@NonNull Runnable runnable, Scheduler defaultScheduler) {
         if (subscriberThread != null) {
             subscriberThread.execute(runnable);
         } else {
-            defaultThread.execute(runnable);
+            defaultScheduler.execute(runnable);
         }
     }
 
