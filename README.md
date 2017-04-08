@@ -1,14 +1,21 @@
 # Bonsai
 A miniature reactive Android library.
 
-[![Build Status](https://travis-ci.org/anthonycr/Bonsai.svg?branch=master)](https://travis-ci.org/anthonycr/Bonsai)
+| Branch | Build Status |
+|--------|--------------|
+| master | [![Build Status](https://travis-ci.org/anthonycr/Bonsai.svg?branch=master)](https://travis-ci.org/anthonycr/Bonsai) |
+| dev    | [![Build Status](https://travis-ci.org/anthonycr/Bonsai.svg?branch=dev)](https://travis-ci.org/anthonycr/Bonsai) |
+
+| Test Coverage |
+|---------------|
+| [![codecov](https://codecov.io/gh/anthonycr/Bonsai/branch/dev/graph/badge.svg)](https://codecov.io/gh/anthonycr/Bonsai) |\
 
 ### Why
 [RxJava](https://github.com/ReactiveX/RxJava) is a great library that introduces the concept of reactive programming to your Android code. However, to newcomers, it can be a daunting library with a high learning curve. You have to learn about Schedulers, Observables, Singles, Subscribers, Subscriptions, and many more paradigms that can be confusing to someone new to reactive programming. Additionally, for the Android developer, it can be confusing as Rx is primarily a Java library, and there are some things on Android that are functionally different (e.g. the main thread). To use Rx in an Android app properly, you also need to use [RxAndroid](https://github.com/ReactiveX/RxAndroid). The relationship between the two can be confusing. The aim of Bonsai is to help people interested in using reactive Java in their Android code be introduced to some of the basic concepts of Rx. Bonsai mirrors some of the basic parts of Rx in a way that users of the library can understand. Since there is very little source code compared to the more functional Rx library, it will be easier for users to dive in and see how something works. Additionally, Bonsai has built in support for the Android main thread, which should help users adopt functional programming into their code. Hopefully some of you find this library helpful. This is not meant to be an Rx replacement, but rather a taste of what the reactive world has to offer. In case you are interested, I am currently using this in [Lightning Browser](https://github.com/anthonycr/Lightning-Browser).
 
 ### Usage
 include from jcenter
-- `compile 'com.anthonycr.bonsai:bonsai:1.0'`
+- `compile 'com.anthonycr.bonsai:bonsai:1.0.1'`
 
 include from submodule
 - `compile project(':library')`
@@ -194,6 +201,11 @@ Single.create(new SingleAction<Integer>() {
   });
 ```
 
+### What's missing
+- Backpressure. If an observable emits events faster than the subscriber can consume them, the subscriber thread will get backed up with a queue of unhandled items. This is an important ReactiveX feature that is not supported by this minimal implementation.
+- Replaying events. Related to backpressure, events are not cached and are not able to be replayed.
+- Multiple subscribers. Only one subscriber per observable instance is supported.
+- Transformers. There is currently no way to transform or re-map a stream of items.
 
 ### License
 

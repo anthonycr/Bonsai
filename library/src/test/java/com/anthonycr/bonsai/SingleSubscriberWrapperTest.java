@@ -1,159 +1,78 @@
 package com.anthonycr.bonsai;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-import junit.framework.Assert;
-
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 /**
- * Created by anthonycr on 2/19/17.
+ * Test for {@link SingleSubscriberWrapper}.
  */
 public class SingleSubscriberWrapperTest extends BaseUnitTest {
+
+    @Mock
+    private SingleOnSubscribe<String> stringSingleOnSubscribe;
 
     @Test
     public void onItemTest_Succeeds() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
 
-        SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onItem(@Nullable String item) {
-                emittedItem.set(item);
-            }
-        };
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
         wrapper.onStart();
         wrapper.onItem(itemToBeEmitted);
         wrapper.onComplete();
 
-        Assert.assertTrue(onCompleteCalled.get());
-        Assert.assertTrue(onStartCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
-        Assert.assertEquals(itemToBeEmitted, emittedItem.get());
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(itemToBeEmitted);
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
 
     }
 
     @Test(expected = RuntimeException.class)
     public void onItemTest_Fails_calledAfterOnComplete() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
 
-        SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onItem(@Nullable String item) {
-                emittedItem.set(item);
-            }
-        };
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
         wrapper.onStart();
         wrapper.onComplete();
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
+
         wrapper.onItem(itemToBeEmitted);
     }
 
     @Test(expected = RuntimeException.class)
     public void onItemTest_Fails_calledMultipleTimes() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
 
-        SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onItem(@Nullable String item) {
-                emittedItem.set(item);
-            }
-        };
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
         wrapper.onStart();
         wrapper.onItem(itemToBeEmitted);
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onItem(itemToBeEmitted);
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
+
         wrapper.onItem(itemToBeEmitted);
-        wrapper.onComplete();
     }
 
     @Test
     public void unsubscribe_itemNotEmitted() throws Exception {
         final String itemToBeEmitted = "test";
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        final Assertion<String> emittedItem = new Assertion<>(null);
 
-        SingleOnSubscribe<String> onSubscribe = new SingleOnSubscribe<String>() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onItem(@Nullable String item) {
-                emittedItem.set(item);
-            }
-        };
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
         wrapper.onStart();
 
         // Unsubscribe after onStart
@@ -162,12 +81,52 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
         wrapper.onItem(itemToBeEmitted);
         wrapper.onComplete();
 
-        Assert.assertTrue(onStartCalled.get());
+        Mockito.verify(stringSingleOnSubscribe).onStart();
 
-        // Unsubscribed so the following assertions should be made
-        Assert.assertFalse(onCompleteCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
-        Assert.assertNull(emittedItem.get());
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
+    }
+
+    @Test
+    public void onError_itemNotEmitted() throws Exception {
+        final String itemToBeEmitted = "test";
+
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        wrapper.onStart();
+
+        // Throw an error after onStart
+        Throwable throwable = new Exception("Test exception");
+        wrapper.onError(throwable);
+
+        wrapper.onItem(itemToBeEmitted);
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onError(throwable);
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
+    }
+
+    @Test
+    public void onError_unsubscribe_itemNotEmitted() throws Exception {
+        final String itemToBeEmitted = "test";
+
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        wrapper.onStart();
+
+        // Throw an error after onStart and then unsubscribe
+        Throwable throwable = new Exception("Test exception");
+        wrapper.onError(throwable);
+        wrapper.unsubscribe();
+
+        wrapper.onItem(itemToBeEmitted);
+
+        InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
+
+        inOrder.verify(stringSingleOnSubscribe).onStart();
+        inOrder.verify(stringSingleOnSubscribe).onError(throwable);
+
+        Mockito.verifyNoMoreInteractions(stringSingleOnSubscribe);
     }
 
 }

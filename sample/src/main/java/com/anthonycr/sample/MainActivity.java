@@ -21,6 +21,7 @@
 package com.anthonycr.sample;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -28,6 +29,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -35,21 +38,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.anthonycr.bonsai.CompletableOnSubscribe;
 import com.anthonycr.bonsai.Schedulers;
-import com.anthonycr.bonsai.SingleOnSubscribe;
+import com.anthonycr.bonsai.StreamOnSubscribe;
 import com.anthonycr.bonsai.Subscription;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -58,15 +60,32 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     private interface DialogCallback {
-        void onPositiveClicked(Contact contact);
+        /**
+         * Called when the positive button on the
+         * dialog is pressed.
+         *
+         * @param contact the contact contained by
+         *                the dialog.
+         */
+        void onPositiveClicked(@NonNull Contact contact);
 
-        void onNegativeClicked(Contact contact);
+        /**
+         * Called when the negative button on the
+         * dialog is pressed.
+         *
+         * @param contact the contact contained by
+         *                the dialog.
+         */
+        void onNegativeClicked(@NonNull Contact contact);
     }
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
 
     // list view data adapter
-    private Adapter adapter;
+    private RecyclerAdapter contactsAdapter;
+
+    private RecyclerView listView;
+    private ProgressBar progressBar;
 
     // data model subscriptions
     @Nullable private Subscription getAllContactsSubscription;
@@ -79,37 +98,71 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final ListView list = (ListView) findViewById(R.id.list_view);
-        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        listView = (RecyclerView) findViewById(R.id.list_view);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
-        list.setVisibility(View.INVISIBLE);
-        progressBar.setVisibility(View.VISIBLE);
+        showLoadingSpinner();
 
-        adapter = new Adapter(this, R.layout.contact_layout);
+        listView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-        list.setAdapter(adapter);
+        contactsAdapter = new RecyclerAdapter(this);
+        contactsAdapter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int index = listView.getChildAdapterPosition(v);
+                Contact clickedContact = contactsAdapter.getItem(index);
+                if (clickedContact != null) {
+                    contactClicked(clickedContact);
+                }
+            }
+        });
+
+        listView.setAdapter(contactsAdapter);
 
         // Loads all the initial data from the database on a separate thread
         // then notifies the main thread after the data is loaded. Then we
         // add all the items we received to the adapter and they get displayed.
-        getAllContactsSubscription = DataModel.allContactsSingle()
+        getAllContactsSubscription = DataModel.allContactsStream()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.main())
-            .subscribe(new SingleOnSubscribe<List<Contact>>() {
+            .subscribe(new StreamOnSubscribe<Contact>() {
                 @Override
-                public void onItem(@Nullable List<Contact> item) {
-                    if (item != null) {
-                        adapter.addAll(item);
-                    } else {
-                        adapter.clear();
-                    }
-                    adapter.notifyDataSetChanged();
+                public void onStart() {
+                    contactsAdapter.clearItems();
+                    showLoadingSpinner();
+                }
 
-                    list.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
+                @Override
+                public void onNext(@Nullable Contact item) {
+                    if (item != null) {
+                        contactsAdapter.addItem(item);
+                    }
+
+                    showListView();
+                }
+
+                @Override
+                public void onComplete() {
+                    showListView();
                 }
             });
+
     }
+
+    private void showListView() {
+        if (listView.getVisibility() != View.VISIBLE || progressBar.getVisibility() != View.GONE) {
+            listView.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
+    private void showLoadingSpinner() {
+        if (listView.getVisibility() != View.INVISIBLE || progressBar.getVisibility() != View.VISIBLE) {
+            listView.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -160,10 +213,10 @@ public class MainActivity extends AppCompatActivity {
      * add contact dialog.
      */
     private void addContactClicked() {
-        final Contact newContact = new Contact();
+        Contact newContact = new Contact();
         showContactDialog(newContact, new DialogCallback() {
             @Override
-            public void onPositiveClicked(Contact contact) {
+            public void onPositiveClicked(@NonNull final Contact contact) {
                 if (contact.getName().isEmpty()) {
                     Toast.makeText(MainActivity.this, R.string.message_blank_name, Toast.LENGTH_LONG).show();
                 } else {
@@ -173,21 +226,20 @@ public class MainActivity extends AppCompatActivity {
                     // the database on the background thread, then receive
                     // notification when it has finished inserting into the
                     // database.
-                    addContactSubscription = DataModel.addContactCompletable(newContact)
+                    addContactSubscription = DataModel.addContactCompletable(contact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
                         .subscribe(new CompletableOnSubscribe() {
                             @Override
                             public void onComplete() {
-                                adapter.add(newContact);
-                                adapter.notifyDataSetChanged();
+                                contactsAdapter.addItem(contact);
                             }
                         });
                 }
             }
 
             @Override
-            public void onNegativeClicked(Contact contact) {
+            public void onNegativeClicked(@NonNull Contact contact) {
                 // Do nothing if cancel was clicked because
                 // the user has indicated they don't want to
                 // enter this into the contacts database.
@@ -205,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
         showContactDialog(contact, new DialogCallback() {
             @Override
-            public void onPositiveClicked(Contact contact) {
+            public void onPositiveClicked(@NonNull final Contact contact) {
 
                 // When the user clicks okay, we update the database
                 // with the new values for the contact. The update is
@@ -217,13 +269,13 @@ public class MainActivity extends AppCompatActivity {
                     .subscribe(new CompletableOnSubscribe() {
                         @Override
                         public void onComplete() {
-                            adapter.notifyDataSetChanged();
+                            contactsAdapter.changedItem(contact);
                         }
                     });
             }
 
             @Override
-            public void onNegativeClicked(final Contact contact) {
+            public void onNegativeClicked(@NonNull final Contact contact) {
 
                 // When the user clicks delete, we asynchronously
                 // delete the item from the database. When the operation
@@ -235,8 +287,7 @@ public class MainActivity extends AppCompatActivity {
                     .subscribe(new CompletableOnSubscribe() {
                         @Override
                         public void onComplete() {
-                            adapter.remove(contact);
-                            adapter.notifyDataSetChanged();
+                            contactsAdapter.removeItem(contact);
                         }
                     });
             }
@@ -342,52 +393,93 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * The view holder class for the Contacts list.
+     */
+    private static class AdapterView extends RecyclerView.ViewHolder {
+
+        @NonNull private final TextView textView;
+
+        AdapterView(@NonNull View itemView) {
+            super(itemView);
+            textView = (TextView) itemView.findViewById(R.id.contact_name);
+        }
+
+        void setText(@Nullable String text) {
+            textView.setText(text);
+        }
+    }
+
+    /**
      * The adapter class for the Contacts list.
      */
-    private static class Adapter extends ArrayAdapter<Contact> {
+    private static class RecyclerAdapter extends RecyclerView.Adapter implements View.OnClickListener {
 
-        private static class ViewHolder {
+        @NonNull private final Context context;
+        @NonNull private final List<Contact> contactList = new ArrayList<>();
+        @Nullable private View.OnClickListener onClickListener;
 
-            @NonNull private final TextView nameView;
-
-            ViewHolder(@NonNull View view) {
-                nameView = (TextView) view.findViewById(R.id.contact_name);
-            }
-
+        RecyclerAdapter(@NonNull Context context) {
+            this.context = context;
         }
 
-        @NonNull private final MainActivity activity;
-
-        Adapter(@NonNull MainActivity activity, int resource) {
-            super(activity, resource);
-            this.activity = activity;
-        }
-
-        @NonNull
         @Override
-        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
-            ViewHolder viewHolder;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.contact_layout, parent, false);
-                viewHolder = new ViewHolder(convertView);
-                convertView.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) convertView.getTag();
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(context).inflate(R.layout.contact_layout, parent, false);
+            view.setOnClickListener(this);
+            return new AdapterView(view);
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            AdapterView adapterView = (AdapterView) holder;
+
+            Contact contact = contactList.get(position);
+            adapterView.setText(contact != null ? contact.getName() : null);
+        }
+
+        @Override
+        public synchronized int getItemCount() {
+            return contactList.size();
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (onClickListener != null) {
+                onClickListener.onClick(v);
             }
-            Contact contact = getItem(position);
-            viewHolder.nameView.setText(contact != null ? contact.getName() : null);
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // When the user clicks the item,
-                    // call back to the contactClicked() method.
-                    Contact clickedContact = getItem(position);
-                    if (clickedContact != null) {
-                        activity.contactClicked(clickedContact);
-                    }
-                }
-            });
-            return convertView;
+        }
+
+        void setOnClickListener(@Nullable View.OnClickListener onClickListener) {
+            this.onClickListener = onClickListener;
+        }
+
+        @Nullable
+        private synchronized Contact getItem(int index) {
+            if (index < 0 || contactList.size() <= index) {
+                return null;
+            }
+            return contactList.get(index);
+        }
+
+        private synchronized void addItem(@NonNull Contact contact) {
+            contactList.add(contact);
+            notifyItemInserted(getItemCount() - 1);
+        }
+
+        private synchronized void removeItem(@NonNull Contact contact) {
+            int index = contactList.indexOf(contact);
+            contactList.remove(contact);
+            notifyItemRemoved(index);
+        }
+
+        private synchronized void changedItem(@NonNull Contact contact) {
+            int index = contactList.indexOf(contact);
+            notifyItemChanged(index);
+        }
+
+        private synchronized void clearItems() {
+            contactList.clear();
+            notifyDataSetChanged();
         }
     }
 }

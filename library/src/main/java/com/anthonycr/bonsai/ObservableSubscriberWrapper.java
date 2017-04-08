@@ -30,7 +30,7 @@ import android.support.annotation.Nullable;
  * appropriate errors when certain rules are violated.
  */
 @SuppressWarnings("WeakerAccess")
-public class ObservableSubscriberWrapper<T extends ObservableOnSubscribe> implements ObservableSubscriber {
+class ObservableSubscriberWrapper<T extends ObservableOnSubscribe> implements ObservableSubscriber {
 
     private volatile boolean onStartExecuted = false;
     volatile boolean onErrorExecuted = false;

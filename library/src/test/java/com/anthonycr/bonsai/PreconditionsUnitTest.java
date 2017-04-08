@@ -22,7 +22,7 @@ package com.anthonycr.bonsai;
 
 import org.junit.Test;
 
-public class PreconditionsUnitTest extends BaseUnitTest{
+public class PreconditionsUnitTest extends BaseUnitTest {
 
     @Test
     public void testClassIsFinal() throws Exception {

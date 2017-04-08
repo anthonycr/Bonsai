@@ -5,104 +5,85 @@ import android.support.annotation.NonNull;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 /**
- * Created by anthonycr on 2/19/17.
+ * Test for {@link CompletableSubscriberWrapper}.
  */
 public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
+    @Mock
+    private CompletableOnSubscribe completableOnSubscribe;
+
     @Test
     public void onCompleteTest_Succeeds() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-        };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
         wrapper.onComplete();
 
-        Assert.assertTrue(onCompleteCalled.get());
-        Assert.assertFalse(onStartCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
+        Mockito.verify(completableOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test(expected = RuntimeException.class)
     public void onCompleteTest_calledMultipleTimes_throwsException() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-        };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
         wrapper.onComplete();
 
-        Assert.assertFalse(onStartCalled.get());
-        Assert.assertTrue(onCompleteCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
+        Mockito.verify(completableOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
 
         wrapper.onComplete();
     }
 
     @Test
     public void onErrorTest_Succeeds_overridden() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
 
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
+        Exception exception = new Exception("Test exception");
 
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-        };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
-        wrapper.onError(new Exception("Test exception"));
+        wrapper.onError(exception);
 
-        Assert.assertTrue(onErrorCalled.get());
-        Assert.assertFalse(onStartCalled.get());
-        Assert.assertFalse(onCompleteCalled.get());
+        Mockito.verify(completableOnSubscribe).onError(exception);
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
+    }
+
+    @Test
+    public void onErrorTest_onCompleteNotCalled() throws Exception {
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+
+        Exception exception = new Exception("Test exception");
+
+        wrapper.onError(exception);
+        wrapper.onComplete();
+
+        Mockito.verify(completableOnSubscribe).onError(exception);
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
+    }
+
+    @Test
+    public void onError_unsubscribe_onCompleteNotCalled() throws Exception {
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+
+        Exception exception = new Exception("Test exception");
+
+        wrapper.onError(exception);
+        wrapper.unsubscribe();
+        wrapper.onComplete();
+
+        Mockito.verify(completableOnSubscribe).onError(exception);
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test(expected = RuntimeException.class)
     public void onErrorTest_throwsException_notOverridden() throws Exception {
         CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
+            @SuppressWarnings("EmptyMethod")
             @Override
             public void onError(@NonNull Throwable throwable) {
                 // By not doing anything and calling super, we should throw an exception
@@ -115,86 +96,29 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onStartTest_Succeeds() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-        };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
         wrapper.onStart();
 
-        Assert.assertTrue(onStartCalled.get());
-        Assert.assertFalse(onCompleteCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
+        Mockito.verify(completableOnSubscribe).onStart();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
     }
 
     @Test(expected = RuntimeException.class)
     public void onStartTest_calledMultipleTimes_throwsException() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-        };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
         wrapper.onStart();
 
-        Assert.assertTrue(onStartCalled.get());
-        Assert.assertFalse(onCompleteCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
+        Mockito.verify(completableOnSubscribe).onStart();
+
+        Mockito.verifyNoMoreInteractions(completableOnSubscribe);
 
         wrapper.onStart();
     }
 
     @Test
     public void unsubscribeTest() throws Exception {
-        final Assertion<Boolean> onCompleteCalled = new Assertion<>(false);
-        final Assertion<Boolean> onStartCalled = new Assertion<>(false);
-        final Assertion<Boolean> onErrorCalled = new Assertion<>(false);
-        CompletableOnSubscribe onSubscribe = new CompletableOnSubscribe() {
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-                onErrorCalled.set(true);
-            }
-
-            @Override
-            public void onComplete() {
-                onCompleteCalled.set(true);
-            }
-
-            @Override
-            public void onStart() {
-                onStartCalled.set(true);
-            }
-        };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
         wrapper.unsubscribe();
 
         Assert.assertTrue(wrapper.isUnsubscribed());
@@ -203,9 +127,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
         wrapper.onComplete();
         wrapper.onError(new Exception("Test exception"));
 
-        Assert.assertFalse(onStartCalled.get());
-        Assert.assertFalse(onCompleteCalled.get());
-        Assert.assertFalse(onErrorCalled.get());
+        Mockito.verifyZeroInteractions(completableOnSubscribe);
     }
 
 }

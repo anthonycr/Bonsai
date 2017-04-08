@@ -24,11 +24,17 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -40,6 +46,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class StreamUnitTest extends BaseUnitTest {
 
+    @Mock
+    private StreamOnSubscribe<String> stringStreamOnSubscribe;
+
     @Test
     public void testMainLooperWorking() throws Exception {
         if (Looper.getMainLooper() == null) {
@@ -50,101 +59,68 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamEmissionOrder_singleThread() throws Exception {
-        final int testCount = 7;
+        final List<String> testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7");
 
-        final List<String> list = new ArrayList<>(testCount);
         Stream.create(new StreamAction<String>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onNext(String.valueOf(n));
+                for (String item : testList) {
+                    subscriber.onNext(item);
                 }
                 subscriber.onComplete();
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new StreamOnSubscribe<String>() {
-                @Override
-                public void onNext(@Nullable String item) {
-                    list.add(item);
-                }
+            .subscribe(stringStreamOnSubscribe);
 
-            });
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
 
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        for (String item : testList) {
+            inOrder.verify(stringStreamOnSubscribe).onNext(item);
         }
+        inOrder.verify(stringStreamOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test
     public void testStreamEventEmission_withException() throws Exception {
-        final int testCount = 7;
+        final List<String> testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7");
+        final RuntimeException runtimeException = new RuntimeException("Test failure");
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
-
-        final List<String> list = new ArrayList<>(testCount);
         Stream.create(new StreamAction<String>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onNext(String.valueOf(n));
+                for (String item : testList) {
+                    subscriber.onNext(item);
                 }
-                throw new RuntimeException("Test failure");
+                throw runtimeException;
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new StreamOnSubscribe<String>() {
+            .subscribe(stringStreamOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
 
-                @Override
-                public void onNext(@Nullable String item) {
-                    nextAssertion.set(true);
-                    list.add(item);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Even though error has been broadcast,
-        // stream should still complete.
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        for (String item : testList) {
+            inOrder.verify(stringStreamOnSubscribe).onNext(item);
         }
+        inOrder.verify(stringStreamOnSubscribe).onError(runtimeException);
 
-        // Assert that each of the events was
-        // received by the subscriber
-        assertTrue(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertFalse(completeAssertion.get());
-        assertTrue(nextAssertion.get());
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test
     public void testStreamEventEmission_withoutSubscriber_withException() throws Exception {
-        final int testCount = 7;
+        final List<String> testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7");
 
         Stream.create(new StreamAction<String>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onNext(String.valueOf(n));
+                for (String item : testList) {
+                    subscriber.onNext(item);
                 }
                 throw new RuntimeException("Test failure");
             }
@@ -157,22 +133,17 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamEventEmission_withError() throws Exception {
-        final int testCount = 7;
+        final List<String> testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7");
+        final Exception exception = new Exception("Test failure");
 
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
-
-        final List<String> list = new ArrayList<>(testCount);
         Stream.create(new StreamAction<String>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onNext(String.valueOf(n));
+                for (String item : testList) {
+                    subscriber.onNext(item);
                 }
                 try {
-                    throw new Exception("Test failure");
+                    throw exception;
                 } catch (Exception e) {
                     subscriber.onError(e);
                 }
@@ -180,118 +151,29 @@ public class StreamUnitTest extends BaseUnitTest {
             }
         }).subscribeOn(Schedulers.current())
             .observeOn(Schedulers.current())
-            .subscribe(new StreamOnSubscribe<String>() {
+            .subscribe(stringStreamOnSubscribe);
 
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
 
-                @Override
-                public void onNext(@Nullable String item) {
-                    nextAssertion.set(true);
-                    list.add(item);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Even though error has been broadcast,
-        // stream should still complete.
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        for (String item : testList) {
+            inOrder.verify(stringStreamOnSubscribe).onNext(item);
         }
+        inOrder.verify(stringStreamOnSubscribe).onError(exception);
 
-        // Assert that each of the events was
-        // received by the subscriber
-        assertTrue(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertFalse(completeAssertion.get());
-        assertTrue(nextAssertion.get());
-    }
-
-    @Test
-    public void testStreamEventEmission_withoutError() throws Exception {
-        final int testCount = 7;
-
-        final Assertion<Boolean> errorAssertion = new Assertion<>(false);
-        final Assertion<Boolean> nextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> completeAssertion = new Assertion<>(false);
-        final Assertion<Boolean> startAssertion = new Assertion<>(false);
-
-        final List<String> list = new ArrayList<>(testCount);
-        Stream.create(new StreamAction<String>() {
-            @Override
-            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                for (int n = 0; n < testCount; n++) {
-                    subscriber.onNext(String.valueOf(n));
-                }
-                subscriber.onComplete();
-            }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
-            .subscribe(new StreamOnSubscribe<String>() {
-
-                @Override
-                public void onStart() {
-                    startAssertion.set(true);
-                }
-
-                @Override
-                public void onNext(@Nullable String item) {
-                    nextAssertion.set(true);
-                    list.add(item);
-                }
-
-                @Override
-                public void onComplete() {
-                    completeAssertion.set(true);
-                }
-
-                @Override
-                public void onError(@NonNull Throwable throwable) {
-                    errorAssertion.set(true);
-                }
-            });
-
-        // Even though error has been broadcast,
-        // stream should still complete.
-        assertTrue(list.size() == testCount);
-        for (int n = 0; n < list.size(); n++) {
-            assertTrue(String.valueOf(n).equals(list.get(n)));
-        }
-
-        // Assert that each of the events was
-        // received by the subscriber
-        assertFalse(errorAssertion.get());
-        assertTrue(startAssertion.get());
-        assertTrue(completeAssertion.get());
-        assertTrue(nextAssertion.get());
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test
     public void testStreamUnsubscribe_unsubscribesSuccessfully() throws Exception {
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
         final CountDownLatch latch = new CountDownLatch(1);
-        final Assertion<Boolean> assertion = new Assertion<>(false);
+        final AtomicReference<Boolean> assertion = new AtomicReference<>(false);
         Subscription stringSubscription = Stream.create(new StreamAction<String>() {
 
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
-                try {
-                    subscribeLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(subscribeLatch);
                 subscriber.onNext("test");
                 latch.countDown();
             }
@@ -316,11 +198,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onStartAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onStartAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -333,11 +215,6 @@ public class StreamUnitTest extends BaseUnitTest {
         }).subscribeOn(Schedulers.worker())
             .observeOn(Schedulers.io())
             .subscribe(new StreamOnSubscribe<String>() {
-                @Override
-                public void onNext(@Nullable String item) {
-
-                }
-
                 @Override
                 public void onError(@NonNull Throwable throwable) {
                     onErrorAssertion.set(true);
@@ -374,11 +251,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onNextAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -428,11 +305,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -481,11 +358,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -534,11 +411,11 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch observeLatch = new CountDownLatch(1);
         final CountDownLatch subscribeLatch = new CountDownLatch(1);
 
-        final Assertion<String> subscribeThreadAssertion = new Assertion<>();
-        final Assertion<String> observerThreadAssertion = new Assertion<>();
+        final AtomicReference<String> subscribeThreadAssertion = new AtomicReference<>();
+        final AtomicReference<String> observerThreadAssertion = new AtomicReference<>();
 
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onErrorAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> onCompleteAssertion = new AtomicReference<>(false);
+        final AtomicReference<Boolean> onErrorAssertion = new AtomicReference<>(false);
 
         Stream.create(new StreamAction<String>() {
 
@@ -584,7 +461,7 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamSubscribesWithoutSubscriber() throws Exception {
-        final Assertion<Boolean> isCalledAssertion = new Assertion<>(false);
+        final AtomicReference<Boolean> isCalledAssertion = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -600,26 +477,33 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onCompleteCalledTwice() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Stream.create(new StreamAction<Object>() {
+        final AtomicReference<Throwable> thrownException = new AtomicReference<>(null);
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onComplete();
                 } catch (RuntimeException e) {
-                    errorThrown.set(true);
+                    thrownException.set(e);
+                    throw e;
                 }
             }
-        }).subscribe(new StreamOnSubscribe<Object>() {
-        });
-        assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
-            errorThrown.get());
+        }).subscribe(stringStreamOnSubscribe);
+
+        Assert.assertNotNull(thrownException.get());
+
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test
     public void testStreamThrowsException_onCompleteCalledTwice_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -637,23 +521,30 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onStartCalled() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Stream.create(new StreamAction<Object>() {
+        final AtomicReference<Throwable> thrownException = new AtomicReference<>(null);
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 try {
                     subscriber.onStart();
                 } catch (Exception exception) {
-                    errorThrown.set(true);
+                    thrownException.set(exception);
+                    throw exception;
                 }
             }
-        }).subscribe(new StreamOnSubscribe<Object>() {});
-        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get());
+        }).subscribe(stringStreamOnSubscribe);
+
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onError(thrownException.get());
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test
     public void testStreamThrowsException_onStartCalled_noOnSubscribe() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
         Stream.create(new StreamAction<Object>() {
             @Override
             public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
@@ -669,10 +560,10 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamThrowsException_onNextCalledAfterOnComplete() throws Exception {
-        final Assertion<Boolean> errorThrown = new Assertion<>(false);
-        Stream.create(new StreamAction<Object>() {
+        final AtomicReference<Boolean> errorThrown = new AtomicReference<>(false);
+        Stream.create(new StreamAction<String>() {
             @Override
-            public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
+            public void onSubscribe(@NonNull StreamSubscriber<String> subscriber) {
                 try {
                     subscriber.onComplete();
                     subscriber.onNext(null);
@@ -680,14 +571,22 @@ public class StreamUnitTest extends BaseUnitTest {
                     errorThrown.set(true);
                 }
             }
-        }).subscribe(new StreamOnSubscribe<Object>() {});
+        }).subscribe(stringStreamOnSubscribe);
+
         assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete", errorThrown.get());
+
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
+
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onComplete();
+
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
     @Test
     public void testStreamCreatesLooperIfNotThere() throws Exception {
-        final Assertion<Boolean> looperInitiallyNull = new Assertion<>(false);
-        final Assertion<Boolean> looperFinallyNotNull = new Assertion<>(false);
+        final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -713,7 +612,7 @@ public class StreamUnitTest extends BaseUnitTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final CountDownLatch onNextLatch = new CountDownLatch(1);
         final CountDownLatch onFinalLatch = new CountDownLatch(1);
-        final Assertion<Boolean> unsubscribed = new Assertion<>(false);
+        final AtomicReference<Boolean> unsubscribed = new AtomicReference<>(false);
         final List<String> list = new ArrayList<>();
         Subscription subscription = Stream.create(new StreamAction<String>() {
 
@@ -722,11 +621,7 @@ public class StreamUnitTest extends BaseUnitTest {
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 1");
                 }
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Utils.safeWait(latch);
                 // should be unsubscribed after the latch countdown occurs
                 if (!subscriber.isUnsubscribed()) {
                     subscriber.onNext("test 2");
@@ -756,24 +651,15 @@ public class StreamUnitTest extends BaseUnitTest {
 
     @Test
     public void testStreamEmpty_emitsNothingImmediately() throws Exception {
-        final Assertion<Boolean> onNextAssertion = new Assertion<>(false);
-        final Assertion<Boolean> onCompleteAssertion = new Assertion<>(false);
-        Stream.empty().subscribe(new StreamOnSubscribe<Object>() {
+        Stream<String> stream = Stream.empty();
+        stream.subscribe(stringStreamOnSubscribe);
 
-            @Override
-            public void onNext(@Nullable Object item) {
-                onNextAssertion.set(true);
-            }
+        InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
 
-            @Override
-            public void onComplete() {
-                onCompleteAssertion.set(true);
-            }
+        inOrder.verify(stringStreamOnSubscribe).onStart();
+        inOrder.verify(stringStreamOnSubscribe).onComplete();
 
-        });
-
-        assertFalse(onNextAssertion.get());
-        assertTrue(onCompleteAssertion.get());
+        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe);
     }
 
 }

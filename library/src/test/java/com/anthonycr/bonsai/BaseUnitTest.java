@@ -15,11 +15,19 @@
  */
 package com.anthonycr.bonsai;
 
+import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 25)
 public abstract class BaseUnitTest {
+
+    @Before
+    public void before() {
+        MockitoAnnotations.initMocks(this);
+    }
+
 }

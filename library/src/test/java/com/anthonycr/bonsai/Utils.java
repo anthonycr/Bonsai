@@ -28,10 +28,9 @@ import junit.framework.Assert;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.CountDownLatch;
 
-public class Utils {
-
-    private static final String DEFAULT_LOG_TAG = "BonsaiUnitTest";
+class Utils {
 
     @SuppressWarnings("TryWithIdenticalCatches")
     public static <T> void testNonInstantiableClass(Class<T> clazz) {
@@ -57,18 +56,18 @@ public class Utils {
         Assert.assertFalse("Class should not be instantiable", instantiable);
     }
 
-    public static void prepareLooper() {
+    static void prepareLooper() {
         if (Looper.myLooper() == null) {
             Looper.prepare();
         }
     }
 
-    public static void log(@NonNull CharSequence tag, @NonNull CharSequence message) {
-        System.out.println(tag + ": " + message);
-    }
-
-    public static void log(@NonNull CharSequence message) {
-        log(DEFAULT_LOG_TAG, message);
+    static void safeWait(@NonNull CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
