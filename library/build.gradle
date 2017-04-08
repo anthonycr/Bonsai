@@ -13,7 +13,6 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             testCoverageEnabled false
         }
@@ -38,7 +37,6 @@ android {
 jacoco {
     toolVersion = '0.7.9' // See http://www.eclemma.org/jacoco/.
 }
-
 
 dependencies {
     testCompile 'junit:junit:4.12'
