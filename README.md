@@ -15,7 +15,7 @@ A miniature reactive Android library.
 
 ### Usage
 include from jcenter
-- `compile 'com.anthonycr.bonsai:bonsai:1.0'`
+- `compile 'com.anthonycr.bonsai:bonsai:1.0.1'`
 
 include from submodule
 - `compile project(':library')`
