@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.1'
         classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
     }
 }
@@ -28,8 +28,8 @@ ext {
     targetSdkVersion = compileSdkVersion
     buildToolsVersion = '25.0.2'
 
-    versionCode = 1
-    versionName = '1.0'
+    versionCode = 2
+    versionName = '1.0.1'
 
     PUBLISH_GROUP_ID = 'com.anthonycr.bonsai'
     PUBLISH_ARTIFACT_ID = 'bonsai'
