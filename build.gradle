@@ -29,7 +29,7 @@ ext {
     buildToolsVersion = '25.0.2'
 
     versionCode = 2
-    versionName = '1.0.1'
+    versionName = '1.1.0'
 
     PUBLISH_GROUP_ID = 'com.anthonycr.bonsai'
     PUBLISH_ARTIFACT_ID = 'bonsai'

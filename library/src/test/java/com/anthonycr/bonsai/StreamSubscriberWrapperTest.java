@@ -21,7 +21,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
 
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.immediate());
 
         wrapper.onStart();
         for (String item : testList) {
@@ -44,7 +44,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
     public void onNextTest_Fails_calledAfterOnComplete() throws Exception {
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.immediate());
 
         wrapper.onStart();
         wrapper.onComplete();
@@ -65,7 +65,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
     public void unsubscribe_itemsNotEmitted() throws Exception {
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.immediate());
 
         wrapper.onStart();
 
@@ -93,7 +93,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
     public void onError_itemsNotEmitted() throws Exception {
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.immediate());
 
         wrapper.onStart();
 
@@ -122,7 +122,7 @@ public class StreamSubscriberWrapperTest extends BaseUnitTest {
     public void onError_unsubscribe_itemsNotEmitted() throws Exception {
         List<String> testList = Arrays.asList("one", "two", "three", "four", "five");
 
-        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.current());
+        StreamSubscriberWrapper<String> wrapper = new StreamSubscriberWrapper<>(stringStreamOnSubscribe, null, Schedulers.immediate());
 
         wrapper.onStart();
 

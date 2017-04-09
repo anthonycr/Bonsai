@@ -69,8 +69,8 @@ public class StreamUnitTest extends BaseUnitTest {
                 }
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringStreamOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
@@ -97,8 +97,8 @@ public class StreamUnitTest extends BaseUnitTest {
                 }
                 throw runtimeException;
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringStreamOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
@@ -124,8 +124,8 @@ public class StreamUnitTest extends BaseUnitTest {
                 }
                 throw new RuntimeException("Test failure");
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe();
 
         // No assertions since we did not supply an OnSubscribe.
@@ -149,8 +149,8 @@ public class StreamUnitTest extends BaseUnitTest {
                 }
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringStreamOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringStreamOnSubscribe);
@@ -469,8 +469,8 @@ public class StreamUnitTest extends BaseUnitTest {
                 subscriber.onComplete();
                 isCalledAssertion.set(true);
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe();
         assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
     }
@@ -584,9 +584,9 @@ public class StreamUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testStreamCreatesLooperIfNotThere() throws Exception {
+    public void testStream_DoesNotCreateLooper_IfNotThere() throws Exception {
         final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
-        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -596,7 +596,7 @@ public class StreamUnitTest extends BaseUnitTest {
                 Stream.create(new StreamAction<Object>() {
                     @Override
                     public void onSubscribe(@NonNull StreamSubscriber<Object> subscriber) {
-                        looperFinallyNotNull.set(Looper.myLooper() != null);
+                        looperFinallyNull.set(Looper.myLooper() == null);
                     }
                 }).subscribe();
                 latch.countDown();
@@ -604,7 +604,7 @@ public class StreamUnitTest extends BaseUnitTest {
         });
         latch.await();
         assertTrue("Looper should initially be null", looperInitiallyNull.get());
-        assertTrue("Looper should be initialized by stream class", looperFinallyNotNull.get());
+        assertTrue("Looper should not be initialized by stream class", looperFinallyNull.get());
     }
 
     @Test

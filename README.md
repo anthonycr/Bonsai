@@ -19,7 +19,7 @@ A miniature reactive Android library.
 
 ### Usage
 include from jcenter
-- `compile 'com.anthonycr.bonsai:bonsai:1.0.1'`
+- `compile 'com.anthonycr.bonsai:bonsai:1.1.0'`
 
 include from submodule
 - `compile project(':library')`
@@ -41,7 +41,7 @@ include from submodule
     - `main()`: A reference to the main thread of your application. All work will be posted to the main message queue.
     - `worker()`: Runs work on one thread out of a pool.
     - `newSingleThreadScheduler()`: Creates a new single thread scheduler (like the `io()` scheduler).
-    - `current()`: Runs work on the thread that this method was called on.
+    - `immediate()`: Runs work immediately and synchronously on the current thread.
     - `from(Executor)`: Allows you to construct a scheduler backed by an `Executor` of your choice.
 - `Subscription`: This is returned when you subscribe to an observable. It allows you to unsubscribe from the work. If you unsubscribe, you will no longer receive events. This is especially helpful in Android if we are observing long lasting work in an Activity, we want to unsubscribe in `Activity.onDestroy()` in order to avoid leaking the Activity.
 
@@ -150,8 +150,8 @@ Stream.create(new StreamAction<List<String>>() {
         subscriber.onNext(stringList);
         subscriber.onComplete();
     }
-}).subscribeOn(Schedulers.current())
-  .observeOn(Schedulers.current())
+}).subscribeOn(Schedulers.immediate())
+  .observeOn(Schedulers.immediate())
   .subscribe(new StreamOnSubscribe<List<String>>() {
         @Override
         public void onNext(List<String> item) {

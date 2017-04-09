@@ -17,7 +17,7 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     public void onItemTest_Succeeds() throws Exception {
         final String itemToBeEmitted = "test";
 
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
         wrapper.onItem(itemToBeEmitted);
         wrapper.onComplete();
@@ -36,7 +36,7 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     public void onItemTest_Fails_calledAfterOnComplete() throws Exception {
         final String itemToBeEmitted = "test";
 
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
         wrapper.onComplete();
 
@@ -54,7 +54,7 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     public void onItemTest_Fails_calledMultipleTimes() throws Exception {
         final String itemToBeEmitted = "test";
 
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
         wrapper.onItem(itemToBeEmitted);
 
@@ -72,7 +72,7 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     public void unsubscribe_itemNotEmitted() throws Exception {
         final String itemToBeEmitted = "test";
 
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
 
         // Unsubscribe after onStart
@@ -90,7 +90,7 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     public void onError_itemNotEmitted() throws Exception {
         final String itemToBeEmitted = "test";
 
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
 
         // Throw an error after onStart
@@ -111,7 +111,7 @@ public class SingleSubscriberWrapperTest extends BaseUnitTest {
     public void onError_unsubscribe_itemNotEmitted() throws Exception {
         final String itemToBeEmitted = "test";
 
-        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.current());
+        SingleSubscriberWrapper<String> wrapper = new SingleSubscriberWrapper<>(stringSingleOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
 
         // Throw an error after onStart and then unsubscribe

@@ -60,8 +60,8 @@ public class CompletableUnitTest extends BaseUnitTest {
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
                 throw runtimeException;
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(completableOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
@@ -79,8 +79,8 @@ public class CompletableUnitTest extends BaseUnitTest {
             public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
                 throw new RuntimeException("Test failure");
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe();
 
         // No assertions since we did not supply an OnSubscribe.
@@ -100,8 +100,8 @@ public class CompletableUnitTest extends BaseUnitTest {
                 }
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(completableOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(completableOnSubscribe);
@@ -122,8 +122,8 @@ public class CompletableUnitTest extends BaseUnitTest {
                 onSubscribeAssertion.set(true);
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(completableOnSubscribe);
 
         // Assert that each of the events was
@@ -425,8 +425,8 @@ public class CompletableUnitTest extends BaseUnitTest {
                 subscriber.onComplete();
                 isCalledAssertion.set(true);
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe();
 
         assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
@@ -478,9 +478,9 @@ public class CompletableUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testCompletableCreatesLooperIfNotThere() throws Exception {
+    public void testCompletable_DoesNotCreateLooper_IfNotThere() throws Exception {
         final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
-        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -490,7 +490,7 @@ public class CompletableUnitTest extends BaseUnitTest {
                 Completable.create(new CompletableAction() {
                     @Override
                     public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
-                        looperFinallyNotNull.set(Looper.myLooper() != null);
+                        looperFinallyNull.set(Looper.myLooper() == null);
                     }
                 }).subscribe();
                 latch.countDown();
@@ -500,7 +500,7 @@ public class CompletableUnitTest extends BaseUnitTest {
         latch.await();
 
         assertTrue("Looper should initially be null", looperInitiallyNull.get());
-        assertTrue("Looper should be initialized by Completable class", looperFinallyNotNull.get());
+        assertTrue("Looper should not be initialized by Completable class", looperFinallyNull.get());
     }
 
     @Test
