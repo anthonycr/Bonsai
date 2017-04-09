@@ -20,6 +20,7 @@
  */
 package com.anthonycr.bonsai;
 
+import android.os.Handler;
 import android.os.Looper;
 
 import org.junit.Test;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class SchedulersUnitTest extends BaseUnitTest {
@@ -135,6 +137,36 @@ public class SchedulersUnitTest extends BaseUnitTest {
 
         latch.await();
         assertFalse(currentScheduler.get());
+    }
+
+    @Test
+    public void testFromHandler_isOnRightThread() throws Exception {
+        final AtomicReference<String> executorThread = new AtomicReference<>(null);
+        final AtomicReference<String> schedulerThread = new AtomicReference<>(null);
+        final CountDownLatch latch = new CountDownLatch(1);
+        Executors.newSingleThreadExecutor()
+            .execute(new Runnable() {
+                @Override
+                public void run() {
+                    Looper.prepare();
+                    Handler handler = new Handler(Looper.myLooper());
+                    executorThread.set(Thread.currentThread().toString());
+                    Schedulers.from(handler)
+                        .execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                schedulerThread.set(Thread.currentThread().toString());
+                                latch.countDown();
+                            }
+                        });
+                }
+            });
+
+        latch.await();
+
+        assertNotNull(schedulerThread.get());
+        assertNotNull(executorThread.get());
+        assertEquals(schedulerThread.get(), executorThread.get());
     }
 
     @Test
