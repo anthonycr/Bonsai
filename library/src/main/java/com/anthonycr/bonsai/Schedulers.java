@@ -20,6 +20,7 @@
  */
 package com.anthonycr.bonsai;
 
+import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -41,6 +42,7 @@ public final class Schedulers {
     @Nullable private static Scheduler mainScheduler;
     @Nullable private static Scheduler workerScheduler;
     @Nullable private static Scheduler ioScheduler;
+    @Nullable private static Scheduler immediateScheduler;
 
     private Schedulers() {
         throw new UnsupportedOperationException("This class is not instantiable");
@@ -93,6 +95,16 @@ public final class Schedulers {
     }
 
     /**
+     * A scheduler that executes tasks immediately.
+     */
+    private static class ImmediateScheduler implements Scheduler {
+        @Override
+        public void execute(@NonNull Runnable runnable) {
+            runnable.run();
+        }
+    }
+
+    /**
      * Creates a scheduler from an executor instance.
      *
      * @param executor the executor to use to create
@@ -105,26 +117,35 @@ public final class Schedulers {
     }
 
     /**
-     * A scheduler that points to the
-     * current thread. Useful when you
-     * are not on the main thread and
-     * need to observe on that thread.
+     * Creates a scheduler from a handler. The scheduler
+     * will post tasks to the looper associated with the
+     * handler.
      *
-     * @return a scheduler associated with
-     * the current thread.
+     * @param handler the handler used to create the Scheduler.
+     * @return a valid Scheduler backed by a handler.
      */
     @NonNull
-    public static Scheduler current() {
-        if (Looper.myLooper() == null) {
-            Looper.prepare();
+    public static Scheduler from(@NonNull Handler handler) {
+        return new ThreadScheduler(handler.getLooper());
+    }
+
+    /**
+     * A scheduler that executes tasks synchronously
+     * on the calling thread. If you use this scheduler
+     * as the subscribe-on scheduler, then the work will
+     * execute synchronously on the current thread. If
+     * you use this scheduler as the observe-on thread,
+     * then you will receive events on whatever thread
+     * was used as that subscribe-on thread.
+     *
+     * @return a synchronous scheduler.
+     */
+    @NonNull
+    public static Scheduler immediate() {
+        if (immediateScheduler == null) {
+            immediateScheduler = new ImmediateScheduler();
         }
-
-        // Assert that the looper is not null
-        // since we just prepared it if it was.
-        Looper looper = Looper.myLooper();
-        Preconditions.checkNonNull(looper);
-
-        return new ThreadScheduler(looper);
+        return immediateScheduler;
     }
 
     /**

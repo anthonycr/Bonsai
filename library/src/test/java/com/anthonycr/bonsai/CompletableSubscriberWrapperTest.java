@@ -18,7 +18,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onCompleteTest_Succeeds() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
         wrapper.onComplete();
 
         Mockito.verify(completableOnSubscribe).onComplete();
@@ -28,7 +28,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test(expected = RuntimeException.class)
     public void onCompleteTest_calledMultipleTimes_throwsException() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
         wrapper.onComplete();
 
         Mockito.verify(completableOnSubscribe).onComplete();
@@ -40,7 +40,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onErrorTest_Succeeds_overridden() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
 
         Exception exception = new Exception("Test exception");
 
@@ -53,7 +53,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onErrorTest_onCompleteNotCalled() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
 
         Exception exception = new Exception("Test exception");
 
@@ -67,7 +67,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void onError_unsubscribe_onCompleteNotCalled() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
 
         Exception exception = new Exception("Test exception");
 
@@ -90,13 +90,13 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
                 super.onError(throwable);
             }
         };
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(onSubscribe, null, Schedulers.immediate());
         wrapper.onError(new Exception("Test exception"));
     }
 
     @Test
     public void onStartTest_Succeeds() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
 
         Mockito.verify(completableOnSubscribe).onStart();
@@ -106,7 +106,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test(expected = RuntimeException.class)
     public void onStartTest_calledMultipleTimes_throwsException() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
         wrapper.onStart();
 
         Mockito.verify(completableOnSubscribe).onStart();
@@ -118,7 +118,7 @@ public class CompletableSubscriberWrapperTest extends BaseUnitTest {
 
     @Test
     public void unsubscribeTest() throws Exception {
-        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.current());
+        CompletableSubscriberWrapper<CompletableOnSubscribe> wrapper = new CompletableSubscriberWrapper<>(completableOnSubscribe, null, Schedulers.immediate());
         wrapper.unsubscribe();
 
         Assert.assertTrue(wrapper.isUnsubscribed());

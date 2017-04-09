@@ -115,7 +115,7 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
 
     @NonNull
     private Subscription startSubscription(@Nullable OnSubscribeT onSubscribe) {
-        final Scheduler defaultSubscriber = Schedulers.current();
+        final Scheduler defaultSubscriber = Schedulers.immediate();
         final SubscriberT subscriber = createSubscriberWrapper(onSubscribe, observerThread, defaultSubscriber);
 
         Preconditions.checkNonNull(subscriber);

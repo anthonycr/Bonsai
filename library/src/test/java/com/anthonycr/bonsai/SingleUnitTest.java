@@ -63,8 +63,8 @@ public class SingleUnitTest extends BaseUnitTest {
                 subscriber.onItem(testItem);
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringSingleOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
@@ -99,7 +99,7 @@ public class SingleUnitTest extends BaseUnitTest {
                 }
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
             .observeOn(Schedulers.io())
             .subscribe(new SingleOnSubscribe<String>() {
                 @Override
@@ -131,7 +131,7 @@ public class SingleUnitTest extends BaseUnitTest {
                 subscriber.onItem(String.valueOf(1));
                 throw new RuntimeException("Test failure");
             }
-        }).subscribeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
             .observeOn(Schedulers.io())
             .subscribe();
 
@@ -149,8 +149,8 @@ public class SingleUnitTest extends BaseUnitTest {
                 subscriber.onItem(testItem);
                 throw runtimeException;
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringSingleOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
@@ -178,8 +178,8 @@ public class SingleUnitTest extends BaseUnitTest {
                 }
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringSingleOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
@@ -201,8 +201,8 @@ public class SingleUnitTest extends BaseUnitTest {
                 subscriber.onItem(testItem);
                 subscriber.onComplete();
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe(stringSingleOnSubscribe);
 
         InOrder inOrder = Mockito.inOrder(stringSingleOnSubscribe);
@@ -557,8 +557,8 @@ public class SingleUnitTest extends BaseUnitTest {
                 subscriber.onComplete();
                 isCalledAssertion.set(true);
             }
-        }).subscribeOn(Schedulers.current())
-            .observeOn(Schedulers.current())
+        }).subscribeOn(Schedulers.immediate())
+            .observeOn(Schedulers.immediate())
             .subscribe();
         assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get());
     }
@@ -661,7 +661,7 @@ public class SingleUnitTest extends BaseUnitTest {
     @Test
     public void testSingleCreatesLooperIfNotThere() throws Exception {
         final AtomicReference<Boolean> looperInitiallyNull = new AtomicReference<>(false);
-        final AtomicReference<Boolean> looperFinallyNotNull = new AtomicReference<>(false);
+        final AtomicReference<Boolean> looperFinallyNull = new AtomicReference<>(false);
         final CountDownLatch latch = new CountDownLatch(1);
         Schedulers.newSingleThreadedScheduler().execute(new Runnable() {
             @Override
@@ -671,7 +671,7 @@ public class SingleUnitTest extends BaseUnitTest {
                 Single.create(new SingleAction<Object>() {
                     @Override
                     public void onSubscribe(@NonNull SingleSubscriber<Object> subscriber) {
-                        looperFinallyNotNull.set(Looper.myLooper() != null);
+                        looperFinallyNull.set(Looper.myLooper() == null);
                     }
                 }).subscribe();
                 latch.countDown();
@@ -679,7 +679,7 @@ public class SingleUnitTest extends BaseUnitTest {
         });
         latch.await();
         assertTrue("Looper should initially be null", looperInitiallyNull.get());
-        assertTrue("Looper should be initialized by Single class", looperFinallyNotNull.get());
+        assertTrue("Looper should not be initialized by Single class", looperFinallyNull.get());
     }
 
     @Test
