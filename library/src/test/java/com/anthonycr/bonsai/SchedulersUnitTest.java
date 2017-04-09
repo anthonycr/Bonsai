@@ -22,8 +22,6 @@ package com.anthonycr.bonsai;
 
 import android.os.Looper;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -31,6 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -57,48 +56,28 @@ public class SchedulersUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testCurrentScheduler_initializesLooper() throws Exception {
-        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
-        final AtomicReference<Boolean> nullScheduler = new AtomicReference<>();
+    public void testImmediateScheduler_isSynchronous() throws Exception {
+        final AtomicReference<Boolean> executedBoolean = new AtomicReference<>(false);
+        final AtomicReference<Looper> currentScheduler = new AtomicReference<>();
         final CountDownLatch latch = new CountDownLatch(1);
-        Schedulers.worker().execute(new Runnable() {
-            @Override
-            public void run() {
-                // should be null
-                Looper currentLooper = Looper.myLooper();
-                nullScheduler.set(currentLooper == null);
-                Schedulers.current().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        // now it shouldn't be null
-                        currentScheduler.set(Looper.myLooper() != null);
-                    }
-                });
-                latch.countDown();
-            }
-        });
-        latch.await();
-        Assert.assertTrue(nullScheduler.get());
-        Assert.assertTrue(currentScheduler.get());
-    }
 
-    @Test
-    public void testCurrentScheduler_isCorrect() throws Exception {
-        final AtomicReference<Boolean> currentScheduler = new AtomicReference<>();
-        final CountDownLatch latch = new CountDownLatch(1);
         Utils.prepareLooper();
         final Looper currentLooper = Looper.myLooper();
-        Schedulers.current().execute(new Runnable() {
+
+        Schedulers.immediate().execute(new Runnable() {
             @Override
             public void run() {
                 Utils.prepareLooper();
-                currentScheduler.set(Looper.myLooper() == currentLooper);
+                currentScheduler.set(Looper.myLooper());
+                executedBoolean.set(true);
                 latch.countDown();
             }
         });
 
+        assertTrue(executedBoolean.get());
+
         latch.await();
-        assertTrue(currentScheduler.get());
+        assertEquals(currentScheduler.get(), currentLooper);
     }
 
     @Test
