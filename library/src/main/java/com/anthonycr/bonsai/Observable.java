@@ -136,7 +136,8 @@ public abstract class Observable<ActionT extends ObservableAction<SubscriberT>,
         return subscriber;
     }
 
-    private void executeOnSubscriberThread(@NonNull Runnable runnable, Scheduler defaultScheduler) {
+    private void executeOnSubscriberThread(@NonNull Runnable runnable,
+                                           @NonNull Scheduler defaultScheduler) {
         if (subscriberThread != null) {
             subscriberThread.execute(runnable);
         } else {

@@ -33,7 +33,7 @@ import java.util.concurrent.CountDownLatch;
 class Utils {
 
     @SuppressWarnings("TryWithIdenticalCatches")
-    public static <T> void testNonInstantiableClass(Class<T> clazz) {
+    public static <T> void testNonInstantiableClass(@NonNull Class<T> clazz) {
         Constructor<T> constructor;
         boolean instantiable = true;
         try {
