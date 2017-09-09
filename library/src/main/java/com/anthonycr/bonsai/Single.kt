@@ -1,8 +1,7 @@
-package com.anthonycr.bonsai.refactor
+package com.anthonycr.bonsai
 
-import com.anthonycr.bonsai.Scheduler
-import com.anthonycr.bonsai.Schedulers
-import com.anthonycr.bonsai.Subscription
+import com.anthonycr.bonsai.refactor.ReactiveEventException
+import com.anthonycr.bonsai.refactor.requireCondition
 
 /**
  * A Reactive Streams Kotlin implementation of a publisher that emits one item or one error. This
@@ -19,7 +18,10 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
     companion object {
         @JvmStatic
-        fun <R> create(block: (Subscriber<R>) -> Unit = { it.onError(Exception("No item emitted")) }) = Single(block)
+        fun <R> error() = Single<R>({ it.onError(RuntimeException("No item emitted")) })
+
+        @JvmStatic
+        fun <R> create(block: (Subscriber<R>) -> Unit) = Single(block)
 
         @JvmStatic
         private fun <R> performSubscribe(subscriptionScheduler: Scheduler,
@@ -33,7 +35,15 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
                 try {
                     onSubscribe(schedulingSubscriber)
                 } catch (exception: Exception) {
-                    schedulingSubscriber.onError(exception)
+                    if (exception is ReactiveEventException) {
+                        throw exception
+                    } else {
+                        if (schedulingSubscriber.isUnsubscribed) {
+                            throw ReactiveEventException("Exception thrown after unsubscribe", exception)
+                        } else {
+                            schedulingSubscriber.onError(exception)
+                        }
+                    }
                 }
             }
 
@@ -41,23 +51,23 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         }
     }
 
-    interface Subscriber<in T> {
-
+    interface Consumer<in T> {
         fun onSuccess(t: T)
 
         fun onError(throwable: Throwable)
-
     }
 
+    interface Subscriber<in T> : Consumer<T>, Subscription
+
     private class ComposingSubscriber<in T>(private var onSuccess: (T) -> Unit,
-                                            private var onError: (Throwable) -> Unit) : Subscriber<T> {
+                                            private var onError: (Throwable) -> Unit) : Consumer<T> {
         override fun onSuccess(t: T) = onSuccess.invoke(t)
 
         override fun onError(throwable: Throwable) = onError.invoke(throwable)
     }
 
     private class SchedulingSubscriber<in T>(private val scheduler: Scheduler,
-                                             private var composingSubscriber: ComposingSubscriber<T>?) : Subscriber<T>, Subscription {
+                                             private var composingSubscriber: ComposingSubscriber<T>?) : Subscriber<T> {
 
         private var onSuccessExecuted = false
         private var onErrorExecuted = false
@@ -69,16 +79,16 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         override fun isUnsubscribed() = composingSubscriber == null
 
         override fun onSuccess(t: T) = scheduler.execute {
-            require(!onSuccessExecuted) { "onSuccess must not be called multiple times" }
-            require(!onErrorExecuted) { "onSuccess must not be called after onError" }
+            requireCondition(!onSuccessExecuted) { "onSuccess must not be called multiple times" }
+            requireCondition(!onErrorExecuted) { "onSuccess must not be called after onError" }
             onSuccessExecuted = true
             composingSubscriber?.onSuccess(t)
             unsubscribe()
         }
 
         override fun onError(throwable: Throwable) = scheduler.execute {
-            require(!onErrorExecuted) { "onError must not be called multiple times" }
-            require(!onSuccessExecuted) { "onError must not be called after onSuccess" }
+            requireCondition(!onErrorExecuted) { "onError must not be called multiple times" }
+            requireCondition(!onSuccessExecuted) { "onError must not be called after onSuccess" }
             onErrorExecuted = true
             composingSubscriber?.onError(throwable)
             unsubscribe()

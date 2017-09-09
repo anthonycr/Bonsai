@@ -26,7 +26,15 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
                 try {
                     onSubscribe(schedulingSubscriber)
                 } catch (exception: Exception) {
-                    schedulingSubscriber.onError(exception)
+                    if (exception is ReactiveEventException) {
+                        throw exception
+                    } else {
+                        if (schedulingSubscriber.isUnsubscribed) {
+                            throw ReactiveEventException("Exception thrown after unsubscribe", exception)
+                        } else {
+                            schedulingSubscriber.onError(exception)
+                        }
+                    }
                 }
             }
 
@@ -67,22 +75,22 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         override fun isUnsubscribed() = composingSubscriber == null
 
         override fun onNext(t: T) {
-            require(!onCompleteExecuted) { "onNext must not be called after onComplete has been called" }
-            require(!onErrorExecuted) { "onNext must not be called after onError has been called" }
+            requireCondition(!onCompleteExecuted) { "onNext must not be called after onComplete has been called" }
+            requireCondition(!onErrorExecuted) { "onNext must not be called after onError has been called" }
             composingSubscriber?.onNext(t)
         }
 
         override fun onComplete() {
-            require(!onCompleteExecuted) { "onComplete must not be called multiple times" }
-            require(!onErrorExecuted) { "onComplete must not be called after onError" }
+            requireCondition(!onCompleteExecuted) { "onComplete must not be called multiple times" }
+            requireCondition(!onErrorExecuted) { "onComplete must not be called after onError" }
             onCompleteExecuted = true
             composingSubscriber?.onComplete()
             unsubscribe()
         }
 
         override fun onError(throwable: Throwable) = scheduler.execute {
-            require(!onErrorExecuted) { "onError must not be called multiple times" }
-            require(!onCompleteExecuted) { "onError must not be called after onSuccess" }
+            requireCondition(!onErrorExecuted) { "onError must not be called multiple times" }
+            requireCondition(!onCompleteExecuted) { "onError must not be called after onSuccess" }
             onErrorExecuted = true
             composingSubscriber?.onError(throwable)
             unsubscribe()

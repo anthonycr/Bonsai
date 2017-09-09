@@ -25,7 +25,15 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
                 try {
                     onSubscribe(schedulingSubscriber)
                 } catch (exception: Exception) {
-                    schedulingSubscriber.onError(exception)
+                    if (exception is ReactiveEventException) {
+                        throw exception
+                    } else {
+                        if (schedulingSubscriber.isUnsubscribed) {
+                            throw ReactiveEventException("Exception thrown after unsubscribe", exception)
+                        } else {
+                            schedulingSubscriber.onError(exception)
+                        }
+                    }
                 }
             }
 
@@ -61,16 +69,16 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
         override fun isUnsubscribed() = composingSubscriber == null
 
         override fun onComplete() {
-            require(!onCompleteExecuted) { "onComplete must not be called multiple times" }
-            require(!onErrorExecuted) { "onComplete must not be called after onError" }
+            requireCondition(!onCompleteExecuted) { "onComplete must not be called multiple times" }
+            requireCondition(!onErrorExecuted) { "onComplete must not be called after onError" }
             onCompleteExecuted = true
             composingSubscriber?.onComplete()
             unsubscribe()
         }
 
         override fun onError(throwable: Throwable) = scheduler.execute {
-            require(!onErrorExecuted) { "onError must not be called multiple times" }
-            require(!onCompleteExecuted) { "onError must not be called after onComplete" }
+            requireCondition(!onErrorExecuted) { "onError must not be called multiple times" }
+            requireCondition(!onCompleteExecuted) { "onError must not be called after onComplete" }
             onErrorExecuted = true
             composingSubscriber?.onError(throwable)
             unsubscribe()
