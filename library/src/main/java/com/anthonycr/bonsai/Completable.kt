@@ -1,8 +1,7 @@
-package com.anthonycr.bonsai.refactor
+package com.anthonycr.bonsai
 
-import com.anthonycr.bonsai.Scheduler
-import com.anthonycr.bonsai.Schedulers
-import com.anthonycr.bonsai.Subscription
+import com.anthonycr.bonsai.refactor.ReactiveEventException
+import com.anthonycr.bonsai.refactor.requireCondition
 
 /**
  * Created by anthonycr on 9/9/17.
@@ -11,7 +10,10 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
 
     companion object {
         @JvmStatic
-        fun create(block: (Subscriber) -> Unit = { it.onComplete() }) = Completable(block)
+        fun complete() = Completable({ it.onComplete() })
+
+        @JvmStatic
+        fun create(block: (Subscriber) -> Unit) = Completable(block)
 
         @JvmStatic
         private fun performSubscribe(subscriptionScheduler: Scheduler,
@@ -41,7 +43,7 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
         }
     }
 
-    interface Subscriber {
+    interface Consumer {
 
         fun onComplete()
 
@@ -49,15 +51,17 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
 
     }
 
+    interface Subscriber : Consumer, Subscription
+
     private class ComposingSubscriber(private var onComplete: () -> Unit,
-                                      private var onError: (Throwable) -> Unit) : Subscriber {
+                                      private var onError: (Throwable) -> Unit) : Consumer {
         override fun onComplete() = onComplete.invoke()
 
         override fun onError(throwable: Throwable) = onError.invoke(throwable)
     }
 
     private class SchedulingSubscriber(private val scheduler: Scheduler,
-                                       private var composingSubscriber: ComposingSubscriber?) : Subscriber, Subscription {
+                                       private var composingSubscriber: ComposingSubscriber?) : Subscriber {
 
         private var onCompleteExecuted = false
         private var onErrorExecuted = false
@@ -68,7 +72,7 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
 
         override fun isUnsubscribed() = composingSubscriber == null
 
-        override fun onComplete() {
+        override fun onComplete() = scheduler.execute {
             requireCondition(!onCompleteExecuted) { "onComplete must not be called multiple times" }
             requireCondition(!onErrorExecuted) { "onComplete must not be called after onError" }
             onCompleteExecuted = true
@@ -99,7 +103,7 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
     }
 
     fun subscribe(onComplete: () -> Unit = {},
-                  onError: (Throwable) -> Unit = { throw IllegalStateException("No error handler supplied", it) }) =
+                  onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
             performSubscribe(subscriptionScheduler, observationScheduler, onSubscribe, onComplete, onError)
 
 }

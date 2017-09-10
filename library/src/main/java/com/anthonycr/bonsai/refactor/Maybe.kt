@@ -84,7 +84,7 @@ class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> U
             unsubscribe()
         }
 
-        override fun onComplete() {
+        override fun onComplete() = scheduler.execute {
             requireCondition(!onCompleteExecuted) { "onComplete must not be called multiple times" }
             requireCondition(!onErrorExecuted) { "onComplete must not be called after onError" }
             requireCondition(!onSuccessExecuted) { "onComplete must not be called after onSuccess" }

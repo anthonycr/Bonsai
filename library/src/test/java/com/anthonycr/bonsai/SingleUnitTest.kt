@@ -26,7 +26,6 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -55,10 +54,10 @@ class SingleUnitTest {
                 .observeOn(Schedulers.immediate())
                 .subscribe(stringOnSuccess, stringOnError)
 
-        Mockito.verify(stringOnSuccess, Mockito.times(1))(testItem)
+        stringOnSuccess.verifyOnlyOneInteraction()(testItem)
+        stringOnSuccess.verifyNoMoreInteractions()
 
-        Mockito.verifyNoMoreInteractions(stringOnSuccess)
-        Mockito.verifyZeroInteractions(stringOnError)
+        stringOnError.verifyZeroInteractions()
     }
 
     @Test(expected = ReactiveEventException::class)
@@ -107,9 +106,10 @@ class SingleUnitTest {
                 .observeOn(Schedulers.immediate())
                 .subscribe(stringOnSuccess, stringOnError)
 
-        Mockito.verify(stringOnError, Mockito.times(1))(exception)
-        Mockito.verifyNoMoreInteractions(stringOnError)
-        Mockito.verifyZeroInteractions(stringOnSuccess)
+        stringOnError.verifyOnlyOneInteraction()(exception)
+        stringOnError.verifyNoMoreInteractions()
+
+        stringOnSuccess.verifyZeroInteractions()
     }
 
     @Test
@@ -122,9 +122,10 @@ class SingleUnitTest {
                 .observeOn(Schedulers.immediate())
                 .subscribe(stringOnSuccess, stringOnError)
 
-        Mockito.verify(stringOnSuccess, Mockito.times(1))(testItem)
-        Mockito.verifyNoMoreInteractions(stringOnSuccess)
-        Mockito.verifyZeroInteractions(stringOnError)
+        stringOnSuccess.verifyOnlyOneInteraction()(testItem)
+        stringOnSuccess.verifyNoMoreInteractions()
+
+        stringOnError.verifyZeroInteractions()
     }
 
     @Test
@@ -305,9 +306,10 @@ class SingleUnitTest {
         assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
                 errorThrown.get())
 
-        Mockito.verify(stringOnSuccess, Mockito.times(1))(emission1)
-        Mockito.verifyNoMoreInteractions(stringOnSuccess)
-        Mockito.verifyZeroInteractions(stringOnError)
+        stringOnSuccess.verifyOnlyOneInteraction()(emission1)
+        stringOnSuccess.verifyNoMoreInteractions()
+
+        stringOnError.verifyZeroInteractions()
 
         assertTrue(errorThrown.get())
     }
@@ -345,9 +347,10 @@ class SingleUnitTest {
         val stringSingle = Single.error<String>()
         stringSingle.subscribe(stringOnSuccess, stringOnError)
 
-        Mockito.verify(stringOnError, Mockito.times(1))(isA<RuntimeException>())
-        Mockito.verifyNoMoreInteractions(stringOnError)
-        Mockito.verifyZeroInteractions(stringOnSuccess)
+        stringOnError.verifyOnlyOneInteraction()(isA<RuntimeException>())
+        stringOnError.verifyNoMoreInteractions()
+
+        stringOnSuccess.verifyZeroInteractions()
     }
 
 }

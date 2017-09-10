@@ -74,13 +74,13 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
         override fun isUnsubscribed() = composingSubscriber == null
 
-        override fun onNext(t: T) {
+        override fun onNext(t: T) = scheduler.execute {
             requireCondition(!onCompleteExecuted) { "onNext must not be called after onComplete has been called" }
             requireCondition(!onErrorExecuted) { "onNext must not be called after onError has been called" }
             composingSubscriber?.onNext(t)
         }
 
-        override fun onComplete() {
+        override fun onComplete() = scheduler.execute {
             requireCondition(!onCompleteExecuted) { "onComplete must not be called multiple times" }
             requireCondition(!onErrorExecuted) { "onComplete must not be called after onError" }
             onCompleteExecuted = true
