@@ -1,8 +1,6 @@
 package com.anthonycr.bonsai.refactor
 
-import com.anthonycr.bonsai.Scheduler
-import com.anthonycr.bonsai.Schedulers
-import com.anthonycr.bonsai.Subscription
+import com.anthonycr.bonsai.*
 
 /**
  * Created by anthonycr on 9/9/17.

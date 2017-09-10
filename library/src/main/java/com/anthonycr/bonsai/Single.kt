@@ -1,8 +1,5 @@
 package com.anthonycr.bonsai
 
-import com.anthonycr.bonsai.refactor.ReactiveEventException
-import com.anthonycr.bonsai.refactor.requireCondition
-
 /**
  * A Reactive Streams Kotlin implementation of a publisher that emits one item or one error. This
  * class allows work to be done on a certain thread and then allows an item to be emitted on a

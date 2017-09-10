@@ -20,7 +20,6 @@
  */
 package com.anthonycr.bonsai
 
-import com.anthonycr.bonsai.refactor.ReactiveEventException
 import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Before

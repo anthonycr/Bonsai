@@ -24,6 +24,9 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -35,7 +38,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class SchedulersUnitTest extends BaseUnitTest {
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
+public class SchedulersUnitTest {
 
     @Test
     public void testIsFinalClass() throws Exception {
