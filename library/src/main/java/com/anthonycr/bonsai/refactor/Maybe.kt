@@ -9,7 +9,10 @@ class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> U
 
     companion object {
         @JvmStatic
-        fun <R> create(block: (Subscriber<R>) -> Unit = { it.onComplete() }) = Maybe(block)
+        fun <R> empty() = { Maybe<R>({ it.onComplete() }) }
+
+        @JvmStatic
+        fun <R> create(block: (Subscriber<R>) -> Unit) = Maybe(block)
 
         @JvmStatic
         private fun <R> performSubscribe(subscriptionScheduler: Scheduler,
