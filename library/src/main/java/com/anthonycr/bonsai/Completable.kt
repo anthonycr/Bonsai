@@ -10,6 +10,12 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
         fun complete() = Completable({ it.onComplete() })
 
         @JvmStatic
+        fun defer(block: () -> Unit) = Completable({
+            block()
+            it.onComplete()
+        })
+
+        @JvmStatic
         fun create(block: (Subscriber) -> Unit) = Completable(block)
 
         @JvmStatic

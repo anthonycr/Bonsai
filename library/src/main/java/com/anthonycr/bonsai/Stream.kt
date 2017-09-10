@@ -10,6 +10,13 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         fun <R> empty() = Stream<R>({ it.onComplete() })
 
         @JvmStatic
+        fun <R> just(vararg values: R) = Stream<R>({ subscriber ->
+            for (r in values) {
+                subscriber.onNext(r)
+            }
+        })
+
+        @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Stream(block)
 
         @JvmStatic

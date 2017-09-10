@@ -18,6 +18,12 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         fun <R> error() = Single<R>({ it.onError(RuntimeException("No item emitted")) })
 
         @JvmStatic
+        fun <R> just(value: R) = Single<R>({ it.onSuccess(value) })
+
+        @JvmStatic
+        fun <R> defer(block: () -> R) = Single<R>({ it.onSuccess(block()) })
+
+        @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Single(block)
 
         @JvmStatic
