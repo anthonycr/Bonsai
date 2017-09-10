@@ -1,8 +1,7 @@
-package com.anthonycr.bonsai.refactor
+package com.anthonycr.bonsai
 
-import com.anthonycr.bonsai.Scheduler
-import com.anthonycr.bonsai.Schedulers
-import com.anthonycr.bonsai.Subscription
+import com.anthonycr.bonsai.refactor.ReactiveEventException
+import com.anthonycr.bonsai.refactor.requireCondition
 
 /**
  * Created by anthonycr on 9/9/17.
@@ -11,7 +10,10 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
     companion object {
         @JvmStatic
-        fun <R> create(block: (Subscriber<R>) -> Unit = { it.onComplete() }) = Stream(block)
+        fun <R> empty() = Stream<R>({ it.onComplete() })
+
+        @JvmStatic
+        fun <R> create(block: (Subscriber<R>) -> Unit) = Stream(block)
 
         @JvmStatic
         private fun <R> performSubscribe(subscriptionScheduler: Scheduler,
@@ -42,19 +44,19 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         }
     }
 
-    interface Subscriber<in T> {
-
+    interface Consumer<in T> {
         fun onNext(t: T)
 
         fun onComplete()
 
         fun onError(throwable: Throwable)
-
     }
+
+    interface Subscriber<in T> : Consumer<T>, Subscription
 
     private class ComposingSubscriber<in T>(private var onNext: (T) -> Unit,
                                             private var onComplete: () -> Unit,
-                                            private var onError: (Throwable) -> Unit) : Subscriber<T> {
+                                            private var onError: (Throwable) -> Unit) : Consumer<T> {
         override fun onNext(t: T) = onNext.invoke(t)
 
         override fun onComplete() = onComplete.invoke()
@@ -63,7 +65,7 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
     }
 
     private class SchedulingSubscriber<in T>(private val scheduler: Scheduler,
-                                             private var composingSubscriber: ComposingSubscriber<T>?) : Subscriber<T>, Subscription {
+                                             private var composingSubscriber: ComposingSubscriber<T>?) : Subscriber<T> {
 
         private var onCompleteExecuted = false
         private var onErrorExecuted = false
@@ -126,7 +128,7 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
     fun subscribe(onNext: (T) -> Unit = {},
                   onComplete: () -> Unit = {},
-                  onError: (Throwable) -> Unit = { throw IllegalStateException("No error handler supplied", it) }) =
+                  onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
             performSubscribe(subscriptionScheduler, observationScheduler, onSubscribe, onNext, onComplete, onError)
 
 }

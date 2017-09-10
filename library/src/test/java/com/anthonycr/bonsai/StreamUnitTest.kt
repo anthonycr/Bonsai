@@ -20,6 +20,7 @@
  */
 package com.anthonycr.bonsai
 
+import com.anthonycr.bonsai.refactor.ReactiveEventException
 import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Before
@@ -37,7 +38,13 @@ import java.util.concurrent.atomic.AtomicReference
 class StreamUnitTest {
 
     @Mock
-    private val stringStreamOnSubscribe: StreamOnSubscribe<String>? = null
+    lateinit var stringOnNext: (String) -> Unit
+
+    @Mock
+    lateinit var onComplete: () -> Unit
+
+    @Mock
+    lateinit var onError: (Throwable) -> Unit
 
     @Before
     fun setUp() {
@@ -45,121 +52,110 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamEmissionOrder_singleThread() {
         val testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7")
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             for (item in testList) {
                 subscriber.onNext(item)
             }
             subscriber.onComplete()
-        }).subscribeOn(Schedulers.immediate())
+        }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringStreamOnSubscribe!!)
+                .subscribe(stringOnNext, onComplete, onError)
 
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
+        val inOrder = Mockito.inOrder(stringOnNext, onComplete)
 
-        inOrder.verify(stringStreamOnSubscribe).onStart()
         for (item in testList) {
-            inOrder.verify(stringStreamOnSubscribe).onNext(item)
+            inOrder.verify(stringOnNext)(item)
         }
-        inOrder.verify(stringStreamOnSubscribe).onComplete()
+        inOrder.verify(onComplete)()
 
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
+        stringOnNext.verifyNoMoreInteractions()
+        onComplete.verifyNoMoreInteractions()
+        onError.verifyZeroInteractions()
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamEventEmission_withException() {
         val testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7")
         val runtimeException = RuntimeException("Test failure")
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             for (item in testList) {
                 subscriber.onNext(item)
             }
             throw runtimeException
-        }).subscribeOn(Schedulers.immediate())
+        }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringStreamOnSubscribe!!)
+                .subscribe(stringOnNext, onComplete, onError)
 
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
+        val inOrder = Mockito.inOrder(stringOnNext, onError)
 
-        inOrder.verify(stringStreamOnSubscribe).onStart()
         for (item in testList) {
-            inOrder.verify(stringStreamOnSubscribe).onNext(item)
+            inOrder.verify(stringOnNext)(item)
         }
-        inOrder.verify(stringStreamOnSubscribe).onError(runtimeException)
+        inOrder.verify(onError)(runtimeException)
 
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
+        stringOnNext.verifyNoMoreInteractions()
+        onError.verifyNoMoreInteractions()
+        onComplete.verifyZeroInteractions()
     }
 
-    @Test
-    @Throws(Exception::class)
+    @Test(expected = ReactiveEventException::class)
     fun testStreamEventEmission_withoutSubscriber_withException() {
         val testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7")
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             for (item in testList) {
                 subscriber.onNext(item)
             }
             throw RuntimeException("Test failure")
-        }).subscribeOn(Schedulers.immediate())
+        }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
                 .subscribe()
-
-        // No assertions since we did not supply an OnSubscribe.
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamEventEmission_withError() {
         val testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7")
         val exception = Exception("Test failure")
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             for (item in testList) {
                 subscriber.onNext(item)
             }
-            try {
-                throw exception
-            } catch (e: Exception) {
-                subscriber.onError(e)
-            }
 
-            subscriber.onComplete()
-        }).subscribeOn(Schedulers.immediate())
+            subscriber.onError(exception)
+        }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringStreamOnSubscribe!!)
+                .subscribe(stringOnNext, onComplete, onError)
 
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
+        val inOrder = Mockito.inOrder(stringOnNext, onError)
 
-        inOrder.verify(stringStreamOnSubscribe).onStart()
         for (item in testList) {
-            inOrder.verify(stringStreamOnSubscribe).onNext(item)
+            inOrder.verify(stringOnNext)(item)
         }
-        inOrder.verify(stringStreamOnSubscribe).onError(exception)
+        inOrder.verify(onError)(exception)
 
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
+        stringOnNext.verifyNoMoreInteractions()
+        onError.verifyNoMoreInteractions()
+        onComplete.verifyZeroInteractions()
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamUnsubscribe_unsubscribesSuccessfully() {
         val subscribeLatch = CountDownLatch(1)
         val latch = CountDownLatch(1)
         val assertion = AtomicReference(false)
-        val stringSubscription = Stream.create(StreamAction<String> { subscriber ->
+        val stringSubscription = Stream.create<String> { subscriber ->
             Utils.safeWait(subscribeLatch)
             subscriber.onNext("test")
             latch.countDown()
-        }).subscribeOn(Schedulers.io())
+        }.subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onNext(item: String?) {
-                        assertion.set(true)
-                    }
+                .subscribe(onNext = {
+                    assertion.set(true)
                 })
 
         stringSubscription.unsubscribe()
@@ -170,55 +166,6 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
-    fun testStreamThread_onStart_isCorrect() {
-        val observeLatch = CountDownLatch(1)
-        val subscribeLatch = CountDownLatch(1)
-
-        val subscribeThreadAssertion = AtomicReference<String>()
-        val observerThreadAssertion = AtomicReference<String>()
-
-        val onStartAssertion = AtomicReference(false)
-        val onErrorAssertion = AtomicReference(false)
-
-        Stream.create(StreamAction<String> { subscriber ->
-            subscribeThreadAssertion.set(Thread.currentThread().toString())
-            subscribeLatch.countDown()
-            subscriber.onComplete()
-        }).subscribeOn(Schedulers.worker())
-                .observeOn(Schedulers.io())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onError(throwable: Throwable) {
-                        onErrorAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
-
-                    override fun onStart() {
-                        onStartAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
-                })
-
-        subscribeLatch.await()
-        observeLatch.await()
-
-        val currentThread = Thread.currentThread().toString()
-
-        assertNotNull(subscribeThreadAssertion.get())
-        assertNotNull(observerThreadAssertion.get())
-
-        assertNotEquals(subscribeThreadAssertion.get(), currentThread)
-        assertNotEquals(observerThreadAssertion.get(), currentThread)
-        assertNotEquals(subscribeThreadAssertion.get(), observerThreadAssertion.get())
-
-        assertTrue(onStartAssertion.get())
-        assertFalse(onErrorAssertion.get())
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun testStreamThread_onNext_isCorrect() {
         val observeLatch = CountDownLatch(1)
         val subscribeLatch = CountDownLatch(1)
@@ -229,25 +176,21 @@ class StreamUnitTest {
         val onNextAssertion = AtomicReference(false)
         val onErrorAssertion = AtomicReference(false)
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             subscribeThreadAssertion.set(Thread.currentThread().toString())
             subscribeLatch.countDown()
-            subscriber.onNext(null)
+            subscriber.onNext("test")
             subscriber.onComplete()
-        }).subscribeOn(Schedulers.worker())
+        }.subscribeOn(Schedulers.worker())
                 .observeOn(Schedulers.io())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onError(throwable: Throwable) {
-                        onErrorAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
-
-                    override fun onNext(item: String?) {
-                        onNextAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
+                .subscribe(onNext = {
+                    onNextAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
+                }, onError = {
+                    onErrorAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
                 })
 
         subscribeLatch.await()
@@ -267,7 +210,6 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamThread_onComplete_isCorrect() {
         val observeLatch = CountDownLatch(1)
         val subscribeLatch = CountDownLatch(1)
@@ -278,24 +220,20 @@ class StreamUnitTest {
         val onCompleteAssertion = AtomicReference(false)
         val onErrorAssertion = AtomicReference(false)
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             subscribeThreadAssertion.set(Thread.currentThread().toString())
             subscribeLatch.countDown()
             subscriber.onComplete()
-        }).subscribeOn(Schedulers.worker())
+        }.subscribeOn(Schedulers.worker())
                 .observeOn(Schedulers.io())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onError(throwable: Throwable) {
-                        onErrorAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
-
-                    override fun onComplete() {
-                        onCompleteAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
+                .subscribe(onError = {
+                    onErrorAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
+                }, onComplete = {
+                    onCompleteAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
                 })
 
         subscribeLatch.await()
@@ -315,7 +253,6 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamThread_onError_isCorrect() {
         val observeLatch = CountDownLatch(1)
         val subscribeLatch = CountDownLatch(1)
@@ -326,24 +263,20 @@ class StreamUnitTest {
         val onCompleteAssertion = AtomicReference(false)
         val onErrorAssertion = AtomicReference(false)
 
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             subscribeThreadAssertion.set(Thread.currentThread().toString())
             subscribeLatch.countDown()
             subscriber.onError(RuntimeException("There was a problem"))
-        }).subscribeOn(Schedulers.worker())
+        }.subscribeOn(Schedulers.worker())
                 .observeOn(Schedulers.io())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onError(throwable: Throwable) {
-                        onErrorAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
-
-                    override fun onComplete() {
-                        onCompleteAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
+                .subscribe(onError = {
+                    onErrorAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
+                }, onComplete = {
+                    onCompleteAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
                 })
 
         subscribeLatch.await()
@@ -363,7 +296,6 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamThread_ThrownException_isCorrect() {
         val observeLatch = CountDownLatch(1)
         val subscribeLatch = CountDownLatch(1)
@@ -374,24 +306,20 @@ class StreamUnitTest {
         val onCompleteAssertion = AtomicReference(false)
         val onErrorAssertion = AtomicReference(false)
 
-        Stream.create(StreamAction<String> {
+        Stream.create<String> {
             subscribeThreadAssertion.set(Thread.currentThread().toString())
             subscribeLatch.countDown()
             throw RuntimeException("There was a problem")
-        }).subscribeOn(Schedulers.worker())
+        }.subscribeOn(Schedulers.worker())
                 .observeOn(Schedulers.io())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onError(throwable: Throwable) {
-                        onErrorAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
-
-                    override fun onComplete() {
-                        onCompleteAssertion.set(true)
-                        observerThreadAssertion.set(Thread.currentThread().toString())
-                        observeLatch.countDown()
-                    }
+                .subscribe(onError = {
+                    onErrorAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
+                }, onComplete = {
+                    onCompleteAssertion.set(true)
+                    observerThreadAssertion.set(Thread.currentThread().toString())
+                    observeLatch.countDown()
                 })
 
         subscribeLatch.await()
@@ -411,126 +339,87 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamSubscribesWithoutSubscriber() {
         val isCalledAssertion = AtomicReference(false)
-        Stream.create(StreamAction<Any> { subscriber ->
-            subscriber.onNext(null)
+        Stream.create<Any> { subscriber ->
+            subscriber.onNext(Any())
             subscriber.onComplete()
             isCalledAssertion.set(true)
-        }).subscribeOn(Schedulers.immediate())
+        }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
                 .subscribe()
         assertTrue("onSubscribe must be called when subscribe is called", isCalledAssertion.get())
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamThrowsException_onCompleteCalledTwice() {
         val thrownException = AtomicReference<Throwable>(null)
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             try {
                 subscriber.onComplete()
                 subscriber.onComplete()
-            } catch (e: RuntimeException) {
+            } catch (e: ReactiveEventException) {
                 thrownException.set(e)
-                throw e
             }
-        }).subscribe(stringStreamOnSubscribe!!)
+        }.subscribe(stringOnNext, onComplete, onError)
 
         Assert.assertNotNull(thrownException.get())
 
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
+        val inOrder = Mockito.inOrder(onComplete)
 
-        inOrder.verify(stringStreamOnSubscribe).onStart()
-        inOrder.verify(stringStreamOnSubscribe).onComplete()
+        inOrder.verify(onComplete)()
 
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
+        onComplete.verifyNoMoreInteractions()
+        onError.verifyZeroInteractions()
+        stringOnNext.verifyZeroInteractions()
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamThrowsException_onCompleteCalledTwice_noOnSubscribe() {
         val errorThrown = AtomicReference(false)
-        Stream.create(StreamAction<Any> { subscriber ->
+        Stream.create<Any> { subscriber ->
             try {
                 subscriber.onComplete()
                 subscriber.onComplete()
-            } catch (e: RuntimeException) {
+            } catch (e: ReactiveEventException) {
                 errorThrown.set(true)
             }
-        }).subscribe()
+        }.subscribe()
         assertTrue("Exception should be thrown in subscribe code if onComplete called more than once",
                 errorThrown.get())
     }
 
     @Test
-    @Throws(Exception::class)
-    fun testStreamThrowsException_onStartCalled() {
-        val thrownException = AtomicReference<Throwable>(null)
-        Stream.create(StreamAction<String> { subscriber ->
-            try {
-                subscriber.onStart()
-            } catch (exception: Exception) {
-                thrownException.set(exception)
-                throw exception
-            }
-        }).subscribe(stringStreamOnSubscribe!!)
-
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
-
-        inOrder.verify(stringStreamOnSubscribe).onStart()
-        inOrder.verify(stringStreamOnSubscribe).onError(thrownException.get())
-
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testStreamThrowsException_onStartCalled_noOnSubscribe() {
-        val errorThrown = AtomicReference(false)
-        Stream.create(StreamAction<Any> { subscriber ->
-            try {
-                subscriber.onStart()
-            } catch (exception: Exception) {
-                errorThrown.set(true)
-            }
-        }).subscribe()
-        assertTrue("Exception should be thrown in subscribe code if onStart is called", errorThrown.get())
-    }
-
-    @Test
-    @Throws(Exception::class)
     fun testStreamThrowsException_onNextCalledAfterOnComplete() {
         val errorThrown = AtomicReference(false)
-        Stream.create(StreamAction<String> { subscriber ->
+        Stream.create<String> { subscriber ->
             try {
                 subscriber.onComplete()
-                subscriber.onNext(null)
-            } catch (e: RuntimeException) {
+                subscriber.onNext("test")
+            } catch (e: ReactiveEventException) {
                 errorThrown.set(true)
             }
-        }).subscribe(stringStreamOnSubscribe!!)
+        }.subscribe(stringOnNext, onComplete, onError)
 
         assertTrue("Exception should be thrown in subscribe code if onNext called after onComplete", errorThrown.get())
 
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
+        val inOrder = Mockito.inOrder(onComplete)
 
-        inOrder.verify(stringStreamOnSubscribe).onStart()
-        inOrder.verify(stringStreamOnSubscribe).onComplete()
+        inOrder.verify(onComplete)()
 
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
+        onComplete.verifyNoMoreInteractions()
+        stringOnNext.verifyZeroInteractions()
+        onError.verifyZeroInteractions()
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamSubscriberIsUnsubscribed() {
         val latch = CountDownLatch(1)
         val onNextLatch = CountDownLatch(1)
         val onFinalLatch = CountDownLatch(1)
         val unsubscribed = AtomicReference(false)
         val list = ArrayList<String>()
-        val subscription = Stream.create(StreamAction<String> { subscriber ->
+        val subscription = Stream.create<String> { subscriber ->
             if (!subscriber.isUnsubscribed) {
                 subscriber.onNext("test 1")
             }
@@ -541,13 +430,11 @@ class StreamUnitTest {
             }
             unsubscribed.set(subscriber.isUnsubscribed)
             onFinalLatch.countDown()
-        }).subscribeOn(Schedulers.newSingleThreadedScheduler())
+        }.subscribeOn(Schedulers.newSingleThreadedScheduler())
                 .observeOn(Schedulers.newSingleThreadedScheduler())
-                .subscribe(object : StreamOnSubscribe<String>() {
-                    override fun onNext(item: String?) {
-                        list.add(item!!)
-                        onNextLatch.countDown()
-                    }
+                .subscribe(onNext = {
+                    list.add(it)
+                    onNextLatch.countDown()
                 })
 
         onNextLatch.await()
@@ -561,17 +448,17 @@ class StreamUnitTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testStreamEmpty_emitsNothingImmediately() {
         val stream = Stream.empty<String>()
-        stream.subscribe(stringStreamOnSubscribe!!)
+        stream.subscribe(stringOnNext, onComplete, onError)
 
-        val inOrder = Mockito.inOrder(stringStreamOnSubscribe)
+        val inOrder = Mockito.inOrder(onComplete)
 
-        inOrder.verify(stringStreamOnSubscribe).onStart()
-        inOrder.verify(stringStreamOnSubscribe).onComplete()
+        inOrder.verify(onComplete)()
 
-        Mockito.verifyNoMoreInteractions(stringStreamOnSubscribe)
+        onComplete.verifyNoMoreInteractions()
+        stringOnNext.verifyZeroInteractions()
+        onError.verifyZeroInteractions()
     }
 
 }
