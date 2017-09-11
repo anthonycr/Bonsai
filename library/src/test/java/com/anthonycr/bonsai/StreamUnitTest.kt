@@ -105,6 +105,35 @@ class StreamUnitTest {
     }
 
     @Test
+    fun testStreamFilter_singleThread() {
+        val testList = listOf(1, 2, 3, 4, 5, 6, 7)
+        val filter: (Int) -> Boolean = { it % 2 == 0 }
+
+        Stream.create<Int> { subscriber ->
+            for (item in testList) {
+                subscriber.onNext(item)
+            }
+            subscriber.onComplete()
+        }.filter(filter)
+                .subscribeOn(Schedulers.immediate())
+                .observeOn(Schedulers.immediate())
+                .subscribe(intOnNext, onComplete, onError)
+
+        val inOrder = Mockito.inOrder(intOnNext, onComplete)
+
+        testList.filter(filter)
+                .forEach {
+                    inOrder.verify(intOnNext)(it)
+                }
+
+        inOrder.verify(onComplete)()
+
+        intOnNext.verifyNoMoreInteractions()
+        onComplete.verifyNoMoreInteractions()
+        onError.verifyZeroInteractions()
+    }
+
+    @Test
     fun testStreamEventEmission_withException() {
         val testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7")
         val runtimeException = RuntimeException("Test failure")

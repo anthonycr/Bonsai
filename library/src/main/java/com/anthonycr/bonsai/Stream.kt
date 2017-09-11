@@ -20,6 +20,8 @@
  */
 package com.anthonycr.bonsai
 
+import com.anthonycr.bonsai.Maybe.Companion.defer
+
 /**
  * A Reactive Streams Kotlin implementation of a publisher that can emit multiple items followed by
  * a completion event or one error. This class allows the work to be done on a certain thread and
@@ -63,6 +65,8 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
         /**
          * Creates a [Stream] from the [Subscriber<R> -> Unit] block, which requires that the
          * creator notify the consumer of all items, errors, and the completion event manually.
+         * If fine grained control over the emission lifecycle is not needed, [defer] offers a less
+         * error prone way to create a similar [Stream].
          */
         @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Stream(block)
@@ -165,7 +169,7 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
     /**
      * Causes the [Stream] to run emission events on the provided [Scheduler]. If no [Scheduler] is
-     * provided, then the items are emitted on the [Scheduler] provided by [subscribeOn].
+     * provided, then the events are emitted on the [Scheduler] provided by [subscribeOn].
      */
     fun observeOn(scheduler: Scheduler): Stream<T> {
         observationScheduler = scheduler
@@ -176,7 +180,7 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
      * Maps from the current [Stream] of type [T] to a new [Stream] of type [R].
      */
     fun <R> map(map: (T) -> R): Stream<R> {
-        return create<R>({ newOnSubscribe ->
+        return create<R> { newOnSubscribe ->
             performSubscribe(
                     Schedulers.immediate(),
                     Schedulers.immediate(),
@@ -185,7 +189,28 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
                     onComplete = { newOnSubscribe.onComplete() },
                     onError = { newOnSubscribe.onError(it) }
             )
-        }).subscribeOn(subscriptionScheduler)
+        }.subscribeOn(subscriptionScheduler)
+                .observeOn(observationScheduler)
+    }
+
+    /**
+     * Filters the [Stream] using the filter provided to this function.
+     */
+    fun filter(predicate: (T) -> Boolean): Stream<T> {
+        return create<T> { newOnSubscribe ->
+            performSubscribe(
+                    Schedulers.immediate(),
+                    Schedulers.immediate(),
+                    onSubscribe,
+                    onNext = { item ->
+                        if (predicate(item)) {
+                            newOnSubscribe.onNext(item)
+                        }
+                    },
+                    onComplete = { newOnSubscribe.onComplete() },
+                    onError = { newOnSubscribe.onError(it) }
+            )
+        }.subscribeOn(subscriptionScheduler)
                 .observeOn(observationScheduler)
     }
 

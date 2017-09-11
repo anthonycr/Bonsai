@@ -20,6 +20,8 @@
  */
 package com.anthonycr.bonsai
 
+import com.anthonycr.bonsai.Maybe.Companion.defer
+
 /**
  * A Reactive Streams Kotlin implementation of a publisher that emits a completion event or an
  * error. This class allows work to be done on a certain thread and then allows the completion or
@@ -46,7 +48,8 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
 
         /**
          * Creates a [Completable] that requires the creator to manually handle notifying of
-         * completion and error event.
+         * completion and error event. If fine grained control over the emission lifecycle is not
+         * needed, [defer] offers a less error prone way to create a similar [Completable].
          */
         @JvmStatic
         fun create(block: (Subscriber) -> Unit) = Completable(block)
@@ -139,7 +142,7 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
 
     /**
      * Causes the [Completable] to run emission events on the provided [Scheduler]. If no
-     * [Scheduler] is provided, then the items are emitted on the [Scheduler] provided by
+     * [Scheduler] is provided, then the events are emitted on the [Scheduler] provided by
      * [subscribeOn].
      */
     fun observeOn(scheduler: Scheduler): Completable {

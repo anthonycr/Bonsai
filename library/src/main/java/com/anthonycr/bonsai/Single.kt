@@ -154,7 +154,7 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
     /**
      * Causes the [Single] to run emission events on the provided [Scheduler]. If no [Scheduler] is
-     * provided, then the items are emitted on the [Scheduler] provided by [subscribeOn].
+     * provided, then the events are emitted on the [Scheduler] provided by [subscribeOn].
      */
     fun observeOn(scheduler: Scheduler): Single<T> {
         observationScheduler = scheduler

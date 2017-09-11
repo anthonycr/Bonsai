@@ -21,20 +21,46 @@
 package com.anthonycr.bonsai
 
 /**
- * Created by anthonycr on 9/9/17.
+ * A Reactive Streams Kotlin implementation of a publisher that might emit an item, or a completion
+ * event, or an exception. One of these events is guaranteed to emitted by this observable. This
+ * class allows work to be done on a certain thread and then allows the item to be emitted on a
+ * different thread.
+ *
+ * It allows the caller of this class to create a single task that could emit a single item or
+ * complete, or emit an error.
+ *
+ * @param [T] the type that the [Maybe] will emit.
  */
 class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> Unit) {
 
     companion object {
+
+        /**
+         * Creates a [Maybe] that doesn't emit an item.
+         */
         @JvmStatic
         fun <R> empty() = Maybe<R>({ it.onComplete() })
 
+        /**
+         * Creates a [Maybe] that emits the provided item.
+         */
         @JvmStatic
         fun <R> just(value: R) = Maybe<R>({ it.onSuccess(value) })
 
+        /**
+         * Creates a [Maybe] that lazily executes the block and emits the value returned by it, or a
+         * completion event if no item was returned.
+         */
         @JvmStatic
-        fun <R> defer(block: () -> R) = Maybe<R>({ it.onSuccess(block()) })
+        fun <R> defer(block: () -> R?) = Maybe<R>({ subscriber ->
+            block()?.let { subscriber.onSuccess(it) } ?: subscriber.onComplete()
+        })
 
+        /**
+         * Creates a [Maybe] that requires the creator to manually notify of item emission,
+         * completion, or error events. If fine grained control over the emission lifecycle is not
+         * needed, [defer] offers a less error prone way to create a similar [Maybe].
+         */
         @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Maybe(block)
 
@@ -131,16 +157,29 @@ class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> U
     private var subscriptionScheduler = Schedulers.immediate()
     private var observationScheduler = Schedulers.immediate()
 
+    /**
+     * Causes the [Maybe] to perform work on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the work is performed synchronously.
+     */
     fun subscribeOn(scheduler: Scheduler): Maybe<T> {
         subscriptionScheduler = scheduler
         return this
     }
 
+    /**
+     * Causes the [Maybe] to run emission events on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the events are emitted on the [Scheduler] provided by [subscribeOn].
+     */
     fun observeOn(scheduler: Scheduler): Maybe<T> {
         observationScheduler = scheduler
         return this
     }
 
+    /**
+     * Maps from the current [Maybe] of type [T] to a new [Maybe] of type [R].
+     *
+     * @param [R] the type to be emitted by the new [Maybe].
+     */
     fun <R> map(map: (T) -> R): Maybe<R> {
         return create<R>({ newOnSubscribe ->
             performSubscribe(
@@ -155,6 +194,10 @@ class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> U
                 .observeOn(observationScheduler)
     }
 
+    /**
+     * Subscribes the consumer to receive next, completion, and error events. If no [onError] is
+     * provided and an error is emitted, then an exception is thrown.
+     */
     fun subscribe(onSuccess: (T) -> Unit = {},
                   onComplete: () -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
