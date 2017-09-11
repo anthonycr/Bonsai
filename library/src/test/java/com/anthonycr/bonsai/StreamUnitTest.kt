@@ -419,15 +419,15 @@ class StreamUnitTest {
         val unsubscribed = AtomicReference(false)
         val list = ArrayList<String>()
         val subscription = Stream.create<String> { subscriber ->
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.isUnsubscribed()) {
                 subscriber.onNext("test 1")
             }
             Utils.safeWait(latch)
             // should be unsubscribed after the latch countdown occurs
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.isUnsubscribed()) {
                 subscriber.onNext("test 2")
             }
-            unsubscribed.set(subscriber.isUnsubscribed)
+            unsubscribed.set(subscriber.isUnsubscribed())
             onFinalLatch.countDown()
         }.subscribeOn(Schedulers.newSingleThreadedScheduler())
                 .observeOn(Schedulers.newSingleThreadedScheduler())

@@ -18,33 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
+
+import android.os.Handler
+import android.os.Looper
 
 /**
- * A subscription to an originating
- * observable that can be unsubscribed.
+ * A special [Scheduler] that creates a [Handler] from a certain [Looper] and executes tasks on the
+ * thread associated with it.
  */
-@SuppressWarnings("WeakerAccess")
-public interface Subscription {
+internal class ThreadScheduler(looper: Looper) : Scheduler {
 
-    /**
-     * Calling this method unsubscribes a subscription
-     * from the originating observable. Once this method
-     * is called, no more calls to the OnSubscribe
-     * callbacks will be made.
-     */
-    void unsubscribe();
+    private val handler: Handler = Handler(looper)
 
-    /**
-     * This method tells the caller whether or not
-     * the subscriber to this observable has unsubscribed
-     * or not. Useful for long running or never ending
-     * operations that would otherwise needlessly use
-     * resources.
-     *
-     * @return true if the the Subscriber has unsubscribed,
-     * false otherwise.
-     */
-    boolean isUnsubscribed();
-
+    @Synchronized
+    override fun execute(runnable: () -> Unit) {
+        handler.post(runnable)
+    }
 }

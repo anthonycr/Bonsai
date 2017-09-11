@@ -294,10 +294,10 @@ class CompletableUnitTest {
         val subscription = Completable.create { subscriber ->
             Utils.safeWait(latch)
             // should be unsubscribed after the latch countdown occurs
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.isUnsubscribed()) {
                 workAssertion.set(true)
             }
-            unsubscribed.set(subscriber.isUnsubscribed)
+            unsubscribed.set(subscriber.isUnsubscribed())
             subscriber.onComplete()
             onFinalLatch.countDown()
         }.subscribeOn(Schedulers.newSingleThreadedScheduler())

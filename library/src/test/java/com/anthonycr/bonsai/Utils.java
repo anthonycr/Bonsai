@@ -23,38 +23,9 @@ package com.anthonycr.bonsai;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
-import junit.framework.Assert;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.concurrent.CountDownLatch;
 
 class Utils {
-
-    @SuppressWarnings("TryWithIdenticalCatches")
-    public static <T> void testNonInstantiableClass(@NonNull Class<T> clazz) {
-        Constructor<T> constructor;
-        boolean instantiable = true;
-        try {
-            Assert.assertTrue("Class should be final", Modifier.isFinal(clazz.getModifiers()));
-            constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            Assert.assertTrue("Constructor should be private", Modifier.isPrivate(constructor.getModifiers()));
-            constructor.newInstance();
-        } catch (NoSuchMethodException e) {
-            instantiable = false;
-        } catch (IllegalAccessException e) {
-            instantiable = false;
-        } catch (InstantiationException e) {
-            instantiable = false;
-        } catch (InvocationTargetException e) {
-            instantiable = false;
-        } catch (UnsupportedOperationException e) {
-            instantiable = false;
-        }
-        Assert.assertFalse("Class should not be instantiable", instantiable);
-    }
 
     static void prepareLooper() {
         if (Looper.myLooper() == null) {

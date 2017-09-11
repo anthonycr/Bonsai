@@ -35,7 +35,7 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
                     if (exception is ReactiveEventException) {
                         throw exception
                     } else {
-                        if (schedulingSubscriber.isUnsubscribed) {
+                        if (schedulingSubscriber.isUnsubscribed()) {
                             throw ReactiveEventException("Exception thrown after unsubscribe", exception)
                         } else {
                             schedulingSubscriber.onError(exception)

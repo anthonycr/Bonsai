@@ -322,10 +322,10 @@ class SingleUnitTest {
         val subscription = Single.create<String> { subscriber ->
             Utils.safeWait(latch)
             // should be unsubscribed after the latch countdown occurs
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.isUnsubscribed()) {
                 subscriber.onSuccess("test 1")
             }
-            unsubscribed.set(subscriber.isUnsubscribed)
+            unsubscribed.set(subscriber.isUnsubscribed())
             onFinalLatch.countDown()
         }.subscribeOn(Schedulers.newSingleThreadedScheduler())
                 .observeOn(Schedulers.newSingleThreadedScheduler())

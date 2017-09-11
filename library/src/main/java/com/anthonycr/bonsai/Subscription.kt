@@ -18,27 +18,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
-
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.NonNull;
+package com.anthonycr.bonsai
 
 /**
- * A special {@link Scheduler} that creates a {@link Handler}
- * from a certain {@link Looper} and executes tasks on the
- * thread associated with it.
+ * A subscription to an originating
+ * observable that can be unsubscribed.
  */
-class ThreadScheduler implements Scheduler {
+interface Subscription {
 
-    @NonNull private final Handler handler;
+    /**
+     * Calling this method unsubscribes a subscription
+     * from the originating observable. Once this method
+     * is called, no more calls to the OnSubscribe
+     * callbacks will be made.
+     */
+    fun unsubscribe()
 
-    ThreadScheduler(@NonNull Looper looper) {
-        handler = new Handler(looper);
-    }
+    /**
+     * This method tells the caller whether or not
+     * the subscriber to this observable has unsubscribed
+     * or not. Useful for long running or never ending
+     * operations that would otherwise needlessly use
+     * resources.
+     *
+     * @return true if the the Subscriber has unsubscribed,
+     * false otherwise.
+     */
+    fun isUnsubscribed(): Boolean
 
-    @Override
-    public synchronized void execute(@NonNull Runnable command) {
-        handler.post(command);
-    }
 }
