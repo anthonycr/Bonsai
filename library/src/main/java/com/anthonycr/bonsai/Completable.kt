@@ -8,15 +8,26 @@ package com.anthonycr.bonsai
 class Completable private constructor(private val onSubscribe: (Subscriber) -> Unit) {
 
     companion object {
+
+        /**
+         * Creates a [Completable] that completes immediately.
+         */
         @JvmStatic
         fun complete() = Completable({ it.onComplete() })
 
+        /**
+         * Creates a [Completable] that runs the deferred work and then completes.
+         */
         @JvmStatic
         fun defer(block: () -> Unit) = Completable({
             block()
             it.onComplete()
         })
 
+        /**
+         * Creates a [Completable] that requires the creator to manually handle notifying of
+         * completion and error event.
+         */
         @JvmStatic
         fun create(block: (Subscriber) -> Unit) = Completable(block)
 
@@ -97,16 +108,29 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
     private var subscriptionScheduler = Schedulers.immediate()
     private var observationScheduler = Schedulers.immediate()
 
+    /**
+     * Causes the [Completable] to perform work on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the work is performed synchronously.
+     */
     fun subscribeOn(scheduler: Scheduler): Completable {
         subscriptionScheduler = scheduler
         return this
     }
 
+    /**
+     * Causes the [Completable] to run emission events on the provided [Scheduler]. If no
+     * [Scheduler] is provided, then the items are emitted on the [Scheduler] provided by
+     * [subscribeOn].
+     */
     fun observeOn(scheduler: Scheduler): Completable {
         observationScheduler = scheduler
         return this
     }
 
+    /**
+     * Subscribes the consumer to receive completion and error events. If no [onError] is provided
+     * and an error is emitted, then an exception is thrown.
+     */
     fun subscribe(onComplete: () -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
             performSubscribe(subscriptionScheduler, observationScheduler, onSubscribe, onComplete, onError)

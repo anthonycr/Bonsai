@@ -170,8 +170,8 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
     }
 
     /**
-     * Subscribes the consumer to receive success and error events. If no [onError] is provided and
-     * an error is emitted, then an exception is thrown.
+     * Subscribes the consumer to receive next, completion, and error events. If no [onError] is
+     * provided and an error is emitted, then an exception is thrown.
      */
     fun subscribe(onNext: (T) -> Unit = {},
                   onComplete: () -> Unit = {},
