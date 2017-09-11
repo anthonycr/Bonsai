@@ -16,6 +16,8 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
     companion object {
         /**
          * Creates a [Single] that emits an error, a [RuntimeException].
+         *
+         * @param [R] the type emitted by this [Single].
          */
         @JvmStatic
         fun <R> error() = Single<R>({ it.onError(RuntimeException("No item emitted")) })
@@ -24,19 +26,24 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
          * Creates a [Single] that emits the item passed as the parameter.
          *
          * @param value the value to emit.
+         * @param [R] the type emitted by this [Single].
          */
         @JvmStatic
         fun <R> just(value: R) = Single<R>({ it.onSuccess(value) })
 
         /**
          * Creates a [Single] that emits the value returned by the lambda.
+         *
+         * @param [R] the type emitted by this [Single].
          */
         @JvmStatic
         fun <R> defer(block: () -> R) = Single<R>({ it.onSuccess(block()) })
 
         /**
          * Creates a [Single] from the [(Subscriber<R>) -> Unit] block. Callers of this method must
-         * manually call item emission, error, and completion events correctly, unlike [defer]
+         * manually call item emission, error, and completion events correctly, unlike [defer].
+         *
+         * @param [R] the type emitted by this [Single].
          */
         @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Single(block)
@@ -136,6 +143,8 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
 
     /**
      * Maps from the current [Single] of type [T] to a new [Single] of type [R].
+     *
+     * @param [R] the type to be emitted by the new [Single].
      */
     fun <R> map(map: (T) -> R): Single<R> {
         return create<R>({ newOnSubscribe ->
