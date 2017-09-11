@@ -21,12 +21,14 @@
 package com.anthonycr.bonsai;
 
 /**
- * An action to perform when a consumer
- * subscribes to the {@link Single}.
- *
- * @param <T> the type the action should emit.
+ * An exception thrown by bonsai when problems caused by misuse of the library arise.
  */
-@SuppressWarnings("WeakerAccess")
-public interface SingleAction<T> extends ObservableAction<SingleSubscriber<T>> {
+class ReactiveEventException extends Exception {
+    public ReactiveEventException(String message) {
+        super(message);
+    }
 
+    public ReactiveEventException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

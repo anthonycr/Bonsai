@@ -18,17 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
-import android.support.annotation.NonNull;
+/**
+ * The interface definition for the threading scheme used by Bonsai. Classes implementing this
+ * interface are expected to correctly execute a runnable on a thread of their choosing.
+ */
+interface Scheduler {
 
-class OnStartRunnable implements Runnable {
-    @NonNull private final ObservableOnSubscribe onSubscribe;
+    /**
+     * Run the runnable on the thread defined by the class implementing this class.
+     *
+     * @param runnable the task to execute.
+     */
+    fun execute(runnable: () -> Unit)
 
-    OnStartRunnable(@NonNull ObservableOnSubscribe onSubscribe) {this.onSubscribe = onSubscribe;}
-
-    @Override
-    public void run() {
-        onSubscribe.onStart();
-    }
 }

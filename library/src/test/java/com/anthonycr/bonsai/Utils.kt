@@ -18,17 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
-import android.support.annotation.NonNull;
+import android.os.Looper
 
-class OnCompleteRunnable implements Runnable {
-    @NonNull private final CompletableOnSubscribe onSubscribe;
+/**
+ * Utils for unit tests.
+ */
+internal object Utils {
 
-    OnCompleteRunnable(@NonNull CompletableOnSubscribe onSubscribe) {this.onSubscribe = onSubscribe;}
-
-    @Override
-    public void run() {
-        onSubscribe.onComplete();
+    fun prepareLooper() {
+        if (Looper.myLooper() == null) {
+            Looper.prepare()
+        }
     }
+
 }

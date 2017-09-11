@@ -24,11 +24,10 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 
 import com.anthonycr.bonsai.Completable;
-import com.anthonycr.bonsai.CompletableAction;
-import com.anthonycr.bonsai.CompletableSubscriber;
 import com.anthonycr.bonsai.Stream;
-import com.anthonycr.bonsai.StreamAction;
-import com.anthonycr.bonsai.StreamSubscriber;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 @SuppressWarnings("WeakerAccess")
 public final class DataModel {
@@ -46,9 +45,9 @@ public final class DataModel {
      */
     @NonNull
     public static Stream<Contact> allContactsStream() {
-        return Stream.create(new StreamAction<Contact>() {
+        return Stream.create(new Function1<Stream.Subscriber<? super Contact>, Unit>() {
             @Override
-            public void onSubscribe(@NonNull StreamSubscriber<Contact> subscriber) {
+            public Unit invoke(Stream.Subscriber<? super Contact> subscriber) {
                 Cursor contactsCursor = Database.getInstance().getAllContactsCursor();
 
                 if (contactsCursor.moveToFirst()) {
@@ -61,6 +60,7 @@ public final class DataModel {
                 }
 
                 subscriber.onComplete();
+                return null;
             }
         });
     }
@@ -75,11 +75,12 @@ public final class DataModel {
      */
     @NonNull
     public static Completable addContactCompletable(@NonNull final Contact contact) {
-        return Completable.create(new CompletableAction() {
+        return Completable.create(new Function1<Completable.Subscriber, Unit>() {
             @Override
-            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+            public Unit invoke(Completable.Subscriber subscriber) {
                 Database.getInstance().addContact(contact);
                 subscriber.onComplete();
+                return null;
             }
         });
     }
@@ -94,11 +95,12 @@ public final class DataModel {
      */
     @NonNull
     public static Completable updateContactCompletable(@NonNull final Contact contact) {
-        return Completable.create(new CompletableAction() {
+        return Completable.create(new Function1<Completable.Subscriber, Unit>() {
             @Override
-            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+            public Unit invoke(Completable.Subscriber subscriber) {
                 Database.getInstance().updateContact(contact);
                 subscriber.onComplete();
+                return null;
             }
         });
     }
@@ -113,11 +115,12 @@ public final class DataModel {
      */
     @NonNull
     public static Completable deleteContactCompletable(@NonNull final Contact contact) {
-        return Completable.create(new CompletableAction() {
+        return Completable.create(new Function1<Completable.Subscriber, Unit>() {
             @Override
-            public void onSubscribe(@NonNull CompletableSubscriber subscriber) {
+            public Unit invoke(Completable.Subscriber subscriber) {
                 Database.getInstance().deleteContact(contact);
                 subscriber.onComplete();
+                return null;
             }
         });
     }

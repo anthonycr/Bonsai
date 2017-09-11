@@ -18,15 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
+
+import org.mockito.Mockito
 
 /**
- * An action to perform when a consumer
- * subscribes to the {@link Stream}.
- *
- * @param <T> the type the action should emit.
+ * @see Mockito.verify
  */
-@SuppressWarnings("WeakerAccess")
-public interface StreamAction<T> extends ObservableAction<StreamSubscriber<T>> {
+fun <T> T.verifyOnlyOneInteraction(): T = Mockito.verify(this)
 
-}
+/**
+ * @see Mockito.verifyNoMoreInteractions
+ */
+fun <T> T.verifyNoMoreInteractions() = Mockito.verifyNoMoreInteractions(this)
+
+/**
+ * @see Mockito.verifyZeroInteractions
+ */
+fun <T> T.verifyZeroInteractions() = Mockito.verifyZeroInteractions(this)

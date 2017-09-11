@@ -45,9 +45,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.anthonycr.bonsai.CompletableOnSubscribe;
 import com.anthonycr.bonsai.Schedulers;
-import com.anthonycr.bonsai.StreamOnSubscribe;
 import com.anthonycr.bonsai.Subscription;
 
 import java.text.SimpleDateFormat;
@@ -56,6 +54,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function1;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -122,31 +124,31 @@ public class MainActivity extends AppCompatActivity {
         // Loads all the initial data from the database on a separate thread
         // then notifies the main thread after the data is loaded. Then we
         // add all the items we received to the adapter and they get displayed.
+        contactsAdapter.clearItems();
+        showLoadingSpinner();
         getAllContactsSubscription = DataModel.allContactsStream()
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.main())
-            .subscribe(new StreamOnSubscribe<Contact>() {
+            .subscribe(new Function1<Contact, Unit>() {
                 @Override
-                public void onStart() {
-                    contactsAdapter.clearItems();
-                    showLoadingSpinner();
-                }
-
-                @Override
-                public void onNext(@Nullable Contact item) {
-                    if (item != null) {
-                        contactsAdapter.addItem(item);
-                    }
+                public Unit invoke(Contact contact) {
+                    contactsAdapter.addItem(contact);
 
                     showListView();
+                    return null;
                 }
-
+            }, new Function0<Unit>() {
                 @Override
-                public void onComplete() {
+                public Unit invoke() {
                     showListView();
+                    return null;
+                }
+            }, new Function1<Throwable, Unit>() {
+                @Override
+                public Unit invoke(Throwable throwable) {
+                    return null;
                 }
             });
-
     }
 
     private void showListView() {
@@ -229,10 +231,16 @@ public class MainActivity extends AppCompatActivity {
                     addContactSubscription = DataModel.addContactCompletable(contact)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.main())
-                        .subscribe(new CompletableOnSubscribe() {
+                        .subscribe(new Function0<Unit>() {
                             @Override
-                            public void onComplete() {
+                            public Unit invoke() {
                                 contactsAdapter.addItem(contact);
+                                return null;
+                            }
+                        }, new Function1<Throwable, Unit>() {
+                            @Override
+                            public Unit invoke(Throwable throwable) {
+                                return null;
                             }
                         });
                 }
@@ -266,10 +274,16 @@ public class MainActivity extends AppCompatActivity {
                 editContactSubscription = DataModel.updateContactCompletable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new CompletableOnSubscribe() {
+                    .subscribe(new Function0<Unit>() {
                         @Override
-                        public void onComplete() {
+                        public Unit invoke() {
                             contactsAdapter.changedItem(contact);
+                            return null;
+                        }
+                    }, new Function1<Throwable, Unit>() {
+                        @Override
+                        public Unit invoke(Throwable throwable) {
+                            return null;
                         }
                     });
             }
@@ -284,10 +298,16 @@ public class MainActivity extends AppCompatActivity {
                 deleteContactSubscription = DataModel.deleteContactCompletable(contact)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.main())
-                    .subscribe(new CompletableOnSubscribe() {
+                    .subscribe(new Function0<Unit>() {
                         @Override
-                        public void onComplete() {
+                        public Unit invoke() {
                             contactsAdapter.removeItem(contact);
+                            return null;
+                        }
+                    }, new Function1<Throwable, Unit>() {
+                        @Override
+                        public Unit invoke(Throwable throwable) {
+                            return null;
                         }
                     });
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Anthony C. Restaino
+ * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,24 +18,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
-import android.support.annotation.NonNull;
+import android.os.Handler
+import android.os.Looper
 
 /**
- * An action to perform when a consumer
- * subscribes to the {@link Observable}.
+ * A special [Scheduler] that creates a [Handler] from a certain [Looper] and executes tasks on the
+ * thread associated with it.
  */
-interface ObservableAction<T> {
+internal class ThreadScheduler(looper: Looper) : Scheduler {
 
-    /**
-     * Should be overridden to send the subscriber
-     * events such as {@link SingleSubscriber#onItem(Object)}
-     * or {@link SingleSubscriber#onComplete()}.
-     *
-     * @param subscriber the subscriber that is sent in
-     *                   when the user of the observable
-     *                   subscribes.
-     */
-    void onSubscribe(@NonNull T subscriber);
+    private val handler: Handler = Handler(looper)
+
+    @Synchronized
+    override fun execute(runnable: () -> Unit) {
+        handler.post(runnable)
+    }
 }

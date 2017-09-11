@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,26 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
-import org.junit.Test;
+import java.util.concurrent.CountDownLatch
 
-public class PreconditionsUnitTest extends BaseUnitTest {
 
-    @Test
-    public void testClassIsFinal() throws Exception {
-        Utils.testNonInstantiableClass(Preconditions.class);
+/**
+ * Calls [CountDownLatch.await] and swallows any exceptions, printing the stacktrace if something
+ * goes wrong.
+ */
+fun CountDownLatch.safeAwait() {
+    try {
+        await()
+    } catch (e: InterruptedException) {
+        e.printStackTrace()
     }
-
-    @Test(expected = NullPointerException.class)
-    public void testCheckNotNull_isNull() {
-        Preconditions.checkNonNull(null);
-    }
-
-    @Test
-    public void testCheckNotNull_isNotNull() throws Exception {
-        Object o = new Object();
-        Preconditions.checkNonNull(o);
-    }
-
 }

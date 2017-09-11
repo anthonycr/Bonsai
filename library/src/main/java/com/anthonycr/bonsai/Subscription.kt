@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Anthony C. Restaino
+ * Copyright (C) 2016 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,24 +18,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
 /**
- * When a consumer subscribes to a {@link Completable}
- * it should supply an implementation of this class
- * with the desired methods overridden.
- * If {@link #onError(Throwable)} is not overridden,
- * it will throw an exception.
+ * A subscription to an originating
+ * observable that can be unsubscribed.
  */
-@SuppressWarnings("WeakerAccess")
-public abstract class CompletableOnSubscribe extends ObservableOnSubscribe {
+interface Subscription {
 
     /**
-     * This method is called when the observer is
-     * finished sending the subscriber events. It
-     * is guaranteed that no other methods will be
-     * called on the OnSubscribe after this method
-     * has been called.
+     * Calling this method unsubscribes a subscription
+     * from the originating observable. Once this method
+     * is called, no more calls to the OnSubscribe
+     * callbacks will be made.
      */
-    public void onComplete() {}
+    fun unsubscribe()
+
+    /**
+     * This method tells the caller whether or not
+     * the subscriber to this observable has unsubscribed
+     * or not. Useful for long running or never ending
+     * operations that would otherwise needlessly use
+     * resources.
+     *
+     * @return true if the the Subscriber has unsubscribed,
+     * false otherwise.
+     */
+    fun isUnsubscribed(): Boolean
+
 }

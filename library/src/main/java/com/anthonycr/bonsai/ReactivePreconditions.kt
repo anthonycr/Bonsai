@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Anthony C. Restaino
+ * Copyright (C) 2017 Anthony C. Restaino
  * <p/>
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,21 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
-import android.support.annotation.NonNull;
-
-class OnErrorRunnable implements Runnable {
-    @NonNull private final ObservableOnSubscribe onSubscribe;
-    @NonNull private final Throwable throwable;
-
-    OnErrorRunnable(@NonNull ObservableOnSubscribe onSubscribe, @NonNull Throwable throwable) {
-        this.onSubscribe = onSubscribe;
-        this.throwable = throwable;
-    }
-
-    @Override
-    public void run() {
-        onSubscribe.onError(throwable);
+/**
+ * Requires a condition be true, otherwise it throws a [ReactiveEventException].
+ */
+internal inline fun requireCondition(condition: Boolean, message: () -> String) {
+    if (!condition) {
+        throw ReactiveEventException(message())
     }
 }
