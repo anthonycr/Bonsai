@@ -1,11 +1,8 @@
 package com.anthonycr.bonsai
 
-import com.anthonycr.bonsai.ReactiveEventException
-
 /**
- * Created by anthonycr on 9/9/17.
+ * Requires a condition be true, otherwise it throws a [ReactiveEventException].
  */
-
 internal inline fun requireCondition(condition: Boolean, message: () -> String) {
     if (!condition) {
         throw ReactiveEventException(message())

@@ -1,6 +1,4 @@
-package com.anthonycr.bonsai.refactor
-
-import com.anthonycr.bonsai.*
+package com.anthonycr.bonsai
 
 /**
  * Created by anthonycr on 9/9/17.
