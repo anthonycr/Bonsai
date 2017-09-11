@@ -365,7 +365,6 @@ class CompletableUnitTest {
                 .subscribeOn(singleThread1)
                 .observeOn(singleThread2)
                 .subscribe(onComplete = {
-                    println(singleThreadRef1.get() + " " + singleThreadRef2.get())
                     Assert.assertEquals(singleThreadRef2.get(), Thread.currentThread().toString())
                     countDownLatch.countDown()
                 })
