@@ -149,7 +149,7 @@ class SingleUnitTest {
         val emissionLatch = CountDownLatch(1)
         val assertion = AtomicReference<String>(null)
         val stringSubscription = Single.create<String> { subscriber ->
-            Utils.safeWait(subscribeLatch)
+            subscribeLatch.safeAwait()
             subscriber.onSuccess("test")
             emissionLatch.countDown()
         }.subscribeOn(Schedulers.io())
@@ -336,7 +336,7 @@ class SingleUnitTest {
         val unsubscribed = AtomicReference(false)
         val list = ArrayList<String>()
         val subscription = Single.create<String> { subscriber ->
-            Utils.safeWait(latch)
+            latch.safeAwait()
             // should be unsubscribed after the latch countdown occurs
             if (!subscriber.isUnsubscribed()) {
                 subscriber.onSuccess("test 1")

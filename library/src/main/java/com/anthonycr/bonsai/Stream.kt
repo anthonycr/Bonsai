@@ -1,21 +1,49 @@
 package com.anthonycr.bonsai
 
 /**
- * Created by anthonycr on 9/9/17.
+ * A Reactive Streams Kotlin implementation of a publisher that can emit multiple items followed by
+ * a completion event or one error. This class allows the work to be done on a certain thread and
+ * then allows the events to be emitted on a different thread.
+ *
+ * It allows the caller of this class to create a single task that emits no or one or many items and
+ * then completes, or an error can be emitted.
+ *
+ * @param [T] the type that the [Stream] will emit.
  */
 class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> Unit) {
 
     companion object {
+
+        /**
+         * Creates a [Stream] that emits no items and immediately completes.
+         */
         @JvmStatic
         fun <R> empty() = Stream<R>({ it.onComplete() })
 
+        /**
+         * Creates a [Stream] that emits all the items passed to it and then completes.
+         */
         @JvmStatic
         fun <R> just(vararg values: R) = Stream<R>({ subscriber ->
             for (r in values) {
                 subscriber.onNext(r)
             }
+            subscriber.onComplete()
         })
 
+        /**
+         * Creates a [Stream] which emits all the items held in the collection.
+         */
+        @JvmStatic
+        fun <R> defer(block: () -> Collection<R>) = Stream<R>({ subscriber ->
+            block().forEach { subscriber.onNext(it) }
+            subscriber.onComplete()
+        })
+
+        /**
+         * Creates a [Stream] from the [Subscriber<R> -> Unit] block, which requires that the
+         * creator notify the consumer of all items, errors, and the completion event manually.
+         */
         @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Stream(block)
 
@@ -106,16 +134,27 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
     private var subscriptionScheduler = Schedulers.immediate()
     private var observationScheduler = Schedulers.immediate()
 
+    /**
+     * Causes the [Stream] to perform work on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the work is performed synchronously.
+     */
     fun subscribeOn(scheduler: Scheduler): Stream<T> {
         subscriptionScheduler = scheduler
         return this
     }
 
+    /**
+     * Causes the [Stream] to run emission events on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the items are emitted on the [Scheduler] provided by [subscribeOn].
+     */
     fun observeOn(scheduler: Scheduler): Stream<T> {
         observationScheduler = scheduler
         return this
     }
 
+    /**
+     * Maps from the current [Stream] of type [T] to a new [Stream] of type [R].
+     */
     fun <R> map(map: (T) -> R): Stream<R> {
         return create<R>({ newOnSubscribe ->
             performSubscribe(
@@ -130,6 +169,10 @@ class Stream<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
                 .observeOn(observationScheduler)
     }
 
+    /**
+     * Subscribes the consumer to receive success and error events. If no [onError] is provided and
+     * an error is emitted, then an exception is thrown.
+     */
     fun subscribe(onNext: (T) -> Unit = {},
                   onComplete: () -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =

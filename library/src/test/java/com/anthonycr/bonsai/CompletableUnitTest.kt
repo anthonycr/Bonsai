@@ -29,6 +29,9 @@ import org.mockito.MockitoAnnotations
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * Unit tests for [Completable].
+ */
 class CompletableUnitTest {
 
     @Mock
@@ -107,7 +110,7 @@ class CompletableUnitTest {
         val subscribeLatch = CountDownLatch(1)
         val latch = CountDownLatch(1)
         val stringSubscription = Completable.create { subscriber ->
-            Utils.safeWait(subscribeLatch)
+            subscribeLatch.safeAwait()
             subscriber.onComplete()
             latch.countDown()
         }.subscribeOn(Schedulers.io())
@@ -292,7 +295,7 @@ class CompletableUnitTest {
         val workAssertion = AtomicReference(false)
 
         val subscription = Completable.create { subscriber ->
-            Utils.safeWait(latch)
+            latch.safeAwait()
             // should be unsubscribed after the latch countdown occurs
             if (!subscriber.isUnsubscribed()) {
                 workAssertion.set(true)

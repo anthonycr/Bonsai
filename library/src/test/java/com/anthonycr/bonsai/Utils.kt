@@ -18,26 +18,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.anthonycr.bonsai;
+package com.anthonycr.bonsai
 
-import android.os.Looper;
-import android.support.annotation.NonNull;
+import android.os.Looper
 
-import java.util.concurrent.CountDownLatch;
+/**
+ * Utils for unit tests.
+ */
+internal object Utils {
 
-class Utils {
-
-    static void prepareLooper() {
+    fun prepareLooper() {
         if (Looper.myLooper() == null) {
-            Looper.prepare();
-        }
-    }
-
-    static void safeWait(@NonNull CountDownLatch countDownLatch) {
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            Looper.prepare()
         }
     }
 

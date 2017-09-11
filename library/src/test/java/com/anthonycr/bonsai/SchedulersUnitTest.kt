@@ -31,6 +31,9 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * Unit tests for [Schedulers].
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = intArrayOf(25))
 class SchedulersUnitTest {

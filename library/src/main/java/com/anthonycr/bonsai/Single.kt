@@ -3,13 +3,13 @@ package com.anthonycr.bonsai
 /**
  * A Reactive Streams Kotlin implementation of a publisher that emits one item or one error. This
  * class allows work to be done on a certain thread and then allows an item to be emitted on a
- * different thread. It is a replacement for {@link android.os.AsyncTask}.
- * <p>
+ * different thread.
+ *
  * It allows the caller of this class to create a single task that emits a single item and then
  * completes, or if no item can be emitted, then an error must be emitted. The consumer of the
- * {@link Single} will be notified of the success of the subscription or the failure of it.
+ * [Single] will be notified of the success of the subscription or the failure of it.
  *
- * @param <T> the type that the Single will emit.
+ * @param [T] the type that the [Single] will emit.
  */
 class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> Unit) {
 

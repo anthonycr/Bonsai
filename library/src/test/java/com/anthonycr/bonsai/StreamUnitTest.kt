@@ -32,7 +32,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * To work on unit tests, switch the Test Artifact in the Build Variants view.
+ * Unit tests for [Stream].
  */
 class StreamUnitTest {
 
@@ -177,7 +177,7 @@ class StreamUnitTest {
         val latch = CountDownLatch(1)
         val assertion = AtomicReference(false)
         val stringSubscription = Stream.create<String> { subscriber ->
-            Utils.safeWait(subscribeLatch)
+            subscribeLatch.safeAwait()
             subscriber.onNext("test")
             latch.countDown()
         }.subscribeOn(Schedulers.io())
@@ -451,7 +451,7 @@ class StreamUnitTest {
             if (!subscriber.isUnsubscribed()) {
                 subscriber.onNext("test 1")
             }
-            Utils.safeWait(latch)
+            latch.safeAwait()
             // should be unsubscribed after the latch countdown occurs
             if (!subscriber.isUnsubscribed()) {
                 subscriber.onNext("test 2")
