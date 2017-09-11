@@ -40,6 +40,9 @@ class StreamUnitTest {
     lateinit var stringOnNext: (String) -> Unit
 
     @Mock
+    lateinit var intOnNext: (Int) -> Unit
+
+    @Mock
     lateinit var onComplete: () -> Unit
 
     @Mock
@@ -71,6 +74,32 @@ class StreamUnitTest {
         inOrder.verify(onComplete)()
 
         stringOnNext.verifyNoMoreInteractions()
+        onComplete.verifyNoMoreInteractions()
+        onError.verifyZeroInteractions()
+    }
+
+    @Test
+    fun testStreamMap_singleThread() {
+        val testList = Arrays.asList("1", "2", "3", "4", "5", "6", "7")
+
+        Stream.create<String> { subscriber ->
+            for (item in testList) {
+                subscriber.onNext(item)
+            }
+            subscriber.onComplete()
+        }.map { it.toInt() }
+                .subscribeOn(Schedulers.immediate())
+                .observeOn(Schedulers.immediate())
+                .subscribe(intOnNext, onComplete, onError)
+
+        val inOrder = Mockito.inOrder(intOnNext, onComplete)
+
+        for (item in testList) {
+            inOrder.verify(intOnNext)(item.toInt())
+        }
+        inOrder.verify(onComplete)()
+
+        intOnNext.verifyNoMoreInteractions()
         onComplete.verifyNoMoreInteractions()
         onError.verifyZeroInteractions()
     }

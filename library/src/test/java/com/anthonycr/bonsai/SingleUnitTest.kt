@@ -36,6 +36,9 @@ class SingleUnitTest {
     lateinit var stringOnSuccess: (String) -> Unit
 
     @Mock
+    lateinit var intOnSuccess: (Int) -> Unit
+
+    @Mock
     lateinit var stringOnError: (Throwable) -> Unit
 
     @Before
@@ -47,9 +50,8 @@ class SingleUnitTest {
     fun testSingleEmissionOrder_singleThread() {
         val testItem = "1"
 
-        Single.create<String> {
-            it.onSuccess(testItem)
-        }.subscribeOn(Schedulers.immediate())
+        Single.defer { testItem }
+                .subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
                 .subscribe(stringOnSuccess, stringOnError)
 
@@ -57,6 +59,20 @@ class SingleUnitTest {
         stringOnSuccess.verifyNoMoreInteractions()
 
         stringOnError.verifyZeroInteractions()
+    }
+
+    @Test
+    fun testSingleMap_singleThread() {
+        val testItem = "1"
+
+        Single.defer { testItem }
+                .map { it.toInt() }
+                .subscribeOn(Schedulers.immediate())
+                .observeOn(Schedulers.immediate())
+                .subscribe(intOnSuccess)
+
+        intOnSuccess.verifyOnlyOneInteraction()(1)
+        intOnSuccess.verifyNoMoreInteractions()
     }
 
     @Test(expected = ReactiveEventException::class)
