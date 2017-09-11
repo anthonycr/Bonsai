@@ -14,15 +14,30 @@ package com.anthonycr.bonsai
 class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> Unit) {
 
     companion object {
+        /**
+         * Creates a [Single] that emits an error, a [RuntimeException].
+         */
         @JvmStatic
         fun <R> error() = Single<R>({ it.onError(RuntimeException("No item emitted")) })
 
+        /**
+         * Creates a [Single] that emits the item passed as the parameter.
+         *
+         * @param value the value to emit.
+         */
         @JvmStatic
         fun <R> just(value: R) = Single<R>({ it.onSuccess(value) })
 
+        /**
+         * Creates a [Single] that emits the value returned by the lambda.
+         */
         @JvmStatic
         fun <R> defer(block: () -> R) = Single<R>({ it.onSuccess(block()) })
 
+        /**
+         * Creates a [Single] from the [(Subscriber<R>) -> Unit] block. Callers of this method must
+         * manually call item emission, error, and completion events correctly, unlike [defer]
+         */
         @JvmStatic
         fun <R> create(block: (Subscriber<R>) -> Unit) = Single(block)
 
@@ -101,16 +116,27 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
     private var subscriptionScheduler = Schedulers.immediate()
     private var observationScheduler = Schedulers.immediate()
 
+    /**
+     * Causes the [Single] to perform work on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the work is performed synchronously.
+     */
     fun subscribeOn(scheduler: Scheduler): Single<T> {
         subscriptionScheduler = scheduler
         return this
     }
 
+    /**
+     * Causes the [Single] to run emission events on the provided [Scheduler]. If no [Scheduler] is
+     * provided, then the items are emitted on the [Scheduler] provided by [subscribeOn].
+     */
     fun observeOn(scheduler: Scheduler): Single<T> {
         observationScheduler = scheduler
         return this
     }
 
+    /**
+     * Maps from the current [Single] of type [T] to a new [Single] of type [R].
+     */
     fun <R> map(map: (T) -> R): Single<R> {
         return create<R>({ newOnSubscribe ->
             performSubscribe(
@@ -124,6 +150,10 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
                 .observeOn(observationScheduler)
     }
 
+    /**
+     * Subscribes the consumer to receive success and error events. If no [onError] is provided and
+     * an error is emitted, then an exception is thrown.
+     */
     fun subscribe(onSuccess: (T) -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
             performSubscribe(subscriptionScheduler, observationScheduler, onSubscribe, onSuccess, onError)

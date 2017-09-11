@@ -1,7 +1,11 @@
 package com.anthonycr.bonsai
 
 /**
- * Created by anthonycr on 9/9/17.
+ * A Reactive Streams Kotlin implementation of a publisher that emits a completion event or an
+ * error. This class allows work to be done on a certain thread and then allows the completion or
+ * error event to be emitted on a different thread.
+ *
+ * @param <T> the type that the Single will emit.
  */
 class Completable private constructor(private val onSubscribe: (Subscriber) -> Unit) {
 
