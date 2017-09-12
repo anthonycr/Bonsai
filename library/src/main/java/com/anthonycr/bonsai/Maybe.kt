@@ -195,6 +195,29 @@ class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> U
     }
 
     /**
+     * Filters the [Maybe] using the filter provided to this function.
+     */
+    fun filter(predicate: (T) -> Boolean): Maybe<T> {
+        return Maybe.create<T> { newOnSubscribe ->
+            performSubscribe(
+                    Schedulers.immediate(),
+                    Schedulers.immediate(),
+                    onSubscribe,
+                    onSuccess = { item ->
+                        if (predicate(item)) {
+                            newOnSubscribe.onSuccess(item)
+                        } else {
+                            newOnSubscribe.onComplete()
+                        }
+                    },
+                    onComplete = { newOnSubscribe.onComplete() },
+                    onError = { newOnSubscribe.onError(it) }
+            )
+        }.subscribeOn(subscriptionScheduler)
+                .observeOn(observationScheduler)
+    }
+
+    /**
      * Subscribes the consumer to receive next, completion, and error events. If no [onError] is
      * provided and an error is emitted, then an exception is thrown.
      */
