@@ -21,33 +21,19 @@
 package com.anthonycr.bonsai
 
 import com.nhaarman.mockito_kotlin.isA
+import com.nhaarman.mockito_kotlin.mock
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 
 class SingleUnitTest {
 
-    @Mock
-    lateinit var stringOnSuccess: (String) -> Unit
-
-    @Mock
-    lateinit var intOnSuccess: (Int) -> Unit
-
-    @Mock
-    lateinit var onError: (Throwable) -> Unit
-
-    @Mock
-    lateinit var onComplete: () -> Unit
-
-    @Before
-    fun before() {
-        MockitoAnnotations.initMocks(this)
-    }
+    private val stringOnSuccess = mock<(String) -> Unit>()
+    private val intOnSuccess = mock<(Int) -> Unit>()
+    private val onError = mock<(Throwable) -> Unit>()
+    private val onComplete = mock<() -> Unit>()
 
     @Test
     fun testSingleEmissionOrder_singleThread() {

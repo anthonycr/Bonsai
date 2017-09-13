@@ -20,12 +20,10 @@
  */
 package com.anthonycr.bonsai
 
+import com.nhaarman.mockito_kotlin.mock
 import org.junit.Assert
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 
@@ -34,16 +32,8 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class CompletableUnitTest {
 
-    @Mock
-    lateinit var onComplete: () -> Unit
-
-    @Mock
-    lateinit var onError: (Throwable) -> Unit
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-    }
+    private val onComplete = mock<() -> Unit>()
+    private val onError = mock<(Throwable) -> Unit>()
 
     @Test
     fun testCompletableEventEmission_withException() {
