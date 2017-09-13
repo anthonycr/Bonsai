@@ -39,7 +39,10 @@ class SingleUnitTest {
     lateinit var intOnSuccess: (Int) -> Unit
 
     @Mock
-    lateinit var stringOnError: (Throwable) -> Unit
+    lateinit var onError: (Throwable) -> Unit
+
+    @Mock
+    lateinit var onComplete: () -> Unit
 
     @Before
     fun before() {
@@ -53,12 +56,12 @@ class SingleUnitTest {
         Single.defer { testItem }
                 .subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringOnSuccess, stringOnError)
+                .subscribe(stringOnSuccess, onError)
 
         stringOnSuccess.verifyOnlyOneInteraction()(testItem)
         stringOnSuccess.verifyNoMoreInteractions()
 
-        stringOnError.verifyZeroInteractions()
+        onError.verifyZeroInteractions()
     }
 
     @Test
@@ -73,6 +76,38 @@ class SingleUnitTest {
 
         intOnSuccess.verifyOnlyOneInteraction()(1)
         intOnSuccess.verifyNoMoreInteractions()
+    }
+
+    @Test
+    fun testStreamFilter_singleThread_FilterExclude() {
+        val testItem = 1
+        val filter: (Int) -> Boolean = { it % 2 == 0 }
+
+        Single.defer { testItem }
+                .filter(filter)
+                .subscribeOn(Schedulers.immediate())
+                .observeOn(Schedulers.immediate())
+                .subscribe(intOnSuccess, onComplete, onError)
+
+        intOnSuccess.verifyZeroInteractions()
+        onComplete.verifyOnlyOneInteraction()()
+        onError.verifyZeroInteractions()
+    }
+
+    @Test
+    fun testStreamFilter_singleThread_FilterInclude() {
+        val testItem = 2
+        val filter: (Int) -> Boolean = { it % 2 == 0 }
+
+        Single.defer { testItem }
+                .filter(filter)
+                .subscribeOn(Schedulers.immediate())
+                .observeOn(Schedulers.immediate())
+                .subscribe(intOnSuccess, onComplete, onError)
+
+        intOnSuccess.verifyOnlyOneInteraction()(testItem)
+        onComplete.verifyZeroInteractions()
+        onError.verifyZeroInteractions()
     }
 
     @Test(expected = ReactiveEventException::class)
@@ -107,7 +142,7 @@ class SingleUnitTest {
             throw runtimeException
         }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringOnSuccess, stringOnError)
+                .subscribe(stringOnSuccess, onError)
 
     }
 
@@ -119,10 +154,10 @@ class SingleUnitTest {
             throw exception
         }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringOnSuccess, stringOnError)
+                .subscribe(stringOnSuccess, onError)
 
-        stringOnError.verifyOnlyOneInteraction()(exception)
-        stringOnError.verifyNoMoreInteractions()
+        onError.verifyOnlyOneInteraction()(exception)
+        onError.verifyNoMoreInteractions()
 
         stringOnSuccess.verifyZeroInteractions()
     }
@@ -135,12 +170,12 @@ class SingleUnitTest {
             it.onSuccess(testItem)
         }.subscribeOn(Schedulers.immediate())
                 .observeOn(Schedulers.immediate())
-                .subscribe(stringOnSuccess, stringOnError)
+                .subscribe(stringOnSuccess, onError)
 
         stringOnSuccess.verifyOnlyOneInteraction()(testItem)
         stringOnSuccess.verifyNoMoreInteractions()
 
-        stringOnError.verifyZeroInteractions()
+        onError.verifyZeroInteractions()
     }
 
     @Test
@@ -317,14 +352,14 @@ class SingleUnitTest {
             } catch (e: ReactiveEventException) {
                 errorThrown.set(true)
             }
-        }.subscribe(stringOnSuccess, stringOnError)
+        }.subscribe(stringOnSuccess, onError)
         assertTrue("Exception should be thrown in subscribe code if onItem called after onComplete",
                 errorThrown.get())
 
         stringOnSuccess.verifyOnlyOneInteraction()(emission1)
         stringOnSuccess.verifyNoMoreInteractions()
 
-        stringOnError.verifyZeroInteractions()
+        onError.verifyZeroInteractions()
 
         assertTrue(errorThrown.get())
     }
@@ -360,10 +395,10 @@ class SingleUnitTest {
     @Test
     fun testSingleEmpty_emitsNothingImmediately() {
         val stringSingle = Single.error<String>()
-        stringSingle.subscribe(stringOnSuccess, stringOnError)
+        stringSingle.subscribe(stringOnSuccess, onError)
 
-        stringOnError.verifyOnlyOneInteraction()(isA<RuntimeException>())
-        stringOnError.verifyNoMoreInteractions()
+        onError.verifyOnlyOneInteraction()(isA<RuntimeException>())
+        onError.verifyNoMoreInteractions()
 
         stringOnSuccess.verifyZeroInteractions()
     }

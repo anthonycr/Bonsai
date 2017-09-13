@@ -180,6 +180,28 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
     }
 
     /**
+     * Filters the [Single] using the filter provided to this function and returns a [Maybe].
+     */
+    fun filter(predicate: (T) -> Boolean): Maybe<T> {
+        return Maybe.create<T> { newOnSubscribe ->
+            performSubscribe(
+                    Schedulers.immediate(),
+                    Schedulers.immediate(),
+                    onSubscribe,
+                    onSuccess = { item ->
+                        if (predicate(item)) {
+                            newOnSubscribe.onSuccess(item)
+                        } else {
+                            newOnSubscribe.onComplete()
+                        }
+                    },
+                    onError = { newOnSubscribe.onError(it) }
+            )
+        }.subscribeOn(subscriptionScheduler)
+                .observeOn(observationScheduler)
+    }
+
+    /**
      * Subscribes the consumer to receive success and error events. If no [onError] is provided and
      * an error is emitted, then an exception is thrown.
      */
