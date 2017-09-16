@@ -143,11 +143,6 @@ public class MainActivity extends AppCompatActivity {
                     showListView();
                     return null;
                 }
-            }, new Function1<Throwable, Unit>() {
-                @Override
-                public Unit invoke(Throwable throwable) {
-                    return null;
-                }
             });
     }
 
@@ -237,11 +232,6 @@ public class MainActivity extends AppCompatActivity {
                                 contactsAdapter.addItem(contact);
                                 return null;
                             }
-                        }, new Function1<Throwable, Unit>() {
-                            @Override
-                            public Unit invoke(Throwable throwable) {
-                                return null;
-                            }
                         });
                 }
             }
@@ -280,11 +270,6 @@ public class MainActivity extends AppCompatActivity {
                             contactsAdapter.changedItem(contact);
                             return null;
                         }
-                    }, new Function1<Throwable, Unit>() {
-                        @Override
-                        public Unit invoke(Throwable throwable) {
-                            return null;
-                        }
                     });
             }
 
@@ -302,11 +287,6 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public Unit invoke() {
                             contactsAdapter.removeItem(contact);
-                            return null;
-                        }
-                    }, new Function1<Throwable, Unit>() {
-                        @Override
-                        public Unit invoke(Throwable throwable) {
                             return null;
                         }
                     });

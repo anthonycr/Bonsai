@@ -205,6 +205,7 @@ class Single<T> private constructor(private val onSubscribe: (Subscriber<T>) -> 
      * Subscribes the consumer to receive success and error events. If no [onError] is provided and
      * an error is emitted, then an exception is thrown.
      */
+    @JvmOverloads
     fun subscribe(onSuccess: (T) -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
             performSubscribe(subscriptionScheduler, observationScheduler, onSubscribe, onSuccess, onError)

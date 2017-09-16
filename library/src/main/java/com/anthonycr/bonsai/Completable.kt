@@ -154,6 +154,7 @@ class Completable private constructor(private val onSubscribe: (Subscriber) -> U
      * Subscribes the consumer to receive completion and error events. If no [onError] is provided
      * and an error is emitted, then an exception is thrown.
      */
+    @JvmOverloads
     fun subscribe(onComplete: () -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
             performSubscribe(subscriptionScheduler, observationScheduler, onSubscribe, onComplete, onError)

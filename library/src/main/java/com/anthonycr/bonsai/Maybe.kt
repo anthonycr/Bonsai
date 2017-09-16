@@ -221,6 +221,7 @@ class Maybe<T> private constructor(private val onSubscribe: (Subscriber<T>) -> U
      * Subscribes the consumer to receive next, completion, and error events. If no [onError] is
      * provided and an error is emitted, then an exception is thrown.
      */
+    @JvmOverloads
     fun subscribe(onSuccess: (T) -> Unit = {},
                   onComplete: () -> Unit = {},
                   onError: (Throwable) -> Unit = { throw ReactiveEventException("No error handler supplied", it) }) =
